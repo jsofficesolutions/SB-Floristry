@@ -87,7 +87,7 @@ const products = rawProducts.map(({ node }) => ({
         <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 md:mb-6 block">Step 3 of 3</span>
         <h2 class="font-serif text-[26px] sm:text-3xl md:text-5xl text-sb-black mb-5 md:mb-10 font-light">What is your price range?</h2>
         <div class="flex flex-col gap-3 md:gap-5 max-w-md mx-auto w-full">
-          <button class="quiz-btn border border-gray-100 py-3 md:py-4 px-6 hover:border-sb-gold hover:bg-gray-50 hover:shadow-sm transition-all duration-500 text-sb-black font-light text-sm md:text-lg finish-quiz" data-min="0" data-max="60">£40 - £60</button>
+          <button class="quiz-btn border border-gray-100 py-3 md:py-4 px-6 hover:border-sb-gold hover:bg-gray-50 hover:shadow-sm transition-all duration-500 text-sb-black font-light text-sm md:text-lg finish-quiz" data-min="40" data-max="60">£40 - £60</button>
           <button class="quiz-btn border border-gray-100 py-3 md:py-4 px-6 hover:border-sb-gold hover:bg-gray-50 hover:shadow-sm transition-all duration-500 text-sb-black font-light text-sm md:text-lg finish-quiz" data-min="61" data-max="99">£60 - £100</button>
           <button class="quiz-btn border border-gray-100 py-3 md:py-4 px-6 hover:border-sb-gold hover:bg-gray-50 hover:shadow-sm transition-all duration-500 text-sb-black font-light text-sm md:text-lg finish-quiz" data-min="100" data-max="999">£100+ (Showstopper)</button>
         </div>
@@ -119,8 +119,8 @@ const products = rawProducts.map(({ node }) => ({
         <p class="text-sb-gold/70 text-sm font-light uppercase tracking-widest" id="ai-loading-subtext">Please wait</p>
     </div>
 
-    <!-- Final Results View (Fixed Layout & Perfect Centering) -->
-    <div id="ai-results-view" class="absolute inset-0 z-20 hidden flex-col items-center justify-center p-4 md:p-8 opacity-0 scale-105 transition-all duration-1000 w-full h-full">
+    <!-- Final Results View (Scrollable on mobile to fit 3 cards gracefully) -->
+    <div id="ai-results-view" class="absolute inset-0 z-20 hidden flex-col items-center justify-start md:justify-center p-4 md:p-8 opacity-0 scale-105 transition-all duration-1000 w-full h-full overflow-y-auto overflow-x-hidden pt-12 md:pt-8 pb-20">
         
         <!-- Header -->
         <div class="text-center shrink-0 mb-6 md:mb-10 w-full">
@@ -128,12 +128,12 @@ const products = rawProducts.map(({ node }) => ({
             <h2 class="font-serif text-3xl md:text-5xl text-white font-light">Your Perfect Matches</h2>
         </div>
         
-        <!-- Layout Grid: Flex column on mobile (horizontal cards), Flex row on desktop (vertical cards) -->
-        <div class="w-full max-w-4xl mx-auto flex flex-col md:flex-row justify-center items-center md:items-stretch gap-4 md:gap-8 shrink-0" id="results-grid">
+        <!-- 3-Card Grid -->
+        <div class="w-full max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-stretch gap-4 md:gap-6 shrink-0" id="results-grid">
             <!-- Products injected here via JS -->
         </div>
 
-        <!-- Footer w/ Fixed JS-Only Restart Logic -->
+        <!-- Footer -->
         <div class="shrink-0 mt-8 md:mt-10 pt-6 border-t border-white/10 w-full max-w-xl text-center mx-auto">
             <button id="restart-concierge-btn" class="text-gray-400 hover:text-sb-gold text-[10px] tracking-luxury uppercase font-bold transition-colors duration-300">
                 <i class="fas fa-redo mr-2"></i> Restart Concierge
@@ -153,7 +153,6 @@ const products = rawProducts.map(({ node }) => ({
       const progressBar = document.getElementById('progress-bar');
       const restartBtn = document.getElementById('restart-concierge-btn');
       
-      // Store user criteria for smart matching
       let userPreferences = { keywords: [], min: 0, max: 999 };
 
       const loadingPhrases = [
@@ -172,24 +171,19 @@ const products = rawProducts.map(({ node }) => ({
       // --- SMOOTH RESTART LOGIC ---
       if (restartBtn) {
           restartBtn.addEventListener('click', () => {
-              // Scroll back to top immediately
               window.scrollTo({ top: 0, behavior: 'smooth' });
 
-              // Reset Preferences
               userPreferences = { keywords: [], min: 0, max: 999 };
               
-              // Hide overlay smoothly
               const overlay = document.getElementById('cinematic-overlay');
               overlay.classList.remove('opacity-100', 'pointer-events-auto');
               overlay.classList.add('opacity-0', 'pointer-events-none');
               
-              // Reset views
               setTimeout(() => {
                   document.getElementById('ai-results-view').classList.add('hidden');
                   document.getElementById('ai-loading-view').classList.remove('hidden', 'opacity-0', 'scale-95');
                   document.getElementById('ai-loading-view').classList.add('opacity-100', 'scale-100');
                   
-                  // Reset Steps
                   document.querySelectorAll('.quiz-step').forEach(step => {
                       step.classList.add('hidden', 'opacity-0', 'translate-y-4');
                       step.classList.remove('opacity-100', 'translate-y-0');
@@ -198,7 +192,6 @@ const products = rawProducts.map(({ node }) => ({
                   step1.classList.remove('hidden', 'translate-y-4');
                   step1.classList.add('opacity-100', 'translate-y-0');
                   
-                  // Reset Progress Bar
                   progressBar.style.width = '33%';
               }, 1000);
           });
@@ -231,7 +224,6 @@ const products = rawProducts.map(({ node }) => ({
           const clicked = e.currentTarget;
           const currentStepId = clicked.closest('.quiz-step').id;
           
-          // Accumulate intelligent keywords
           if(clicked.dataset.keywords) {
               const kws = clicked.dataset.keywords.split(',');
               userPreferences.keywords.push(...kws);
@@ -283,46 +275,60 @@ const products = rawProducts.map(({ node }) => ({
         });
       });
 
-      // --- THE SMART SCORING ENGINE ---
       function scoreProducts(productsList, keywords) {
           productsList.forEach(p => {
               p.score = 0;
-              // Combine title, description, and tags to search against
               const searchString = `${p.title} ${p.description} ${p.tags.join(' ')}`.toLowerCase();
-              
               keywords.forEach(kw => {
                   const regex = new RegExp(`\\b${kw}\\b`, 'i');
                   if (regex.test(searchString)) p.score += 1;
-                  // Extra points if the keyword is right in the title
                   if (regex.test(p.title)) p.score += 2; 
               });
-              // Add a tiny random fraction to break ties naturally
               p.score += Math.random() * 0.5;
           });
           return productsList.sort((a,b) => b.score - a.score);
       }
 
       function showCinematicResults() {
-          // 1. Filter strictly by budget first
-          let budgetMatches = allProducts.filter(p => p.price >= userPreferences.min && p.price <= userPreferences.max);
-          if (budgetMatches.length === 0) budgetMatches = allProducts; // Fallback if catalog is small
+          // RULE 1: Absolute Minimum £35 Filter
+          const validProducts = allProducts.filter(p => p.price >= 35);
           
-          // 2. Score and sort matches based on accumulated keywords
-          let scoredMatches = scoreProducts(budgetMatches, userPreferences.keywords);
-          const perfectMatch = scoredMatches[0];
+          // Score all valid products based on user's keywords
+          let scoredProducts = scoreProducts([...validProducts], userPreferences.keywords);
 
-          // 3. Logic for the "Showstopper Upgrade" (Higher price bracket, but still highly relevant)
-          let upsellMatches = allProducts.filter(p => p.price > perfectMatch.price && p.handle !== perfectMatch.handle);
-          let scoredUpsells = scoreProducts(upsellMatches, userPreferences.keywords);
-          
-          // If no natural upsell exists, grab the most expensive item generally
-          const upsellMatch = scoredUpsells.length > 0 ? scoredUpsells[0] : allProducts.sort((a,b) => b.price - a.price).find(p => p.handle !== perfectMatch.handle);
+          // Find matches in their exact chosen budget
+          let inBudget = scoredProducts.filter(p => p.price >= userPreferences.min && p.price <= userPreferences.max);
+          if (inBudget.length === 0) inBudget = scoredProducts; // Fallback
+
+          // --- 1. THE PERFECT MATCH ---
+          const match1 = inBudget[0];
+
+          // --- 2. BEAUTIFUL ALTERNATIVE ---
+          // Seek a different product, ideally with a different price point, but still strong score
+          let match2 = inBudget.find(p => p.handle !== match1.handle && p.price !== match1.price);
+          if (!match2) match2 = scoredProducts.find(p => p.handle !== match1.handle);
+
+          // --- 3. SENSIBLE UPGRADE ---
+          // Rule: Strictly higher price, but capped at +£50 to prevent crazy £350 leaps
+          const highestCurrentPrice = Math.max(match1.price, match2 ? match2.price : 0);
+          let upgradeMatches = scoredProducts.filter(p => 
+              p.handle !== match1.handle && 
+              (!match2 || p.handle !== match2.handle) &&
+              p.price > highestCurrentPrice &&
+              p.price <= highestCurrentPrice + 50 // The Sensible Cap
+          );
+
+          let match3 = upgradeMatches[0];
+          if (!match3) {
+              match3 = scoredProducts.find(p => p.handle !== match1.handle && (!match2 || p.handle !== match2.handle));
+          }
 
           const grid = document.getElementById('results-grid');
           grid.innerHTML = ''; 
           
-          if(perfectMatch) grid.innerHTML += createProportionalCard(perfectMatch, "The Perfect Match");
-          if(upsellMatch) grid.innerHTML += createProportionalCard(upsellMatch, "Showstopper Upgrade", true);
+          if(match1) grid.innerHTML += createProportionalCard(match1, "Perfect Match");
+          if(match2) grid.innerHTML += createProportionalCard(match2, "Beautiful Alternative");
+          if(match3) grid.innerHTML += createProportionalCard(match3, "Sensible Upgrade", true);
 
           const loadingView = document.getElementById('ai-loading-view');
           const resultsView = document.getElementById('ai-results-view');
@@ -341,18 +347,16 @@ const products = rawProducts.map(({ node }) => ({
           }, 1000);
       }
 
-      // Proportional Card Design (Horizontal on Mobile, Vertical on Desktop)
       function createProportionalCard(product, label, isUpsell = false) {
           const badgeClass = isUpsell ? "text-sb-cream bg-white/10 border-white/20" : "text-sb-black bg-sb-gold border-sb-gold";
           const highlightBorder = isUpsell ? "hover:border-white/40" : "hover:border-sb-gold/60";
           
-          // Using w-full max-w-md to ensure both cards sit perfectly centered in the layout
           return `
-            <div class="flex flex-row md:flex-col w-full max-w-md bg-white/5 border border-white/10 ${highlightBorder} transition-all duration-700 rounded-sm overflow-hidden group relative backdrop-blur-sm shadow-2xl h-32 md:h-auto">
+            <div class="flex flex-row md:flex-col w-full md:w-1/3 bg-white/5 border border-white/10 ${highlightBorder} transition-all duration-700 rounded-sm overflow-hidden group relative backdrop-blur-sm shadow-2xl h-40 md:h-auto shrink-0">
                 
-                <!-- Image Container -->
-                <div class="w-1/3 md:w-full md:h-[35vh] md:max-h-[300px] md:min-h-[240px] relative overflow-hidden bg-black shrink-0">
-                    <div class="absolute top-3 left-3 md:top-4 md:left-4 ${badgeClass} text-[7px] md:text-[9px] uppercase tracking-luxury font-bold px-3 py-1 z-10 border backdrop-blur-md hidden md:block shadow-sm">
+                <!-- Image Container (40% width on mobile ensures ample text room) -->
+                <div class="w-[40%] md:w-full md:h-[30vh] md:max-h-[250px] md:min-h-[200px] relative overflow-hidden bg-black shrink-0">
+                    <div class="absolute top-2 left-2 md:top-4 md:left-4 ${badgeClass} text-[9px] uppercase tracking-luxury font-bold px-3 py-1 z-10 border backdrop-blur-md hidden md:block shadow-sm">
                         ${label}
                     </div>
                     <img 
@@ -364,13 +368,13 @@ const products = rawProducts.map(({ node }) => ({
                 </div>
                 
                 <!-- Text Container -->
-                <div class="w-2/3 md:w-full p-4 md:p-8 text-left md:text-center relative z-10 flex flex-col justify-center flex-grow">
-                    <div class="md:hidden ${badgeClass} text-[7px] uppercase tracking-luxury font-bold px-2 py-0.5 mb-2 inline-block w-max border">
+                <div class="w-[60%] md:w-full p-4 md:p-6 text-left md:text-center relative z-10 flex flex-col justify-center flex-grow">
+                    <div class="md:hidden ${badgeClass} text-[8px] uppercase tracking-luxury font-bold px-2 py-1 mb-2 inline-block w-max border">
                         ${label}
                     </div>
-                    <h4 class="font-serif text-lg md:text-3xl text-white mb-1 md:mb-2 line-clamp-1">${product.title}</h4>
-                    <p class="text-sb-gold text-sm md:text-lg font-light mb-3 md:mb-6">£${product.price.toFixed(2)}</p>
-                    <a href="/products/${product.handle}" class="border border-white/20 text-white py-2 md:py-3 px-4 md:px-8 text-[8px] md:text-[10px] font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-all duration-500 w-max md:w-full text-center mx-auto md:mx-0">
+                    <h4 class="font-serif text-xl md:text-2xl text-white mb-1 md:mb-2 line-clamp-2 leading-tight">${product.title}</h4>
+                    <p class="text-sb-gold text-base md:text-lg font-light mb-3 md:mb-6">£${product.price.toFixed(2)}</p>
+                    <a href="/products/${product.handle}" class="border border-white/20 text-white py-3 px-4 md:px-6 text-[10px] font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-all duration-500 w-max md:w-full text-center mt-auto">
                         View Bouquet
                     </a>
                 </div>
