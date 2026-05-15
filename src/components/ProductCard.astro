@@ -14,6 +14,9 @@ const textClass = isDark ? "text-sb-cream" : "text-sb-black";
 const subText = isDark ? "text-sb-gold" : "text-gray-500";
 const btnBg = isDark ? "bg-sb-cream text-sb-black" : "bg-white/90 text-sb-black";
 const borderClass = isDark ? "border border-white/10" : "";
+
+// Generate the URL for the new dedicated product page
+const productUrl = `/products/${product.handle}`;
 ---
 
 <div class="group relative reveal active">
@@ -31,10 +34,10 @@ const borderClass = isDark ? "border border-white/10" : "";
       <img src={img2} alt={`${product.title} alternate view`} class="w-full h-full object-cover absolute inset-0 z-0 !opacity-100 loaded" />
     )}
 
-    <!-- Quick View Eye Button (Visual only for now) -->
-    <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 text-sb-black w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 z-20 hover:bg-sb-gold">
+    <!-- Quick View Link to PDP -->
+    <a href={productUrl} class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 text-sb-black w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 z-20 hover:bg-sb-gold">
       <i class="fas fa-eye"></i>
-    </button>
+    </a>
     
     <!-- Add to Cart Button -->
     <button 
@@ -48,6 +51,8 @@ const borderClass = isDark ? "border border-white/10" : "";
     </button>
   </div>
   
-  <h4 class={`font-serif text-2xl mb-1 font-light ${textClass}`}>{product.title}</h4>
+  <a href={productUrl} class="block hover:opacity-80 transition-opacity">
+    <h4 class={`font-serif text-2xl mb-1 font-light hover:text-sb-gold transition-colors ${textClass}`}>{product.title}</h4>
+  </a>
   <p class={`font-medium text-base ${subText}`}>{priceText}</p>
 </div>
