@@ -2,8 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import Testimonials from '../components/Testimonials.astro';
 import { shopifyFetch } from '../utils/shopify.js';
+import { Image } from 'astro:assets';
+import heroImg from '../../public/images/hero.jpg';
+import signatureImg from '../../public/images/collection-signature.jpg';
 
-// 1. Fetch images for the "Explore Our Collections" grid
 const targetTags = ['seasonal', 'luxury', 'gothic', 'fairytale'];
 
 const queryBody = targetTags.map(tag => `
@@ -39,13 +41,20 @@ const collectionCards = targetTags.map(tag => {
 ---
 
 <Layout 
-  title="Luxury Florist in Essex & London" 
-  description="SB Floristry: A mother and daughter studio crafting bespoke, luxury floral arrangements. Delivering to Essex and London."
+  title="Bespoke Luxury Florist Essex & London" 
+  description="SB Floristry: A boutique mother & daughter studio crafting high-end floral arrangements for weddings, events, and luxury gifting. Local delivery across Essex."
 >
-  <!-- 1. HERO SECTION -->
+  <!-- HERO SECTION -->
   <section class="relative h-[90vh] overflow-hidden">
       <div class="absolute inset-0">
-          <img src="/images/hero.jpg" alt="Luxury Bouquet" class="w-full h-full object-cover hero-zoom opacity-90" style="object-position: center 60%;">
+          <Image 
+            src={heroImg} 
+            alt="SB Floristry Luxury Hand-Tied Bouquet" 
+            class="w-full h-full object-cover hero-zoom opacity-90" 
+            loading="eager"
+            quality="high"
+            style="object-position: center 60%;"
+          />
           <div class="absolute inset-0 bg-black/50"></div>
           <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-sb-black to-transparent"></div>
       </div>
@@ -60,7 +69,7 @@ const collectionCards = targetTags.map(tag => {
       </div>
   </section>
   
-  <!-- A FAMILY AFFAIR -->
+  <!-- STORY SECTION -->
   <section class="py-24 bg-sb-black text-sb-cream relative border-t border-white/5">
       <div class="container mx-auto px-6 text-center max-w-2xl">
           <span class="text-gold-metallic text-2xl mb-6 block reveal"><i class="fas fa-leaf"></i></span>
@@ -75,7 +84,7 @@ const collectionCards = targetTags.map(tag => {
       </div>
   </section>
 
-  <!-- 4. EXPLORE COLLECTIONS -->
+  <!-- COLLECTIONS -->
   <section class="py-24 bg-sb-cream">
     <div class="container mx-auto px-6">
         <div class="text-center mb-16 reveal">
@@ -86,7 +95,12 @@ const collectionCards = targetTags.map(tag => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="home-collections-grid">
             {collectionCards.map((card) => (
                 <a href={card.link} class="group relative block h-[500px] overflow-hidden cursor-pointer reveal">
-                    <img src={card.imgSrc} alt={card.title} class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 loaded" />
+                    <img 
+                      src={card.imgSrc} 
+                      alt={card.title} 
+                      class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105" 
+                      loading="lazy"
+                    />
                     <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500"></div>
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
                         <h4 class="font-serif text-4xl text-sb-cream mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 font-light">{card.title}</h4>
@@ -98,33 +112,37 @@ const collectionCards = targetTags.map(tag => {
     </div>
   </section>
 
-  <!-- GIFT CONCIERGE TEASER SECTION -->
+  <!-- BESPOKE GIFTS SECTION (REPLACED AI TEASER) -->
   <section class="py-20 md:py-32 bg-sb-black text-white relative overflow-hidden border-t border-white/5">
     <div class="absolute inset-0 z-0">
-      <img src="/images/collection-signature.jpg" alt="Signature luxury flowers" class="w-full h-full object-cover opacity-40 md:opacity-50" />
+      <Image 
+        src={signatureImg} 
+        alt="Bespoke luxury flower arrangement" 
+        class="w-full h-full object-cover opacity-40 md:opacity-50" 
+        loading="lazy"
+      />
       <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-sb-black via-sb-black/90 to-transparent"></div>
     </div>
 
     <div class="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center">
       <div class="w-full md:w-1/2 md:pr-12 text-center md:text-left reveal">
-        <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-4 block"><i class="fas fa-magic mr-2"></i> Need some inspiration?</span>
-        <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white mb-6 font-light leading-tight">Meet Your <br class="hidden md:block" />AI Gift Advisor</h2>
+        <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-4 block"><i class="fas fa-crown mr-2"></i> Tailored for you</span>
+        <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white mb-6 font-light leading-tight">Bespoke <br class="hidden md:block" />Gift Curation</h2>
         
         <p class="text-gray-300 font-light mb-8 md:mb-10 text-base md:text-lg leading-relaxed max-w-md mx-auto md:mx-0">
-          Finding the perfect arrangement shouldn't be guesswork. Answer three simple questions about your recipient, and let our intelligent gift advisor curate a bespoke selection.
+          Looking for something truly unique? Our designers are available for personal consultations to help you select the perfect palette and style for your recipient.
         </p>
         
-        <a href="/occasion-finder" class="inline-block border border-sb-gold text-sb-gold py-4 px-8 text-[10px] md:text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-all duration-500 shadow-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]">
-          Launch AI Advisor
+        <a href="/contact" class="inline-block border border-sb-gold text-sb-gold py-4 px-8 text-[10px] md:text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-all duration-500 shadow-xl">
+          Request Consultation
         </a>
       </div>
     </div>
   </section>
 
-  <!-- 5. TESTIMONIALS SECTION -->
   <Testimonials />
 
-  <!-- 6. OCCASION REMINDER / NEWSLETTER -->
+  <!-- NEWSLETTER -->
   <section class="py-24 bg-sb-cream border-t border-gray-100">
       <div class="container mx-auto px-6">
           <div class="max-w-4xl mx-auto bg-sb-black p-12 md:p-20 text-center relative overflow-hidden reveal">
@@ -132,17 +150,17 @@ const collectionCards = targetTags.map(tag => {
               <span class="text-sb-gold text-xs tracking-[0.35em] uppercase font-bold mb-6 block">Never Miss a Moment</span>
               <h3 class="font-serif text-4xl md:text-5xl text-sb-cream mb-8 font-light">The SB Occasion Reminder</h3>
               <p class="text-gray-400 font-light text-lg mb-10 max-w-xl mx-auto">
-                  Tell us your most important dates—anniversaries, birthdays, milestones—and we'll send you a curated floral suggestion one week before.
+                  Tell us your most important dates and we'll send you a curated floral suggestion one week before.
               </p>
-              <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-                  <input type="email" placeholder="Email Address" class="flex-grow bg-transparent border-b border-gray-700 py-3 text-sb-cream outline-none focus:border-sb-gold transition-colors font-light">
+              <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" id="newsletter-form">
+                  <input type="email" name="email" required aria-label="Email Address" placeholder="Email Address" class="flex-grow bg-transparent border-b border-gray-700 py-3 text-sb-cream outline-none focus:border-sb-gold transition-colors font-light">
                   <button type="submit" class="btn-luxury border border-sb-cream text-sb-cream px-8 py-3 uppercase tracking-luxury text-[10px] font-bold">Join The Service</button>
               </form>
           </div>
       </div>
   </section>
 
-  <!-- 7. GLOBAL CONTACT FOOTER -->
+  <!-- CONTACT FORM -->
   <section class="py-24 bg-sb-black text-sb-cream border-t border-white/5" id="contact-section">
       <div class="container mx-auto px-6 max-w-4xl">
           <div class="text-center mb-12 reveal">
@@ -152,22 +170,22 @@ const collectionCards = targetTags.map(tag => {
           <form id="home-contact-form" class="space-y-8 reveal">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div class="space-y-1">
-                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Name</label>
-                      <input type="text" name="name" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold" for="contact-name">Name</label>
+                      <input type="text" id="contact-name" name="name" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
                   </div>
                   <div class="space-y-1">
-                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Email</label>
-                      <input type="email" name="email" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold" for="contact-email">Email</label>
+                      <input type="email" id="contact-email" name="email" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
                   </div>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div class="space-y-1">
-                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Event Date (Optional)</label>
-                      <input type="date" name="date" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-gray-400 text-base">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold" for="contact-date">Event Date (Optional)</label>
+                      <input type="date" id="contact-date" name="date" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-gray-400 text-base">
                   </div>
                   <div class="space-y-1">
-                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Interest</label>
-                      <select name="interest" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-base">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold" for="contact-interest">Interest</label>
+                      <select id="contact-interest" name="interest" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-base">
                           <option value="Weddings" class="bg-sb-black text-white">Weddings</option>
                           <option value="Events" class="bg-sb-black text-white">Events</option>
                           <option value="Hotels" class="bg-sb-black text-white">Hotels & Spas</option>
@@ -176,8 +194,8 @@ const collectionCards = targetTags.map(tag => {
                   </div>
               </div>
               <div class="space-y-1">
-                  <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Message</label>
-                  <textarea name="message" rows="4" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base"></textarea>
+                  <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold" for="contact-message">Message</label>
+                  <textarea id="contact-message" name="message" rows="4" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base"></textarea>
               </div>
               <div class="text-center pt-8">
                   <button type="submit" class="btn-luxury border border-sb-cream text-sb-cream px-16 py-4 uppercase tracking-luxury text-xs font-bold inline-block">
