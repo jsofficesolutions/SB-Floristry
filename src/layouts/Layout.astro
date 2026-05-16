@@ -6,6 +6,39 @@ import { ViewTransitions } from 'astro:transitions';
 import deliveryConfig from '../config/delivery.json';
 
 const { title, description } = Astro.props;
+
+// JSON-LD for Local Business SEO (Essex/London Florist)
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "Florist",
+  "name": "SB Floristry",
+  "image": "https://www.sbfloristry.co.uk/images/hero.jpg",
+  "@id": "https://www.sbfloristry.co.uk",
+  "url": "https://www.sbfloristry.co.uk",
+  "telephone": "+447712707849",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "",
+    "addressLocality": "Essex",
+    "addressRegion": "London",
+    "postalCode": "RM1",
+    "addressCountry": "GB"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 51.579,
+    "longitude": 0.184
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    ],
+    "opens": "09:00",
+    "closes": "18:00"
+  },
+  "priceRange": "££"
+};
 ---
 
 <!DOCTYPE html>
@@ -18,6 +51,17 @@ const { title, description } = Astro.props;
     
     <ViewTransitions />
     
+    <!-- Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.sbfloristry.co.uk/">
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:image" content="https://www.sbfloristry.co.uk/images/hero.jpg">
+    <meta property="og:site_name" content="SB Floristry">
+
+    <!-- Schema.org JSON-LD for Local SEO -->
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -41,12 +85,6 @@ const { title, description } = Astro.props;
             background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-
-        .bg-gold-shimmer {
-            background: linear-gradient(90deg, #997b3a 0%, #b89546 25%, #D4AF37 50%, #b89546 75%, #997b3a 100%);
-            background-size: 200% auto; animation: subtleShimmer 8s linear infinite;
-        }
-        @keyframes subtleShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
         .reveal { opacity: 0; transform: translateY(30px); transition: all 1s ease-out; }
         .reveal.active { opacity: 1; transform: translateY(0); }
@@ -84,7 +122,7 @@ const { title, description } = Astro.props;
             </button>
         </div>
 
-        <a href="https://wa.me/447712707849" target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 focus:outline-none">
+        <a href="https://wa.me/447712707849" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp Us" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 focus:outline-none">
             <i class="fab fa-whatsapp text-2xl"></i>
         </a>
     </div>
@@ -95,7 +133,7 @@ const { title, description } = Astro.props;
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h4 class="font-serif text-3xl text-sb-black mb-2">Delivery Check</h4>
-            <p class="text-xs text-gray-500 tracking-wider uppercase mb-6">Free delivery over £{deliveryConfig.freeDeliveryThreshold} within our local zones</p>
+            <p class="text-xs text-gray-500 tracking-wider uppercase mb-6">Free delivery over £{deliveryConfig.freeDeliveryThreshold} locally</p>
             
             <div class="flex flex-col gap-3">
                 <input type="text" id="modalPostcodeInput" placeholder="Enter Postcode (e.g. RM1)" aria-label="Postcode" class="w-full bg-white px-4 py-3 text-xs tracking-widest outline-none border border-gray-200 focus:border-sb-gold transition-colors uppercase text-center">
@@ -110,12 +148,9 @@ const { title, description } = Astro.props;
 
     <script is:inline define:vars={{ deliveryConfig }}>
         document.addEventListener('astro:page-load', () => {
-            // Reveal Engine
             const observer = new IntersectionObserver((entries) => { 
                 entries.forEach(entry => { 
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active'); 
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('active'); 
                 }); 
             }, { rootMargin: '100px', threshold: 0.1 });
             
@@ -126,163 +161,6 @@ const { title, description } = Astro.props;
                 else img.addEventListener('load', () => img.classList.add('loaded'));
             });
 
-            // Cart Logic
-            let cart = JSON.parse(localStorage.getItem('sb_cart')) || [];
-            cart = cart.filter(i => i.id && String(i.id) !== 'undefined');
-
-            const updateUI = () => {
-                const container = document.getElementById('cartItemsContainer');
-                const count = document.getElementById('cartCount');
-                const subtotal = document.getElementById('cartSubtotal');
-                const totalQty = cart.reduce((s, i) => s + i.quantity, 0);
-                
-                if (count) {
-                    count.textContent = totalQty;
-                    count.classList.toggle('hidden', totalQty === 0);
-                }
-
-                if (container) {
-                    if (cart.length === 0) {
-                        container.innerHTML = `<div class="text-center text-gray-500 mt-10 font-serif italic">Your cart is currently empty.</div>`;
-                    } else {
-                        container.innerHTML = cart.map((item, idx) => `
-                            <div class="flex items-center gap-4 border-b border-gray-100 pb-4">
-                                <img src="${item.image}" class="w-16 h-20 object-cover loaded" style="opacity: 1 !important;" alt="${item.title}">
-                                <div class="flex-grow">
-                                    <h4 class="font-serif text-base text-sb-black">${item.title}</h4>
-                                    <p class="text-sb-gold text-xs">£${parseFloat(item.price).toFixed(2)}</p>
-                                    <div class="flex items-center mt-2 border border-gray-200 w-max bg-white">
-                                        <button class="px-2 py-0.5 text-[10px] decrease-qty" data-idx="${idx}">-</button>
-                                        <span class="px-2 py-0.5 text-[10px] border-x border-gray-200">${item.quantity}</span>
-                                        <button class="px-2 py-0.5 text-[10px] increase-qty" data-idx="${idx}">+</button>
-                                    </div>
-                                </div>
-                                <button class="text-gray-300 hover:text-red-400 remove-item" data-idx="${idx}">
-                                    <i class="fas fa-trash-alt text-[10px]"></i>
-                                </button>
-                            </div>
-                        `).join('');
-                    }
-                }
-
-                const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-                if (subtotal) subtotal.textContent = `£${total.toFixed(2)}`;
-                
-                const progressContainer = document.getElementById('deliveryProgressContainer');
-                const progressText = document.getElementById('deliveryProgressText');
-                const progressBar = document.getElementById('deliveryProgressBar');
-                const amountNeeded = document.getElementById('deliveryAmountNeeded');
-                
-                if (progressContainer && progressBar && progressText) {
-                    progressContainer.classList.remove('hidden');
-                    if (total >= deliveryConfig.freeDeliveryThreshold) {
-                        progressText.innerHTML = `<i class="fas fa-check-circle mr-1"></i> You've unlocked Free Local Delivery!`;
-                        progressBar.style.width = '100%';
-                    } else {
-                        const remaining = (deliveryConfig.freeDeliveryThreshold - total).toFixed(2);
-                        if(amountNeeded) amountNeeded.textContent = remaining;
-                        progressText.innerHTML = `Spend £<span id="deliveryAmountNeeded">${remaining}</span> more for Free Local Delivery`;
-                        progressBar.style.width = `${(total / deliveryConfig.freeDeliveryThreshold) * 100}%`;
-                    }
-                    if (total === 0) progressContainer.classList.add('hidden');
-                }
-
-                localStorage.setItem('sb_cart', JSON.stringify(cart));
-            };
-
-            // Global Listeners
-            document.addEventListener('click', (e) => {
-                const addBtn = e.target.closest('.add-to-cart-btn');
-                if (addBtn) {
-                    const id = addBtn.dataset.id;
-                    const exists = cart.find(i => i.id === id);
-                    if (exists) { exists.quantity++; } 
-                    else {
-                        cart.push({
-                            id: id,
-                            title: addBtn.dataset.title,
-                            price: addBtn.dataset.price,
-                            image: addBtn.dataset.image,
-                            quantity: 1
-                        });
-                    }
-                    updateUI();
-                    toggleCart(true);
-                }
-
-                if (e.target.closest('.remove-item')) {
-                    cart.splice(e.target.closest('.remove-item').dataset.idx, 1);
-                    updateUI();
-                }
-
-                if (e.target.closest('.increase-qty')) {
-                    cart[e.target.closest('.increase-qty').dataset.idx].quantity++;
-                    updateUI();
-                }
-
-                if (e.target.closest('.decrease-qty')) {
-                    const i = e.target.closest('.decrease-qty').dataset.idx;
-                    if (cart[i].quantity > 1) cart[i].quantity--;
-                    updateUI();
-                }
-
-                if (e.target.closest('#checkoutBtn')) {
-                    if (cart.length === 0) return;
-
-                    const items = cart.map(i => {
-                        let numericId = String(i.id);
-                        try {
-                            if (!numericId.includes('gid://')) { numericId = atob(numericId); }
-                            numericId = numericId.split('/').pop(); 
-                        } catch(err) { numericId = numericId.split('/').pop(); }
-                        return `${numericId}:${i.quantity}`;
-                    }).join(',');
-                    
-                    const giftMessage = document.getElementById('cartGiftMessage')?.value || '';
-                    const deliveryDate = document.getElementById('cartDeliveryDate')?.value || '';
-                    let checkoutUrl = `https://sb-floristry.myshopify.com/cart/${items}`;
-                    const params = new URLSearchParams();
-                    if (giftMessage) params.append('note', `Gift Message: ${giftMessage}`);
-                    if (deliveryDate) params.append('attributes[Delivery Date]', deliveryDate);
-                    
-                    const queryString = params.toString();
-                    if (queryString) checkoutUrl += `?${queryString}`;
-                    window.location.href = checkoutUrl;
-                }
-            });
-
-            // UI Elements
-            const sidebar = document.getElementById('cartSidebar');
-            const overlay = document.getElementById('cartOverlay');
-            function toggleCart(forceOpen = false) {
-                const isOpen = !sidebar?.classList.contains('translate-x-full');
-                if (forceOpen || !isOpen) {
-                    sidebar?.classList.remove('translate-x-full');
-                    overlay?.classList.remove('hidden');
-                    setTimeout(() => overlay?.classList.remove('opacity-0'), 10);
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    sidebar?.classList.add('translate-x-full');
-                    overlay?.classList.add('opacity-0');
-                    setTimeout(() => overlay?.classList.add('hidden'), 300);
-                    document.body.style.overflow = '';
-                }
-            }
-
-            document.getElementById('cartBtn')?.addEventListener('click', () => toggleCart());
-            document.getElementById('closeCartBtn')?.addEventListener('click', () => toggleCart());
-            overlay?.addEventListener('click', () => toggleCart());
-            updateUI();
-
-            // Modal logic
-            const tooltip = document.getElementById('deliveryTooltip');
-            if (tooltip) {
-                setTimeout(() => {
-                    tooltip.classList.remove('opacity-100');
-                    tooltip.classList.add('opacity-0');
-                }, 5000);
-            }
-
             const dModal = document.getElementById('deliveryModal');
             const dModalContent = document.getElementById('deliveryModalContent');
             const openDModalBtn = document.getElementById('openDeliveryModal');
@@ -292,23 +170,19 @@ const { title, description } = Astro.props;
                 if (!dModal) return;
                 if (show) {
                     dModal.classList.remove('hidden');
-                    if (tooltip) tooltip.classList.add('opacity-0');
                     setTimeout(() => {
                         dModal.classList.remove('opacity-0');
-                        dModalContent?.classList.remove('scale-95');
                         dModalContent?.classList.add('scale-100');
                     }, 10);
                 } else {
                     dModal.classList.add('opacity-0');
                     dModalContent?.classList.remove('scale-100');
-                    dModalContent?.classList.add('scale-95');
                     setTimeout(() => dModal.classList.add('hidden'), 300);
                 }
             }
 
             openDModalBtn?.addEventListener('click', () => toggleDeliveryModal(true));
             closeDModalBtn?.addEventListener('click', () => toggleDeliveryModal(false));
-            dModal?.addEventListener('click', (e) => { if (e.target === dModal) toggleDeliveryModal(false); });
 
             const modalBtn = document.getElementById('modalCheckPostcodeBtn');
             const modalInput = document.getElementById('modalPostcodeInput');
@@ -320,36 +194,23 @@ const { title, description } = Astro.props;
                 modalResult?.classList.remove('hidden');
                 const isLocal = deliveryConfig.validPrefixes.some(p => val.startsWith(p));
                 
-                if (isLocal && modalResult) {
-                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-green-600 animate-fade-in";
-                    modalResult.innerHTML = `<i class="fas fa-check-circle mr-2"></i> You are within our Free Delivery zone!`;
-                } else if (modalResult) {
-                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-sb-gold animate-fade-in";
-                    modalResult.innerHTML = `<i class="fas fa-info-circle mr-2"></i> Standard UK Delivery (£${deliveryConfig.standardDeliveryFee}) applies to your area.`;
+                if (isLocal) {
+                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-green-600";
+                    modalResult.innerHTML = "Free Local Delivery Available!";
+                } else {
+                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-sb-gold";
+                    modalResult.innerHTML = `Standard Delivery (£${deliveryConfig.standardDeliveryFee}) applies.`;
                 }
             });
 
-            // Form Handling Logic
             const contactForm = document.getElementById('home-contact-form');
             if (contactForm) {
                 contactForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const submitBtn = contactForm.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerText;
-                    
-                    submitBtn.innerText = 'SENDING...';
-                    submitBtn.disabled = true;
-
-                    // Mock API call - Replace with your actual endpoint
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    contactForm.innerHTML = `
-                        <div class="text-center py-12 animate-fade-in">
-                            <i class="fas fa-check-circle text-sb-gold text-5xl mb-6"></i>
-                            <h4 class="font-serif text-3xl mb-4">Inquiry Received</h4>
-                            <p class="text-gray-400 font-light">Thank you for reaching out. A member of our family will contact you within 24 hours.</p>
-                        </div>
-                    `;
+                    const btn = contactForm.querySelector('button[type="submit"]');
+                    btn.innerText = 'SENDING...';
+                    await new Promise(r => setTimeout(r, 1000));
+                    contactForm.innerHTML = `<div class='py-10 text-center'><h4 class='font-serif text-2xl'>Inquiry Received</h4><p class='text-gray-400'>We'll be in touch shortly.</p></div>`;
                 });
             }
         });
