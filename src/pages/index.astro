@@ -1,150 +1,107 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ProductCard from '../components/ProductCard.astro';
 import Testimonials from '../components/Testimonials.astro';
 import { shopifyFetch } from '../utils/shopify.js';
 
-// Define the GraphQL query to fetch products
-const query = `
-  {
-    products(first: 8) {
-      edges {
-        node {
-          id
-          title
-          handle
-          images(first: 2) {
-            edges {
-              node {
-                url
-              }
-            }
-          }
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                price {
-                  amount
-                  currencyCode
-                }
-              }
-            }
-          }
-        }
+// 1. Fetch images for the "Explore Our Collections" grid
+const targetTags = ['seasonal', 'luxury', 'gothic', 'fairytale'];
+
+const queryBody = targetTags.map(tag => `
+  ${tag}: products(first: 10, query: "tag:${tag} AND available_for_sale:true") {
+    edges {
+      node {
+        images(first: 1) { edges { node { url } } }
       }
     }
   }
-`;
+`).join('\n');
 
-// Fetch data from Shopify
+const query = `{ ${queryBody} }`;
 const response = await shopifyFetch({ query });
-const products = response?.data?.products?.edges || [];
+const collectionsData = response?.data || {};
+
+const collectionCards = targetTags.map(tag => {
+  const products = collectionsData[tag]?.edges || [];
+  const validProducts = products.filter(p => p.node?.images?.edges?.length > 0);
+  let imgSrc = 'https://via.placeholder.com/600x800?text=Coming+Soon';
+  
+  if (validProducts.length > 0) {
+    imgSrc = validProducts[0].node.images.edges[0].node.url;
+  }
+  
+  return {
+    tag: tag,
+    title: tag.charAt(0).toUpperCase() + tag.slice(1),
+    imgSrc: imgSrc,
+    link: `/collections/${tag}`
+  };
+});
 ---
 
-<Layout title="SB Floristry | Luxury Essex Florist">
+<Layout 
+  title="Luxury Florist in Essex & London" 
+  description="SB Floristry: A mother and daughter studio crafting bespoke, luxury floral arrangements. Delivering to Essex and London."
+>
+  <!-- 1. HERO SECTION -->
+  <section class="relative h-[90vh] overflow-hidden">
+      <div class="absolute inset-0">
+          <img src="/images/hero.jpg" alt="Luxury Bouquet" class="w-full h-full object-cover hero-zoom opacity-90" style="object-position: center 60%;">
+          <div class="absolute inset-0 bg-black/50"></div>
+          <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-sb-black to-transparent"></div>
+      </div>
+      <div class="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-center text-center text-sb-cream pt-20">
+          <h2 class="text-xs md:text-sm tracking-[0.3em] uppercase mb-8 font-medium text-sb-gold animate-fade-in">Hand-Tied in Essex • Delivered to London</h2>
+          <h1 class="font-serif text-6xl md:text-8xl lg:text-9xl mb-10 leading-none animate-fade-in-up font-normal">
+              Artistry in <br><span class="italic font-light text-gold-metallic">Every Bloom</span>
+          </h1>
+          <a href="/collections/seasonal" class="animate-fade-in btn-luxury border border-sb-cream/30 text-sb-cream px-10 py-3 uppercase tracking-luxury text-xs font-bold hover:border-sb-gold">
+              Shop The Collection
+          </a>
+      </div>
+  </section>
   
-  <!-- Hero Section -->
-  <section class="relative h-screen flex items-center justify-center overflow-hidden">
-    <div class="absolute inset-0 z-0">
-      <img src="/images/hero.jpg" alt="Luxury floral arrangement" class="w-full h-full object-cover opacity-60" />
-      <div class="absolute inset-0 bg-sb-black/50"></div>
-    </div>
-    
-    <div class="relative z-10 text-center px-6 reveal">
-      <span class="text-sb-gold text-xs md:text-sm tracking-luxury uppercase font-bold mb-4 block">Bespoke Floral Design</span>
-      <h2 class="font-serif text-5xl md:text-7xl lg:text-8xl text-sb-cream mb-6 font-light">Elegance in<br/>Every Stem</h2>
-      <p class="text-gray-300 font-light max-w-lg mx-auto mb-10 text-sm md:text-base">Hand-tied luxury bouquets and styling for weddings and events across Essex.</p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/collections/seasonal" class="bg-sb-gold text-sb-black px-8 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-white transition-colors duration-300">Shop Collection</a>
-        <a href="/weddings" class="border border-sb-gold text-sb-gold px-8 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors duration-300">Weddings & Events</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Welcome / About Teaser -->
-  <section class="py-24 bg-sb-cream text-sb-black text-center px-6">
-    <div class="max-w-3xl mx-auto reveal">
-      <h3 class="font-serif text-3xl md:text-5xl mb-8 font-light">A Family Affair</h3>
-      <p class="text-gray-600 font-light leading-relaxed mb-8 text-sm md:text-base">
-        At SB Floristry, we believe flowers are more than just a gift; they are a gesture, a memory, and a piece of art. As a family-run business based in the heart of Essex, we pour our passion into every arrangement, ensuring that from the moment they leave our hands to the moment they arrive in yours, the experience is nothing short of luxurious.
-      </p>
-      <a href="/our-story" class="inline-block border-b border-sb-black pb-1 text-xs uppercase font-bold tracking-luxury hover:text-sb-gold hover:border-sb-gold transition-colors">Discover Our Story</a>
-    </div>
-  </section>
-
-  <!-- Featured Products / Seasonal Edit -->
-  <section class="py-24 bg-white text-sb-black">
-    <div class="container mx-auto px-6">
-      <div class="flex flex-col md:flex-row justify-between items-end mb-16 reveal">
-        <div>
-          <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-2 block">Latest Arrivals</span>
-          <h3 class="font-serif text-4xl md:text-5xl font-light">The Seasonal Edit</h3>
-        </div>
-        <a href="/collections/seasonal" class="hidden md:inline-block border-b border-sb-black pb-1 text-[10px] uppercase font-bold tracking-luxury hover:text-sb-gold hover:border-sb-gold transition-colors">View All</a>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-        {products.slice(0, 4).map((product, index) => (
-          <div class="reveal" style={`transition-delay: ${index * 100}ms;`}>
-            <ProductCard product={product.node} isDark={false} />
+  <!-- A FAMILY AFFAIR -->
+  <section class="py-24 bg-sb-black text-sb-cream relative border-t border-white/5">
+      <div class="container mx-auto px-6 text-center max-w-2xl">
+          <span class="text-gold-metallic text-2xl mb-6 block reveal"><i class="fas fa-leaf"></i></span>
+          <h2 class="font-serif text-4xl md:text-5xl text-sb-cream mb-8 reveal font-light text-shadow-sm">A Family Affair</h2>
+          <p class="text-gray-400 leading-relaxed text-xl font-light mb-12 reveal">
+              Welcome to SB Floristry. We are a mother and daughter team bringing bespoke, luxury floral design to weddings, events, and homes across Essex and London. Every arrangement is hand-selected and styled with the care only family can provide.
+          </p>
+          <div class="flex flex-col md:flex-row justify-center gap-12 text-xs font-bold tracking-luxury text-sb-cream uppercase reveal">
+              <div class="flex items-center justify-center"><i class="fas fa-truck mr-3 text-sb-gold"></i> Free Local Delivery</div>
+              <div class="flex items-center justify-center"><i class="fas fa-heart mr-3 text-sb-gold"></i> Family Owned</div>
           </div>
-        ))}
       </div>
-      
-      <div class="mt-12 text-center md:hidden reveal">
-         <a href="/collections/seasonal" class="inline-block border-b border-sb-black pb-1 text-[10px] uppercase font-bold tracking-luxury hover:text-sb-gold hover:border-sb-gold transition-colors">View All Collection</a>
-      </div>
+  </section>
+
+  <!-- 4. EXPLORE COLLECTIONS -->
+  <section class="py-24 bg-sb-cream">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16 reveal">
+            <h3 class="font-serif text-5xl text-sb-black mb-4 font-light">Explore Our Collections</h3>
+            <div class="w-16 h-px bg-sb-gold mx-auto mt-6"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="home-collections-grid">
+            {collectionCards.map((card) => (
+                <a href={card.link} class="group relative block h-[500px] overflow-hidden cursor-pointer reveal">
+                    <img src={card.imgSrc} alt={card.title} class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 loaded" />
+                    <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                        <h4 class="font-serif text-4xl text-sb-cream mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 font-light">{card.title}</h4>
+                        <span class="text-sb-cream text-xs tracking-luxury uppercase border-b border-transparent group-hover:border-sb-cream pb-1 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">View Collection</span>
+                    </div>
+                </a>
+            ))}
+        </div>
     </div>
   </section>
 
-  <!-- Signature Collections (Visual Links) -->
-  <section class="py-4 bg-white">
-     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        <!-- Collection 1 -->
-        <a href="/collections/signature" class="group relative h-[60vh] overflow-hidden reveal">
-           <img src="/images/collection-signature.jpg" alt="Signature Collection" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-           <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500"></div>
-           <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-              <h4 class="font-serif text-3xl md:text-4xl text-white mb-4 font-light">Signature</h4>
-              <span class="text-white border-b border-white pb-1 text-[10px] uppercase font-bold tracking-luxury group-hover:text-sb-gold group-hover:border-sb-gold transition-colors">Shop Now</span>
-           </div>
-        </a>
-
-        <!-- Collection 2 -->
-        <a href="/weddings" class="group relative h-[60vh] overflow-hidden reveal">
-           <img src="/images/collection-weddings.jpg" alt="Weddings Collection" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-           <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500"></div>
-           <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-              <h4 class="font-serif text-3xl md:text-4xl text-white mb-4 font-light">Weddings</h4>
-              <span class="text-white border-b border-white pb-1 text-[10px] uppercase font-bold tracking-luxury group-hover:text-sb-gold group-hover:border-sb-gold transition-colors">Discover</span>
-           </div>
-        </a>
-
-        <!-- Collection 3 -->
-        <a href="/funerals" class="group relative h-[60vh] overflow-hidden reveal md:col-span-2 lg:col-span-1">
-           <img src="/images/collection-sympathy.jpg" alt="Sympathy Collection" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-           <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500"></div>
-           <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-              <h4 class="font-serif text-3xl md:text-4xl text-white mb-4 font-light">Sympathy</h4>
-              <span class="text-white border-b border-white pb-1 text-[10px] uppercase font-bold tracking-luxury group-hover:text-sb-gold group-hover:border-sb-gold transition-colors">Shop Now</span>
-           </div>
-        </a>
-     </div>
-  </section>
-
-  <!-- Gift Concierge Teaser Section -->
-  <section class="py-20 md:py-32 bg-sb-black text-white relative overflow-hidden">
-    <!-- Background Image with Fade Overlay -->
+  <!-- GIFT CONCIERGE TEASER SECTION -->
+  <section class="py-20 md:py-32 bg-sb-black text-white relative overflow-hidden border-t border-white/5">
     <div class="absolute inset-0 z-0">
       <img src="/images/collection-signature.jpg" alt="Signature luxury flowers" class="w-full h-full object-cover opacity-40 md:opacity-50" />
-      <!-- Gradient overlay to ensure text is perfectly readable -->
       <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-sb-black via-sb-black/90 to-transparent"></div>
     </div>
 
@@ -164,5 +121,70 @@ const products = response?.data?.products?.edges || [];
     </div>
   </section>
 
+  <!-- 5. TESTIMONIALS SECTION -->
   <Testimonials />
+
+  <!-- 6. OCCASION REMINDER / NEWSLETTER -->
+  <section class="py-24 bg-sb-cream border-t border-gray-100">
+      <div class="container mx-auto px-6">
+          <div class="max-w-4xl mx-auto bg-sb-black p-12 md:p-20 text-center relative overflow-hidden reveal">
+              <div class="absolute top-0 left-0 w-full h-1 bg-sb-gold"></div>
+              <span class="text-sb-gold text-xs tracking-[0.35em] uppercase font-bold mb-6 block">Never Miss a Moment</span>
+              <h3 class="font-serif text-4xl md:text-5xl text-sb-cream mb-8 font-light">The SB Occasion Reminder</h3>
+              <p class="text-gray-400 font-light text-lg mb-10 max-w-xl mx-auto">
+                  Tell us your most important dates—anniversaries, birthdays, milestones—and we'll send you a curated floral suggestion one week before.
+              </p>
+              <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
+                  <input type="email" placeholder="Email Address" class="flex-grow bg-transparent border-b border-gray-700 py-3 text-sb-cream outline-none focus:border-sb-gold transition-colors font-light">
+                  <button type="submit" class="btn-luxury border border-sb-cream text-sb-cream px-8 py-3 uppercase tracking-luxury text-[10px] font-bold">Join The Service</button>
+              </form>
+          </div>
+      </div>
+  </section>
+
+  <!-- 7. GLOBAL CONTACT FOOTER -->
+  <section class="py-24 bg-sb-black text-sb-cream border-t border-white/5" id="contact-section">
+      <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-12 reveal">
+              <h3 class="font-serif text-5xl md:text-6xl text-sb-cream mb-4 font-light">Start Your Floral Journey</h3>
+              <p class="font-light text-gray-400 text-lg">Tell us about your event or custom request.</p>
+          </div>
+          <form id="home-contact-form" class="space-y-8 reveal">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div class="space-y-1">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Name</label>
+                      <input type="text" name="name" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
+                  </div>
+                  <div class="space-y-1">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Email</label>
+                      <input type="email" name="email" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base">
+                  </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div class="space-y-1">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Event Date (Optional)</label>
+                      <input type="date" name="date" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-gray-400 text-base">
+                  </div>
+                  <div class="space-y-1">
+                      <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Interest</label>
+                      <select name="interest" class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream text-base">
+                          <option value="Weddings" class="bg-sb-black text-white">Weddings</option>
+                          <option value="Events" class="bg-sb-black text-white">Events</option>
+                          <option value="Hotels" class="bg-sb-black text-white">Hotels & Spas</option>
+                          <option value="Bespoke Order" class="bg-sb-black text-white">Bespoke Order</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="space-y-1">
+                  <label class="text-xs font-bold tracking-luxury uppercase text-sb-gold">Message</label>
+                  <textarea name="message" rows="4" required class="w-full bg-transparent border-b border-gray-700 focus:border-sb-gold outline-none py-2 transition-colors text-sb-cream placeholder-gray-600 text-base"></textarea>
+              </div>
+              <div class="text-center pt-8">
+                  <button type="submit" class="btn-luxury border border-sb-cream text-sb-cream px-16 py-4 uppercase tracking-luxury text-xs font-bold inline-block">
+                      Send Inquiry
+                  </button>
+              </div>
+          </form>
+      </div>
+  </section>
 </Layout>
