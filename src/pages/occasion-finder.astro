@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { shopifyFetch } from '../utils/shopify.js';
-import { Image } from 'astro:assets';
 
 // Fetch live products to power the instant client-side matching quiz
 const query = `{
@@ -16,7 +15,7 @@ const query = `{
         images(first: 1) { 
           edges { 
             node { 
-              url 
+               url 
             } 
           } 
         }
@@ -35,16 +34,16 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
 ---
 
 <Layout 
-  title="Bloom Matcher - Interactive Floral Finder" 
-  description="Take our quick interactive quiz to find the perfect luxury hand-tied arrangement customized for your occasion, aesthetic, and budget."
+  title="Collection Matcher - Find Your Aesthetic" 
+  description="Explore our themed and seasonal floral collections. Take our interactive guide to find the perfect luxury arrangement for your space or recipient."
 >
   <section class="py-32 bg-sb-cream min-h-screen flex items-center">
     <div class="container mx-auto px-6 max-w-3xl">
       <div class="text-center mb-12">
-        <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Interactive Curation</span>
-        <h1 class="font-serif text-5xl md:text-6xl text-sb-black mb-6">The Bloom Matcher</h1>
+        <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Curated For You</span>
+        <h1 class="font-serif text-5xl md:text-6xl text-sb-black mb-6">The Collection Matcher</h1>
         <p class="text-gray-500 font-light max-w-lg mx-auto text-sm leading-relaxed">
-          Discover your perfect floral match. Select your occasion, preferred aesthetic, and budget below for an instant custom curation.
+          We design by mood, season, and aesthetic rather than traditional dates. Discover the perfect floral curation by selecting your preferred theme and scale below.
         </p>
       </div>
 
@@ -62,95 +61,87 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
         </div>
 
         <div id="quiz-flow">
-          <!-- STEP 1: Occasion -->
+          <!-- STEP 1: Collection Theme -->
           <div id="step-1" class="space-y-6">
-            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">What is the special occasion?</h3>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">Select one to begin</p>
+            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">Which aesthetic draws you in?</h3>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">Select a core collection theme</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="anniversary">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="seasonal">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Anniversary & Romance</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Deep sentiments, classic love, and poetry</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Seasonal Signatures</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Evolving palettes reflecting nature's current moment</p>
                 </div>
-                <i class="fas fa-heart text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
+                <i class="fas fa-leaf text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
               </button>
 
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="birthday">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="gothic">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Birthday & Cheer</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Celebrations, vibrant palettes, and joy</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Dark & Gothic</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Moody, dramatic, and deeply romantic velvet tones</p>
                 </div>
-                <i class="fas fa-cake-candles text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
+                <i class="fas fa-moon text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
               </button>
 
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="sympathy">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="fairytale">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Sympathy & Solace</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Quiet thoughts, elegant support, and respect</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Soft & Fairytale</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Whimsical pastels, dreamy textures, and meadow blooms</p>
                 </div>
-                <i class="fas fa-dove text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
+                <i class="fas fa-wand-magic-sparkles text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
               </button>
 
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="just-because">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="1" data-val="luxury">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Just Because</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Spontaneous gestures, warmth, and surprise</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Timeless Luxury</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Classic premium whites, orchids, and sophisticated greens</p>
                 </div>
-                <i class="fas fa-sparkles text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
+                <i class="fas fa-crown text-gray-300 group-hover:text-sb-gold transition-colors ml-4 text-xl"></i>
               </button>
             </div>
           </div>
 
-          <!-- STEP 2: Aesthetic / Vibe (Matches Shopify tags) -->
+          <!-- STEP 2: Intention -->
           <div id="step-2" class="hidden space-y-6">
-            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">Choose their floral aesthetic</h3>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">Each arrangement is tailored to a distinct design theme</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="luxury">
+            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">What is the intention?</h3>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">How will these blooms be enjoyed?</p>
+            <div class="grid grid-cols-1 gap-4">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="gift">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Timeless & Luxury</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Classic premium whites, sophisticated greenery</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">A Thoughtful Gift</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Hand-tied and beautifully wrapped for someone special</p>
                 </div>
-                <span class="text-xs text-sb-gold font-serif italic font-bold">Luxury</span>
+                <i class="fas fa-gift text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
 
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="gothic">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="home">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Gothic & Dramatic</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Deep velvety plum tones, dark mystery, bold contours</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Home Styling</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Elevating my own space, dining table, or entrance</p>
                 </div>
-                <span class="text-xs text-sb-gold font-serif italic font-bold">Gothic</span>
+                <i class="fas fa-house text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
 
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="fairytale">
+              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="event">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Soft & Fairytale</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Romantic pastels, dreamy meadow-style garden blooms</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">A Grand Display</h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">A statement piece designed to turn heads</p>
                 </div>
-                <span class="text-xs text-sb-gold font-serif italic font-bold">Fairytale</span>
-              </button>
-
-              <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="2" data-val="seasonal">
-                <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Bright & Seasonal</h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Evolving garden color palettes handpicked today</p>
-                </div>
-                <span class="text-xs text-sb-gold font-serif italic font-bold">Seasonal</span>
+                <i class="fas fa-champagne-glasses text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
             </div>
             
-            <button id="back-to-1" class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 hover:text-sb-black pt-4 block"><i class="fas fa-chevron-left mr-2"></i> Back to Occasion</button>
+            <button id="back-to-1" class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 hover:text-sb-black pt-4 block"><i class="fas fa-chevron-left mr-2"></i> Back to Themes</button>
           </div>
 
           <!-- STEP 3: Budget Range -->
           <div id="step-3" class="hidden space-y-6">
-            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">Select your ideal arrangement scale</h3>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">Filter by budget range</p>
+            <h3 class="font-serif text-2xl text-sb-black font-light mb-2">Select your ideal scale</h3>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">Filter by size and budget range</p>
             <div class="grid grid-cols-1 gap-4">
               <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="3" data-val="under-50">
                 <div>
                   <h4 class="font-serif text-lg text-sb-black font-normal">Bespoke Bouquets <span class="text-base text-gray-400 font-sans ml-2">(Under £50)</span></h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Charming table displays and elegant hand-tied arrangements</p>
+                  <p class="text-xs text-gray-400 font-light mt-1">Charming, intimate arrangements crafted with care</p>
                 </div>
                 <i class="fas fa-chevron-right text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
@@ -158,21 +149,21 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
               <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="3" data-val="50-100">
                 <div>
                   <h4 class="font-serif text-lg text-sb-black font-normal">Premium Masterpieces <span class="text-base text-gray-400 font-sans ml-2">(£50 - £100)</span></h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Generous, showstopping focal displays full of luxury textures</p>
+                  <p class="text-xs text-gray-400 font-light mt-1">Generous, show-stopping focal displays full of luxury textures</p>
                 </div>
                 <i class="fas fa-chevron-right text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
 
               <button class="quiz-btn border border-gray-200 p-6 text-left hover:border-sb-gold hover:bg-sb-cream/30 transition-all duration-300 flex items-center justify-between group" data-step="3" data-val="all">
                 <div>
-                  <h4 class="font-serif text-lg text-sb-black font-normal">Show All Collections <span class="text-base text-gray-400 font-sans ml-2">(Any Budget)</span></h4>
-                  <p class="text-xs text-gray-400 font-light mt-1">Browse all arrangements matching your chosen style profile</p>
+                  <h4 class="font-serif text-lg text-sb-black font-normal">Show All <span class="text-base text-gray-400 font-sans ml-2">(Any Budget)</span></h4>
+                  <p class="text-xs text-gray-400 font-light mt-1">Browse all arrangements matching your chosen theme</p>
                 </div>
                 <i class="fas fa-chevron-right text-gray-300 group-hover:text-sb-gold transition-all"></i>
               </button>
             </div>
 
-            <button id="back-to-2" class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 hover:text-sb-black pt-4 block"><i class="fas fa-chevron-left mr-2"></i> Back to Aesthetic</button>
+            <button id="back-to-2" class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 hover:text-sb-black pt-4 block"><i class="fas fa-chevron-left mr-2"></i> Back to Intention</button>
           </div>
         </div>
 
@@ -180,8 +171,8 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
         <div id="quiz-results" class="hidden space-y-8 animate-fade-in">
           <div class="flex items-center justify-between border-b border-gray-100 pb-6">
             <div>
-              <h3 class="font-serif text-2xl text-sb-black font-light">Your Custom Curations</h3>
-              <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Hand-selected based on your style and budget preference</p>
+              <h3 class="font-serif text-2xl text-sb-black font-light">Your Curated Collection</h3>
+              <p id="result-subtitle" class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Hand-selected based on your style and budget preference</p>
             </div>
             <button id="restart-quiz" class="text-[10px] tracking-luxury uppercase font-bold text-sb-gold border-b border-sb-gold pb-0.5 hover:text-sb-black hover:border-sb-black transition-colors">Start Over</button>
           </div>
@@ -196,7 +187,7 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
             <i class="fas fa-leaf text-gray-300 text-4xl"></i>
             <h4 class="font-serif text-xl">Almost a Perfect Match</h4>
             <p class="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
-              We don't have items perfectly matching that specific budget combination today, but our custom design service can tailor any bouquet to your specific cost requirements.
+              We don't have items perfectly matching that specific budget combination today, but our custom design service can tailor any bouquet to your specific scale.
             </p>
             <a href="/contact" class="inline-block border border-sb-black text-sb-black hover:bg-sb-black hover:text-sb-cream px-6 py-3 text-[10px] font-bold tracking-luxury uppercase transition-all duration-300">
               Get A Bespoke Quote
@@ -212,8 +203,8 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
 <script is:inline define:vars={{ products }}>
   // Core State
   let selection = {
-    occasion: '',
-    aesthetic: '',
+    theme: '',
+    intention: '',
     budget: ''
   };
 
@@ -226,6 +217,7 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
     const noMatches = document.getElementById('no-matches');
     const progressBar = document.getElementById('quiz-progress-bar');
     const stepLabel = document.getElementById('step-label');
+    const resultSubtitle = document.getElementById('result-subtitle');
 
     // Handle Button Clicks
     document.querySelectorAll('.quiz-btn').forEach(btn => {
@@ -234,10 +226,10 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
         const val = btn.dataset.val;
 
         if (step === '1') {
-          selection.occasion = val;
+          selection.theme = val;
           goToStep(2);
         } else if (step === '2') {
-          selection.aesthetic = val;
+          selection.intention = val;
           goToStep(3);
         } else if (step === '3') {
           selection.budget = val;
@@ -250,7 +242,7 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
     document.getElementById('back-to-1')?.addEventListener('click', () => goToStep(1));
     document.getElementById('back-to-2')?.addEventListener('click', () => goToStep(2));
     document.getElementById('restart-quiz')?.addEventListener('click', () => {
-      selection = { occasion: '', aesthetic: '', budget: '' };
+      selection = { theme: '', intention: '', budget: '' };
       goToStep(1);
     });
 
@@ -281,11 +273,18 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
       progressBar.style.width = '100%';
       stepLabel.innerText = 'Selection Complete';
 
+      // Update subtitle to reflect intention
+      let intentionText = "Perfect for your aesthetic and scale";
+      if (selection.intention === 'gift') intentionText = "Beautifully designed to be a memorable gift";
+      if (selection.intention === 'home') intentionText = "Curated to elevate your interior space";
+      if (selection.intention === 'event') intentionText = "A striking display to anchor your event";
+      resultSubtitle.innerText = intentionText;
+
       // Filtering Logic
       const matches = products.filter(product => {
-        // Tag Match
+        // Theme/Tag Match
         const normalizedTags = (product.tags || []).map(t => t.toLowerCase());
-        const hasAestheticTag = normalizedTags.includes(selection.aesthetic.toLowerCase());
+        const hasThemeTag = normalizedTags.includes(selection.theme.toLowerCase());
         
         // Budget Match
         const price = parseFloat(product.priceRange.minVariantPrice.amount);
@@ -299,7 +298,7 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
           matchesBudget = true; // Show all
         }
 
-        return hasAestheticTag && matchesBudget;
+        return hasThemeTag && matchesBudget;
       });
 
       // Render Match Grid
@@ -310,6 +309,7 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
         resultsGrid.innerHTML = matches.map(match => {
           const imgUrl = match.images?.edges?.[0]?.node?.url || 'https://via.placeholder.com/600x800?text=Coming+Soon';
           const price = parseFloat(match.priceRange.minVariantPrice.amount).toFixed(2);
+          const capitalizedTheme = selection.theme.charAt(0).toUpperCase() + selection.theme.slice(1);
           
           return `
             <div class="group border border-gray-100 p-4 hover:shadow-xl transition-all duration-500 bg-[#F9F8F6]/40 reveal active">
@@ -322,14 +322,14 @@ const products = response?.data?.products?.edges.map(e => e.node) || [];
                     style="opacity: 1 !important;"
                   />
                   <div class="absolute top-3 left-3 bg-sb-black text-sb-gold text-[8px] uppercase tracking-widest font-bold py-1.5 px-3">
-                    ${selection.aesthetic} Vibe
+                    ${capitalizedTheme} Collection
                   </div>
                 </div>
                 <div class="space-y-1 text-center">
                   <h4 class="font-serif text-xl text-sb-black font-light group-hover:text-sb-gold transition-colors duration-300">${match.title}</h4>
                   <p class="text-sb-gold text-xs font-bold font-sans">£${price}</p>
                   <span class="text-[9px] uppercase tracking-luxury border-b border-transparent group-hover:border-sb-black pb-0.5 inline-block transition-all duration-300 mt-2">
-                    View Bouquet Details
+                    View Details
                   </span>
                 </div>
               </a>
