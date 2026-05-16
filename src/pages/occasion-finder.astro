@@ -44,12 +44,13 @@ const products = rawProducts.map(({ node }) => ({
 }));
 ---
 
-<Layout title="AI Gift Concierge | SB Floristry" description="Let our virtual floral concierge find the perfect luxury bouquet for your occasion.">
+<Layout title="AI Gift Advisor | SB Floristry" description="Let our intelligent AI Gift Advisor find the perfect luxury bouquet for your occasion.">
   
   <!-- Step 1-3 Quiz Background -->
-  <section class="min-h-screen bg-sb-cream flex flex-col items-center justify-center px-4 md:px-6 relative pt-20 md:pt-0" id="quiz-background">
+  <!-- FIX: Switched to min-h-[100dvh] with pt-24 pb-12 to perfectly center on mobile below the header -->
+  <section class="min-h-[100dvh] bg-sb-cream flex flex-col items-center justify-center px-4 md:px-6 relative pt-24 pb-12" id="quiz-background">
     
-    <!-- FIXED HEIGHT CONTAINER: Locks proportions so the box never jumps. Adjusted for mobile spacing. -->
+    <!-- FIXED HEIGHT CONTAINER: Locks proportions so the box never jumps -->
     <div class="max-w-4xl w-full bg-white border border-gray-100 shadow-xl p-4 md:p-12 text-center relative overflow-hidden transition-all duration-1000 h-[380px] sm:h-[420px] md:h-[500px] flex flex-col justify-center items-center" id="quiz-container">
       
       <!-- Progress Bar -->
@@ -59,7 +60,7 @@ const products = rawProducts.map(({ node }) => ({
 
       <!-- Step 1: Who is it for? -->
       <div class="quiz-step w-full opacity-100 translate-y-0 transition-all duration-700 ease-out absolute px-4 md:px-16" id="step-1">
-        <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 md:mb-6 block"><i class="fas fa-sparkles mr-1"></i> Virtual Concierge</span>
+        <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 md:mb-6 block"><i class="fas fa-sparkles mr-1"></i> AI Gift Advisor</span>
         <h2 class="font-serif text-2xl sm:text-3xl md:text-5xl text-sb-black mb-5 md:mb-10 font-light">Who are we spoiling today?</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 max-w-2xl mx-auto">
           <button class="quiz-btn border border-gray-100 py-3 md:py-4 px-4 hover:border-sb-gold hover:bg-gray-50 hover:shadow-sm transition-all duration-500 text-sb-black font-light text-sm md:text-lg" data-next="step-2" data-keywords="romantic,love,red,rose,passion,heart,kiss,anniversary">My Partner</button>
@@ -114,7 +115,7 @@ const products = rawProducts.map(({ node }) => ({
             <div class="absolute inset-0 border-[1px] border-sb-gold/15 rounded-full animate-[spin_8s_linear_infinite_reverse] scale-110"></div>
             <i class="fas fa-magic text-3xl md:text-4xl text-sb-gold relative z-10 animate-pulse"></i>
         </div>
-        <h2 class="font-serif text-2xl md:text-4xl text-white mb-3 md:mb-4 font-light transition-all duration-1000 ease-in-out transform translate-y-0" id="ai-loading-text">Initializing concierge...</h2>
+        <h2 class="font-serif text-2xl md:text-4xl text-white mb-3 md:mb-4 font-light transition-all duration-1000 ease-in-out transform translate-y-0" id="ai-loading-text">Initializing AI Advisor...</h2>
         <p class="text-sb-gold/70 text-xs md:text-sm font-light uppercase tracking-widest" id="ai-loading-subtext">Please wait</p>
     </div>
 
@@ -135,11 +136,39 @@ const products = rawProducts.map(({ node }) => ({
         <!-- Footer -->
         <div class="shrink-0 mt-8 md:mt-12 pt-6 border-t border-white/10 w-full max-w-xl text-center mx-auto">
             <button id="restart-concierge-btn" class="text-gray-400 hover:text-sb-gold text-[10px] tracking-luxury uppercase font-bold transition-colors duration-300">
-                <i class="fas fa-redo mr-2"></i> Restart Concierge
+                <i class="fas fa-redo mr-2"></i> Restart Advisor
             </button>
         </div>
     </div>
 
+  </div>
+
+  <!-- THE LIGHTBOX GALLERY OVERLAY -->
+  <div id="lightbox-overlay" class="fixed inset-0 z-[200] bg-sb-black/95 hidden opacity-0 transition-opacity duration-300 flex flex-col items-center justify-center backdrop-blur-md" onclick="window.closeLightbox()">
+      
+      <!-- Close Button -->
+      <button class="absolute top-6 right-6 text-white/60 hover:text-sb-gold text-3xl md:text-4xl z-50 transition-colors p-2" onclick="window.closeLightbox()">
+          <i class="fas fa-times"></i>
+      </button>
+
+      <!-- Navigation Arrows -->
+      <button class="absolute left-2 md:left-10 top-1/2 -translate-y-1/2 text-white/30 hover:text-sb-gold text-4xl md:text-5xl z-50 transition-colors p-4" onclick="window.lightboxPrev(event)">
+          <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="absolute right-2 md:right-10 top-1/2 -translate-y-1/2 text-white/30 hover:text-sb-gold text-4xl md:text-5xl z-50 transition-colors p-4" onclick="window.lightboxNext(event)">
+          <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Lightbox Content -->
+      <div class="relative w-full max-w-5xl h-[70vh] md:h-[80vh] flex flex-col items-center justify-center px-12 md:px-24" onclick="event.stopPropagation()">
+          <img id="lightbox-img" src="" class="w-full h-full object-contain drop-shadow-2xl mb-8" alt="Bouquet Full View" />
+          
+          <div class="text-center absolute bottom-0 translate-y-[120%] w-full">
+              <span id="lightbox-badge" class="text-sb-black bg-sb-gold text-[10px] uppercase tracking-luxury font-bold px-3 py-1 mb-3 inline-block shadow-sm">Match</span>
+              <h3 id="lightbox-title" class="font-serif text-2xl md:text-4xl text-white mb-2 font-light tracking-wide"></h3>
+              <p id="lightbox-price" class="text-sb-gold text-lg md:text-xl font-light"></p>
+          </div>
+      </div>
   </div>
 
   <!-- Pass Shopify products securely to the client -->
@@ -317,13 +346,18 @@ const products = rawProducts.map(({ node }) => ({
               match3 = scoredProducts.find(p => p.handle !== match1.handle && (!match2 || p.handle !== match2.handle));
           }
 
+          // Build Global Results Array for Lightbox
+          window.currentLightboxData = [];
+          if(match2) window.currentLightboxData.push({product: match2, label: "Beautiful Alternative", type: "side"});
+          if(match1) window.currentLightboxData.push({product: match1, label: "The Perfect Match", type: "center"});
+          if(match3) window.currentLightboxData.push({product: match3, label: "Sensible Upgrade", type: "side"});
+
           const grid = document.getElementById('results-grid');
           grid.innerHTML = ''; 
           
-          // Inject in the DOM order: Alternative (Left), Perfect Match (Center), Upgrade (Right)
-          if(match2) grid.innerHTML += createProportionalCard(match2, "Beautiful Alternative", "side");
-          if(match1) grid.innerHTML += createProportionalCard(match1, "The Perfect Match", "center");
-          if(match3) grid.innerHTML += createProportionalCard(match3, "Sensible Upgrade", "side");
+          window.currentLightboxData.forEach((item, index) => {
+              grid.innerHTML += createProportionalCard(item.product, item.label, item.type, index);
+          });
 
           const loadingView = document.getElementById('ai-loading-view');
           const resultsView = document.getElementById('ai-results-view');
@@ -342,28 +376,74 @@ const products = rawProducts.map(({ node }) => ({
           }, 1000);
       }
 
-      function createProportionalCard(product, label, type) {
+      // --- LIGHTBOX LOGIC ---
+      window.openLightbox = function(index) {
+          window.currentLightboxIndex = index;
+          updateLightboxUI();
+          
+          const overlay = document.getElementById('lightbox-overlay');
+          overlay.classList.remove('hidden');
+          // small delay to allow display block to process before fading in
+          setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+      }
+
+      window.closeLightbox = function() {
+          const overlay = document.getElementById('lightbox-overlay');
+          overlay.classList.add('opacity-0');
+          setTimeout(() => overlay.classList.add('hidden'), 300);
+      }
+
+      window.lightboxNext = function(e) {
+          e.stopPropagation();
+          window.currentLightboxIndex = (window.currentLightboxIndex + 1) % window.currentLightboxData.length;
+          updateLightboxUI();
+      }
+
+      window.lightboxPrev = function(e) {
+          e.stopPropagation();
+          window.currentLightboxIndex = (window.currentLightboxIndex - 1 + window.currentLightboxData.length) % window.currentLightboxData.length;
+          updateLightboxUI();
+      }
+
+      function updateLightboxUI() {
+          const item = window.currentLightboxData[window.currentLightboxIndex];
+          const imgEl = document.getElementById('lightbox-img');
+          
+          // Slight fade effect when switching images
+          imgEl.style.opacity = 0;
+          setTimeout(() => {
+              imgEl.src = item.product.image;
+              document.getElementById('lightbox-title').innerText = item.product.title;
+              document.getElementById('lightbox-price').innerText = `£${item.product.price.toFixed(2)}`;
+              document.getElementById('lightbox-badge').innerText = item.label;
+              imgEl.style.opacity = 1;
+          }, 150);
+      }
+
+      function createProportionalCard(product, label, type, index) {
           const isCenter = type === "center";
           
           // Styling differences based on hierarchy
           const badgeClass = isCenter ? "text-sb-black bg-sb-gold border-sb-gold" : "text-sb-cream bg-white/10 border-white/20";
           const borderClass = isCenter ? "border-sb-gold shadow-[0_0_25px_rgba(212,175,55,0.15)]" : "border-white/10";
-          
-          // Layout sizes: Center is natively larger on desktop
           const desktopScale = isCenter ? "md:scale-105 md:z-20 md:w-[35%]" : "md:scale-95 md:z-10 md:w-[30%]";
-          
-          // Interactive "Hover to Compare" logic. Gently lifts the entire card without messing with the image crop.
           const hoverState = "hover:scale-[1.02] md:hover:scale-[1.08] hover:z-[60] hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]";
 
           return `
             <div class="flex flex-row md:flex-col w-full bg-white/5 border ${borderClass} transition-all duration-500 ease-out rounded-sm group relative backdrop-blur-sm h-auto shrink-0 ${desktopScale} ${hoverState}">
                 
-                <!-- Image Container: H-auto dynamically adapts without clipping text -->
-                <div class="w-[40%] md:w-full md:h-[30vh] md:max-h-[350px] md:min-h-[250px] relative overflow-hidden bg-black shrink-0 cursor-pointer">
+                <!-- Image Container with Click-to-Open-Lightbox -->
+                <div class="w-[40%] md:w-full md:h-[30vh] md:max-h-[350px] md:min-h-[250px] relative overflow-hidden bg-black shrink-0 cursor-pointer" onclick="window.openLightbox(${index})">
                     <div class="absolute top-2 left-2 md:top-4 md:left-4 ${badgeClass} text-[9px] uppercase tracking-luxury font-bold px-3 py-1 z-30 border backdrop-blur-md hidden md:block shadow-sm">
                         ${label}
                     </div>
-                    <!-- Removed group-hover:scale-110 so the image crop stays perfect, the whole card just gets bigger! -->
+                    
+                    <!-- View Full Overlay -->
+                    <div class="absolute inset-0 bg-sb-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center z-20 backdrop-blur-[2px]">
+                        <i class="fas fa-search-plus text-white text-3xl md:text-5xl drop-shadow-md"></i>
+                    </div>
+
+                    <!-- Clean image without zoom on hover -->
                     <img 
                         src="${product.image}" 
                         alt="${product.title}" 
@@ -372,12 +452,12 @@ const products = rawProducts.map(({ node }) => ({
                     />
                 </div>
                 
-                <!-- Text Container: Padding and sizing increased for mobile readability -->
-                <div class="w-[60%] md:w-full p-5 md:p-6 text-left md:text-center relative z-20 flex flex-col justify-center flex-grow bg-sb-black/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+                <!-- Text Container: H-Auto ensures no text gets cut off -->
+                <div class="w-[60%] md:w-full p-4 md:p-6 text-left md:text-center relative z-20 flex flex-col justify-center flex-grow bg-sb-black/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none min-h-[9rem]">
                     <div class="md:hidden ${badgeClass} text-[8px] uppercase tracking-luxury font-bold px-2 py-1 mb-3 inline-block w-max border">
                         ${label}
                     </div>
-                    <h4 class="font-serif text-[1.15rem] md:text-2xl text-white mb-2 leading-tight">${product.title}</h4>
+                    <h4 class="font-serif text-[1.15rem] md:text-2xl text-white mb-2 leading-snug">${product.title}</h4>
                     <p class="text-sb-gold text-base md:text-lg font-light mb-4 md:mb-6">£${product.price.toFixed(2)}</p>
                     <a href="/products/${product.handle}" class="border border-white/20 text-white py-3 px-4 md:px-6 text-[10px] font-bold uppercase tracking-luxury group-hover:bg-sb-gold group-hover:text-sb-black group-hover:border-sb-gold transition-all duration-300 w-max md:w-full text-center mt-auto">
                         View Bouquet
