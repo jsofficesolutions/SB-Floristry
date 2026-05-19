@@ -7,7 +7,6 @@ import heroImg from '../../public/images/hero.jpg';
 import signatureImg from '../../public/images/collection-signature.jpg';
 
 const targetTags = ['seasonal', 'luxury', 'gothic', 'fairytale'];
-
 const queryBody = targetTags.map(tag => `
   ${tag}: products(first: 10, query: "tag:${tag} AND available_for_sale:true") {
     edges {
@@ -17,11 +16,9 @@ const queryBody = targetTags.map(tag => `
     }
   }
 `).join('\n');
-
 const query = `{ ${queryBody} }`;
 const response = await shopifyFetch({ query });
 const collectionsData = response?.data || {};
-
 const collectionCards = targetTags.map(tag => {
   const products = collectionsData[tag]?.edges || [];
   const validProducts = products.filter(p => p.node?.images?.edges?.length > 0);
@@ -44,7 +41,6 @@ const collectionCards = targetTags.map(tag => {
   title="Bespoke Luxury Florist Essex & London" 
   description="SB Floristry: A boutique mother & daughter studio crafting high-end floral arrangements for weddings, events, and luxury gifting. Local delivery across Essex."
 >
-  <!-- HERO SECTION -->
   <section class="relative h-[90vh] overflow-hidden">
       <div class="absolute inset-0">
           <Image 
@@ -69,7 +65,6 @@ const collectionCards = targetTags.map(tag => {
       </div>
   </section>
   
-  <!-- STORY SECTION -->
   <section class="py-24 bg-sb-black text-sb-cream relative border-t border-white/5">
       <div class="container mx-auto px-6 text-center max-w-2xl">
           <span class="text-gold-metallic text-2xl mb-6 block reveal"><i class="fas fa-leaf"></i></span>
@@ -84,7 +79,6 @@ const collectionCards = targetTags.map(tag => {
       </div>
   </section>
 
-  <!-- COLLECTIONS -->
   <section class="py-24 bg-sb-cream">
     <div class="container mx-auto px-6">
         <div class="text-center mb-16 reveal">
@@ -112,7 +106,6 @@ const collectionCards = targetTags.map(tag => {
     </div>
   </section>
 
-  <!-- INTERACTIVE GUIDE CALL-TO-ACTION -->
   <section class="py-20 md:py-32 bg-sb-black text-white relative overflow-hidden border-t border-white/5">
     <div class="absolute inset-0 z-0">
       <Image 
@@ -142,25 +135,6 @@ const collectionCards = targetTags.map(tag => {
 
   <Testimonials />
 
-  <!-- NEWSLETTER -->
-  <section class="py-24 bg-sb-cream border-t border-gray-100">
-      <div class="container mx-auto px-6">
-          <div class="max-w-4xl mx-auto bg-sb-black p-12 md:p-20 text-center relative overflow-hidden reveal">
-              <div class="absolute top-0 left-0 w-full h-1 bg-sb-gold"></div>
-              <span class="text-sb-gold text-xs tracking-[0.35em] uppercase font-bold mb-6 block">Never Miss a Moment</span>
-              <h3 class="font-serif text-4xl md:text-5xl text-sb-cream mb-8 font-light">The SB Occasion Reminder</h3>
-              <p class="text-gray-400 font-light text-lg mb-10 max-w-xl mx-auto">
-                  Tell us your most important dates and we'll send you a curated floral suggestion one week before.
-              </p>
-              <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" id="newsletter-form">
-                  <input type="email" name="email" required aria-label="Email Address" placeholder="Email Address" class="flex-grow bg-transparent border-b border-gray-700 py-3 text-sb-cream outline-none focus:border-sb-gold transition-colors font-light">
-                  <button type="submit" class="btn-luxury border border-sb-cream text-sb-cream px-8 py-3 uppercase tracking-luxury text-[10px] font-bold">Join The Service</button>
-              </form>
-          </div>
-      </div>
-  </section>
-
-  <!-- CONTACT FORM -->
   <section class="py-24 bg-sb-black text-sb-cream border-t border-white/5" id="contact-section">
       <div class="container mx-auto px-6 max-w-4xl">
           <div class="text-center mb-12 reveal">
