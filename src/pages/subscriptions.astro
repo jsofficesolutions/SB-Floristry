@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Floral Subscriptions | SB Floristry" description="Subscribe to regular luxury flower deliveries in Essex. Set up easily via Direct Debit.">
   
+  <!-- Hero Section -->
   <section class="relative min-h-[80vh] flex items-center justify-center bg-sb-black text-sb-cream overflow-hidden">
     <div class="absolute inset-0 z-0">
       <img src="/images/collection-signature.jpg" alt="Luxury Subscription Flowers" class="w-full h-full object-cover opacity-60 hero-zoom" />
@@ -18,9 +19,11 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <!-- Editorial Tier Section -->
   <section class="py-32 bg-sb-cream text-sb-black">
     <div class="container mx-auto px-6 max-w-6xl">
       
+      <!-- The Classic -->
       <div class="flex flex-col md:flex-row items-center gap-16 mb-32 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -45,6 +48,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
+      <!-- The Signature -->
       <div class="flex flex-col md:flex-row-reverse items-center gap-16 mb-32 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -70,6 +74,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
+      <!-- The Luxe -->
       <div class="flex flex-col md:flex-row items-center gap-16 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -97,6 +102,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <!-- GoCardless Trust Banner -->
   <section class="py-12 bg-white border-y border-gray-100">
     <div class="container mx-auto px-6 text-center">
       <p class="text-[10px] uppercase tracking-luxury text-gray-400 mb-4 font-bold">Secure Payments Powered By</p>
@@ -113,8 +119,12 @@ import Layout from '../layouts/Layout.astro';
 <script>
   document.querySelectorAll('.subscribe-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      const plan = e.target.getAttribute('data-plan');
-      e.target.innerHTML = 'Processing...';
+      const target = e.currentTarget;
+      const originalText = target.innerHTML;
+      target.innerHTML = 'Processing...';
+      target.disabled = true;
+      
+      const plan = target.getAttribute('data-plan');
       
       try {
         const response = await fetch('/api/gocardless/create-checkout', {
@@ -128,11 +138,15 @@ import Layout from '../layouts/Layout.astro';
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         } else {
-          throw new Error('No checkout URL returned');
+          throw new Error(data.error || 'No checkout URL returned');
         }
       } catch (error) {
         console.error('Payment initialization failed:', error);
-        e.target.innerHTML = 'Error - Try Again';
+        target.innerHTML = 'Error - Try Again';
+        target.disabled = false;
+        setTimeout(() => {
+          target.innerHTML = originalText;
+        }, 3000);
       }
     });
   });
