@@ -3,50 +3,10 @@ export const prerender = false; // Runs server-side on Cloudflare to fetch detai
 
 import Layout from '../layouts/Layout.astro';
 
-// 1. Capture the query parameters appended by GoCardless
-const billingRequestId = Astro.url.searchParams.get('billing_request_id');
-
-let customerName = "";
-let planName = "Your Luxury Subscription";
-
-// 2. If a billing request ID is present, fetch the subscriber details from GoCardless
-if (billingRequestId) {
-  try {
-    const gcToken = import.meta.env.GOCARDLESS_ACCESS_TOKEN;
-    const gcEnv = import.meta.env.PUBLIC_GC_ENVIRONMENT || 'sandbox';
-    const apiBase = gcEnv === 'live' 
-      ? 'https://api.gocardless.com' 
-      : 'https://api-sandbox.gocardless.com';
-
-    // Retrieve Billing Request details
-    const response = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${gcToken}`,
-        'GoCardless-Version': '2015-07-06',
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      
-      // Grab customer details if they exist in the links/resources
-      const customer = data.billing_requests?.resources?.customer;
-      if (customer?.given_name) {
-        customerName = customer.given_name;
-      }
-
-      // Determine the tier description
-      const desc = data.billing_requests?.payment_request?.description;
-      if (desc) {
-        planName = desc.replace("SB Floristry - ", "");
-      }
-    }
-  } catch (error) {
-    console.error("Failed to retrieve subscription info on success page:", error);
-  }
-}
+// 1. Capture the query parameters passed directly from our checkout API
+const customerName = Astro.url.searchParams.get('name') || "";
+const rawPlan = Astro.url.searchParams.get('plan') || "Your Luxury Subscription";
+const planName = rawPlan.replace("SB Floristry - ", "");
 ---
 
 <Layout title="Thank You | SB Floristry" description="Your luxury floral subscription has been confirmed.">
