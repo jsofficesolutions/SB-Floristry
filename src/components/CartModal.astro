@@ -20,12 +20,12 @@
     </div>
 
     <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-6 space-y-6 bg-[#F9F8F6]">
-        </div>
+    </div>
 
     <div class="bg-white border-t border-gray-200 shadow-[0_-4px_15px_rgba(0,0,0,0.02)] z-10">
         
         <div class="border-b border-gray-100">
-            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" onclick="document.getElementById('deliveryDateSection').classList.toggle('hidden'); this.querySelector('.fa-chevron-down').classList.toggle('rotate-180')">
+            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" id="toggleDeliveryDate">
                 <span class="flex items-center pointer-events-none"><i class="fas fa-calendar-alt mr-3 text-sb-gold text-sm"></i> Select Delivery Date</span>
                 <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold pointer-events-none"></i>
             </button>
@@ -36,7 +36,7 @@
         </div>
 
         <div>
-            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" onclick="document.getElementById('giftMessageSection').classList.toggle('hidden'); this.querySelector('.fa-chevron-down').classList.toggle('rotate-180')">
+            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" id="toggleGiftMessage">
                 <span class="flex items-center pointer-events-none"><i class="fas fa-envelope-open-text mr-3 text-sb-gold text-sm"></i> Add a Gift Message</span>
                 <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold pointer-events-none"></i>
             </button>
@@ -63,8 +63,9 @@
 </div>
 
 <script is:inline>
+    // Astro View Transitions Safe Global Cart Script
     document.addEventListener('astro:page-load', () => {
-        // 1. Set minimum date selection to 48 hours out from today
+        // 1. Minimum date offset calculator (48 hours out)
         const dateInput = document.getElementById('cartDeliveryDate');
         if (dateInput) {
             const today = new Date();
@@ -75,7 +76,18 @@
             dateInput.min = `${yyyy}-${mm}-${dd}`;
         }
 
-        // 2. DOM Elements Selection
+        // Toggle UI elements cleanly
+        document.getElementById('toggleDeliveryDate')?.addEventListener('click', function() {
+            document.getElementById('deliveryDateSection')?.classList.toggle('hidden');
+            this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
+        });
+
+        document.getElementById('toggleGiftMessage')?.addEventListener('click', function() {
+            document.getElementById('giftMessageSection')?.classList.toggle('hidden');
+            this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
+        });
+
+        // 2. Select Elements
         const cartBtn = document.getElementById('cartBtn');
         const closeCartBtn = document.getElementById('closeCartBtn');
         const cartOverlay = document.getElementById('cartOverlay');
@@ -89,7 +101,7 @@
         const deliveryProgressText = document.getElementById('deliveryProgressText');
         const deliveryProgressBar = document.getElementById('deliveryProgressBar');
 
-        // Drawer Animations & Scroll Lock
+        // Drawer Animations & Scroll Control
         const openCart = () => {
             if (!cartOverlay || !cartSidebar) return;
             cartOverlay.classList.remove('hidden');
@@ -106,19 +118,15 @@
             document.body.style.overflow = '';
         };
 
+        // Standard Button Actions
         cartBtn?.addEventListener('click', openCart);
         closeCartBtn?.addEventListener('click', closeCart);
         cartOverlay?.addEventListener('click', closeCart);
 
-        // 3. Basket State Syncing
-        let cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-
-        const saveCart = () => {
-            localStorage.setItem('sb_cart', JSON.stringify(cart));
-            renderCart();
-        };
-
+        // 3. Basket Rendering
         const renderCart = () => {
+            // Fetch dynamically on-demand inside function to avoid stale closures across navigated pages
+            const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             if (!cartItemsContainer) return;
 
             if (cart.length === 0) {
@@ -166,14 +174,14 @@
 
             cartItemsContainer.innerHTML = itemsHtml;
 
-            // Updates totals & dynamic badge counter layout
+            // Update subtotal display & badge counter
             if (cartSubtotal) cartSubtotal.innerText = `£${subtotalAmount.toFixed(2)}`;
             if (cartCount) {
                 cartCount.innerText = totalItems;
                 cartCount.classList.remove('hidden');
             }
 
-            // Free Delivery Eligibility calculation threshold (£60)
+            // Local free delivery eligibility counter threshold calculation (£60)
             if (deliveryProgressContainer && deliveryProgressText && deliveryProgressBar) {
                 deliveryProgressContainer.classList.remove('hidden');
                 const threshold = 60.00;
@@ -189,79 +197,88 @@
             }
         };
 
-        // 4. Global Event Delegation to Intercept Card/Product Interactivity
-        document.body.addEventListener('click', (e) => {
-            const target = e.target;
+        // 4. Double Event Listener Safeguard (Avoid compounding page navigation handlers)
+        if (!window.cartListenersInitialized) {
+            document.body.addEventListener('click', (e) => {
+                const target = e.target;
+                const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
 
-            // Add To Cart Triggers
-            if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
-                const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
-                const id = btn.dataset.id;
-                const title = btn.dataset.title;
-                const price = btn.dataset.price;
-                const image = btn.dataset.image;
+                // Intercept item additions
+                if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
+                    const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
+                    const id = btn.dataset.id;
+                    const title = btn.dataset.title;
+                    const price = btn.dataset.price;
+                    const image = btn.dataset.image;
 
-                if (!id) return;
+                    if (!id) return;
 
-                const itemMatch = cart.find(item => item.id === id);
-                if (itemMatch) {
-                    itemMatch.quantity += 1;
-                } else {
-                    cart.push({ id, title, price, image, quantity: 1 });
-                }
-
-                saveCart();
-                openCart();
-                return;
-            }
-
-            // Increase Drawer Items
-            if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
-                const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
-                const id = btn.dataset.id;
-                const item = cart.find(i => i.id === id);
-                if (item) {
-                    item.quantity += 1;
-                    saveCart();
-                }
-                return;
-            }
-
-            // Decrease Drawer Items
-            if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
-                const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
-                const id = btn.dataset.id;
-                const matchIndex = cart.findIndex(i => i.id === id);
-                if (matchIndex > -1) {
-                    if (cart[matchIndex].quantity > 1) {
-                        cart[matchIndex].quantity -= 1;
+                    const itemMatch = cart.find(item => item.id === id);
+                    if (itemMatch) {
+                        itemMatch.quantity += 1;
                     } else {
-                        cart.splice(matchIndex, 1);
+                        cart.push({ id, title, price, image, quantity: 1 });
                     }
-                    saveCart();
+
+                    localStorage.setItem('sb_cart', JSON.stringify(cart));
+                    renderCart();
+                    openCart();
+                    return;
                 }
-                return;
-            }
 
-            // Trash Trigger
-            if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
-                const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
-                const id = btn.dataset.id;
-                cart = cart.filter(i => i.id !== id);
-                saveCart();
-                return;
-            }
-        });
+                // Quantity increments
+                if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
+                    const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
+                    const id = btn.dataset.id;
+                    const item = cart.find(i => i.id === id);
+                    if (item) {
+                        item.quantity += 1;
+                        localStorage.setItem('sb_cart', JSON.stringify(cart));
+                        renderCart();
+                    }
+                    return;
+                }
 
-        // 5. Shopify Permalinks Redirection with Notes & Attributes Handling
+                // Quantity decrements
+                if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
+                    const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
+                    const id = btn.dataset.id;
+                    const matchIndex = cart.findIndex(i => i.id === id);
+                    if (matchIndex > -1) {
+                        if (cart[matchIndex].quantity > 1) {
+                            cart[matchIndex].quantity -= 1;
+                        } else {
+                            cart.splice(matchIndex, 1);
+                        }
+                        localStorage.setItem('sb_cart', JSON.stringify(cart));
+                        renderCart();
+                    }
+                    return;
+                }
+
+                // Trash button deletions
+                if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
+                    const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
+                    const id = btn.dataset.id;
+                    const updatedCart = cart.filter(i => i.id !== id);
+                    localStorage.setItem('sb_cart', JSON.stringify(updatedCart));
+                    renderCart();
+                    return;
+                }
+            });
+
+            window.cartListenersInitialized = true;
+        }
+
+        // 5. Shopify checkout redirection logic
         checkoutBtn?.addEventListener('click', () => {
+            const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             if (cart.length === 0) return;
 
             const shopifyDomain = 'sb-floristry.myshopify.com';
             
             const lines = cart.map(item => {
                 let numericId = item.id;
-                // Parse standard numeric ID if variant target is base64 encoded string
                 if (numericId.includes('gid://shopify/ProductVariant/')) {
                     numericId = numericId.split('/').pop();
                 } else {
@@ -295,7 +312,7 @@
             window.location.href = checkoutUrl;
         });
 
-        // Bootstrap on load
+        // Initialize state on page load
         renderCart();
     });
 </script>
