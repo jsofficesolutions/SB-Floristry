@@ -51,7 +51,8 @@ export async function POST({ request, locals }) {
             metadata: {
               frequency: frequency,
               reason: reason,
-              delivery_address: address
+              delivery_address: address,
+              plan_tier: planTier // Stamped to easily fetch in the webhook
             }
           }
         }
