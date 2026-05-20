@@ -66,6 +66,12 @@ export async function POST({ request, locals }) {
 
     // 3. Create Flow (The Hosted UI)
     const billingRequestId = brData.billing_requests.id;
+    
+    // Safely append the name and plan to the URL so the success page can read them instantly
+    const successUrl = new URL(`${new URL(request.url).origin}/success`);
+    successUrl.searchParams.set('name', firstName);
+    successUrl.searchParams.set('plan', plan.description);
+
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -75,7 +81,7 @@ export async function POST({ request, locals }) {
       },
       body: JSON.stringify({
         billing_request_flows: {
-          redirect_uri: `${new URL(request.url).origin}/success?billing_request_id=${billingRequestId}`,
+          redirect_uri: successUrl.toString(),
           exit_uri: `${new URL(request.url).origin}/subscriptions`,
           links: { billing_request: billingRequestId },
           prefilled_customer: {
