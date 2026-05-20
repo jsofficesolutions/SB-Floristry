@@ -37,8 +37,8 @@ export async function POST({ request, locals }) {
     console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
 
     // 2. Create Billing Request (The Intent)
-    // FIX: Moved metadata from nested mandate_request to the root of the billing_requests resource.
-    // GoCardless API rejects metadata inside mandate_request with a 422 Unprocessable Entity error.
+    // FIX: GoCardless has a strict 3-key maximum limit for metadata. 
+    // We must place it inside mandate_request and combine reason/address into a single string.
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -54,13 +54,12 @@ export async function POST({ request, locals }) {
             description: plan.description
           },
           mandate_request: { 
-            scheme: 'bacs'
-          },
-          metadata: {
-            frequency: frequency || "Weekly",
-            reason: reason || "Treat",
-            delivery_address: address || "No address provided",
-            plan_tier: planTier
+            scheme: 'bacs',
+            metadata: {
+              plan_tier: planTier,
+              frequency: frequency || "Weekly",
+              order_notes: `Reason: ${reason || "Treat"} | Addr: ${address || "No address"}`.substring(0, 500)
+            }
           }
         }
       })
@@ -69,7 +68,7 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}`);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}. Details: ${JSON.stringify(brData.error?.errors)}`);
     }
 
     // 3. Create Flow (The Hosted UI)
@@ -80,6 +79,24 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
+    // Conditionally build customer payload to prevent GoCardless throwing 422 for empty strings
+    const prefilled_customer = {};
+    if (firstName) prefilled_customer.given_name = firstName;
+    if (lastName) prefilled_customer.family_name = lastName;
+    if (email) prefilled_customer.email = email;
+
+    const flowPayload = {
+      billing_request_flows: {
+        redirect_uri: successUrl.toString(),
+        exit_uri: `${new URL(request.url).origin}/subscriptions`,
+        links: { billing_request: billingRequestId }
+      }
+    };
+
+    if (Object.keys(prefilled_customer).length > 0) {
+      flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
+    }
+
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -87,18 +104,7 @@ export async function POST({ request, locals }) {
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        billing_request_flows: {
-          redirect_uri: successUrl.toString(),
-          exit_uri: `${new URL(request.url).origin}/subscriptions`,
-          links: { billing_request: billingRequestId },
-          prefilled_customer: {
-            given_name: firstName || '',
-            family_name: lastName || '',
-            email: email || ''
-          }
-        }
-      })
+      body: JSON.stringify(flowPayload)
     });
 
     const flowData = await flowResponse.json();
