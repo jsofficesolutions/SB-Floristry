@@ -4,7 +4,6 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Floral Subscriptions | SB Floristry" description="Subscribe to regular luxury flower deliveries in Essex. Set up easily via Direct Debit.">
   
-  <!-- Hero Section -->
   <section class="relative min-h-[80vh] flex items-center justify-center bg-sb-black text-sb-cream overflow-hidden">
     <div class="absolute inset-0 z-0">
       <img src="/images/collection-signature.jpg" alt="Luxury Subscription Flowers" class="w-full h-full object-cover opacity-60 hero-zoom" />
@@ -19,11 +18,35 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Editorial Tier Section -->
   <section class="py-32 bg-sb-cream text-sb-black">
     <div class="container mx-auto px-6 max-w-6xl">
+
+      <div class="flex flex-col md:flex-row items-center gap-16 mb-32 reveal border border-dashed border-sb-gold/40 p-8 md:p-12 bg-white/40 backdrop-blur-sm rounded-sm">
+        <div class="w-full md:w-1/2">
+          <div class="aspect-[4/5] bg-sb-black/5 rounded-sm flex flex-col items-center justify-center border border-gray-200/50 p-6 text-center">
+            <i class="fas fa-flask text-5xl text-sb-gold/60 mb-4 animate-pulse"></i>
+            <p class="font-serif text-xl text-sb-black tracking-wide">Sandbox QA Suite</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Direct Debit Testing</p>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 md:pl-12">
+          <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">QA Vetting Only</span>
+          <h2 class="font-serif text-4xl md:text-5xl mb-4 text-sb-black">Developer Test Tier</h2>
+          <p class="text-xl text-gray-500 mb-6 font-light">£0.01 <span class="text-sm uppercase tracking-wider">/ checkout sandbox trigger</span></p>
+          <p class="text-gray-600 font-light leading-relaxed mb-8">
+            A safe 1p micro-payment subscription designed exclusively to run end-to-end integration tests, verify secure webhook data handshakes, and check downstream automated Shopify order execution.
+          </p>
+          <ul class="text-sm text-gray-500 space-y-4 mb-10 font-light border-l border-sb-gold/30 pl-6">
+            <li>1p direct debit subscription simulation</li>
+            <li>Fires live webhook event models on completion</li>
+            <li>Safely verifies end-to-end architecture state</li>
+          </ul>
+          <button data-plan="test" class="subscribe-btn inline-block bg-sb-black border border-sb-black text-sb-gold px-10 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 shadow-xl">
+            Trigger 1p Test Flow
+          </button>
+        </div>
+      </div>
       
-      <!-- The Classic -->
       <div class="flex flex-col md:flex-row items-center gap-16 mb-32 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -48,7 +71,6 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
-      <!-- The Signature -->
       <div class="flex flex-col md:flex-row-reverse items-center gap-16 mb-32 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -74,7 +96,6 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
-      <!-- The Luxe -->
       <div class="flex flex-col md:flex-row items-center gap-16 reveal">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/5] overflow-hidden relative group">
@@ -102,7 +123,6 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Delivery Details Modal -->
   <div id="subModal" class="fixed inset-0 bg-black/80 z-[100] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
     <div class="bg-sb-cream w-full max-w-2xl p-8 md:p-12 relative transform scale-95 transition-transform duration-300 shadow-2xl overflow-y-auto max-h-[90vh] hide-scrollbar" id="subModalContent">
       <button id="closeSubModal" class="absolute top-6 right-6 text-gray-400 hover:text-sb-gold transition-colors focus:outline-none">
@@ -179,7 +199,6 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </div>
 
-  <!-- GoCardless Trust Banner -->
   <section class="py-12 bg-white border-y border-gray-100">
     <div class="container mx-auto px-6 text-center">
       <p class="text-[10px] uppercase tracking-luxury text-gray-400 mb-4 font-bold">Secure Payments Powered By</p>
@@ -209,7 +228,7 @@ import Layout from '../layouts/Layout.astro';
   const submitFormBtn = document.getElementById('submitFormBtn');
 
   function openModal(plan) {
-    if (!subModal) return;
+    if (!subModal || !planTierInput || !modalPlanName) return;
     planTierInput.value = plan;
     modalPlanName.innerText = `The ${plan.charAt(0).toUpperCase() + plan.slice(1)} Subscription`;
     
@@ -230,7 +249,7 @@ import Layout from '../layouts/Layout.astro';
   document.querySelectorAll('.subscribe-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const plan = e.currentTarget.getAttribute('data-plan');
-      openModal(plan);
+      if (plan) openModal(plan);
     });
   });
 
@@ -238,12 +257,13 @@ import Layout from '../layouts/Layout.astro';
 
   subscriptionForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!submitFormBtn) return;
     
     const originalText = submitFormBtn.innerHTML;
     submitFormBtn.innerHTML = 'Securely Initializing...';
     submitFormBtn.disabled = true;
     
-    const formData = new FormData(subscriptionForm);
+    const formData = new FormData(subscriptionForm as HTMLFormElement);
     const dataObj = Object.fromEntries(formData.entries());
     
     try {
@@ -262,6 +282,7 @@ import Layout from '../layouts/Layout.astro';
       }
     } catch (error) {
       console.error('Payment initialization failed:', error);
+      
       submitFormBtn.innerHTML = 'Error - Please Try Again';
       submitFormBtn.disabled = false;
       setTimeout(() => {
