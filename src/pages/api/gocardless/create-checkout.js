@@ -1,83 +1,93 @@
 export const prerender = false;
 
-const PLAN_CONFIG = {
-  classic: { amount: 4000, name: "The Classic Subscription" },
-  signature: { amount: 6500, name: "The Signature Subscription" },
-  luxe: { amount: 10000, name: "The Luxe Subscription" }
+// Define your pricing map
+const PLAN_PRICES = {
+  classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
+  signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
+  luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
 };
 
-export const POST = async ({ request, locals }) => {
+export async function POST({ request, locals }) {
+  // Access environment variables with fallbacks
+  const env = locals.runtime?.env || process.env;
+  const token = env.GOCARDLESS_ACCESS_TOKEN;
+  
+  // 1. Validate environment
+  if (!token) {
+    console.error("CRITICAL ERROR: GOCARDLESS_ACCESS_TOKEN is missing!");
+    return new Response(JSON.stringify({ error: "Configuration Error" }), { status: 500 });
+  }
+
   try {
-    const data = await request.json();
-    const { planTier, firstName, lastName, email, address, frequency, reason } = data;
-    const selectedPlan = PLAN_CONFIG[planTier];
+    const body = await request.json();
+    const { planTier } = body;
+    
+    if (!planTier || !PLAN_PRICES[planTier]) {
+      return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
+    }
 
-    const gcToken = import.meta.env.GOCARDLESS_ACCESS_TOKEN || locals?.runtime?.env?.GOCARDLESS_ACCESS_TOKEN;
-    const gcEnv = import.meta.env.PUBLIC_GC_ENVIRONMENT || locals?.runtime?.env?.PUBLIC_GC_ENVIRONMENT || 'sandbox';
-    const apiBase = gcEnv === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
+    const plan = PLAN_PRICES[planTier];
+    const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' 
+      ? 'https://api.gocardless.com' 
+      : 'https://api-sandbox.gocardless.com';
 
-    // 1. Create the CUSTOMER first to lock in the name
-    const custRes = await fetch(`${apiBase}/customers`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${gcToken}`,
-        'GoCardless-Version': '2015-07-06',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        customers: { given_name: firstName, family_name: lastName, email: email }
-      })
-    });
-    const custData = await custRes.json();
-    const customerId = custData.customers.id;
-
-    // 2. Create the Billing Request (linked to the new Customer ID)
+    // 2. Create Billing Request (The Intent)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${gcToken}`,
+        'Authorization': `Bearer ${token}`,
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         billing_requests: {
-          links: { customer: customerId }, // Link it here!
           payment_request: {
-            description: `SB Floristry - ${selectedPlan.name}`,
-            amount: selectedPlan.amount,
-            currency: 'GBP'
+            amount: plan.amount,
+            currency: 'GBP',
+            description: plan.description
           },
-          mandate_request: {
-            scheme: 'bacs',
-            metadata: { frequency, reason, delivery_address: address.substring(0, 450) }
-          }
+          mandate_request: { scheme: 'bacs' }
         }
       })
     });
-    const brData = await brResponse.json();
-    const billingRequestId = brData.billing_requests.id;
 
-    // 3. Generate Checkout Flow
+    const brData = await brResponse.json();
+    if (!brResponse.ok) {
+      console.error("GoCardless Billing Request Error:", brData);
+      throw new Error("Failed to create billing request");
+    }
+
+    // 3. Create Flow (The Hosted UI)
+    const billingRequestId = brData.billing_requests.id;
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${gcToken}`,
+        'Authorization': `Bearer ${token}`,
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         billing_request_flows: {
-          redirect_uri: 'https://www.sbfloristry.co.uk/success',
-          exit_uri: 'https://www.sbfloristry.co.uk/subscriptions',
+          redirect_uri: `${new URL(request.url).origin}/success`,
+          exit_uri: `${new URL(request.url).origin}/subscriptions`,
           links: { billing_request: billingRequestId }
         }
       })
     });
+
     const flowData = await flowResponse.json();
+    if (!flowResponse.ok) {
+      console.error("GoCardless Flow Error:", flowData);
+      throw new Error("Failed to create checkout flow");
+    }
 
-    return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), { status: 200 });
+    return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  } catch (err) {
+    console.error("CRITICAL CATCH ERROR:", err);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
-};
+}
