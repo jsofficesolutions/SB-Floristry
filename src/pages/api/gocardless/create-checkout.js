@@ -20,7 +20,7 @@ export async function POST({ request, locals }) {
 
   try {
     const body = await request.json();
-    const { planTier } = body;
+    const { planTier, firstName, lastName, email, address, frequency, reason } = body;
     
     if (!planTier || !PLAN_PRICES[planTier]) {
       return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
@@ -46,7 +46,14 @@ export async function POST({ request, locals }) {
             currency: 'GBP',
             description: plan.description
           },
-          mandate_request: { scheme: 'bacs' }
+          mandate_request: { 
+            scheme: 'bacs',
+            metadata: {
+              frequency: frequency,
+              reason: reason,
+              delivery_address: address
+            }
+          }
         }
       })
     });
@@ -68,9 +75,14 @@ export async function POST({ request, locals }) {
       },
       body: JSON.stringify({
         billing_request_flows: {
-          redirect_uri: `${new URL(request.url).origin}/success`,
+          redirect_uri: `${new URL(request.url).origin}/success?billing_request_id=${billingRequestId}`,
           exit_uri: `${new URL(request.url).origin}/subscriptions`,
-          links: { billing_request: billingRequestId }
+          links: { billing_request: billingRequestId },
+          prefilled_customer: {
+            given_name: firstName,
+            family_name: lastName,
+            email: email
+          }
         }
       })
     });
