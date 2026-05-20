@@ -74,10 +74,6 @@ export async function POST({ request, locals }) {
           }
 
           const br = brData.billing_requests;
-          const meta = br.metadata || {};
-          console.log("Successfully extracted billing request metadata:", meta);
-
-          const planTier = meta.plan_tier || "test";
           const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
           const customerId = br.links?.customer;
 
@@ -85,6 +81,21 @@ export async function POST({ request, locals }) {
             console.error(`Mandate ID (${mandateId}) or Customer ID (${customerId}) is missing from the Billing Request links. Skipping.`);
             continue;
           }
+
+          // 1.5 Fetch Mandate to retrieve the 3 custom metadata keys we embedded during checkout
+          const mandateRes = await fetch(`${apiBase}/mandates/${mandateId}`, {
+            headers: {
+              'Authorization': `Bearer ${gcToken}`,
+              'GoCardless-Version': '2015-07-06'
+            }
+          });
+          const mandateData = await mandateRes.json();
+          const meta = mandateData.mandates?.metadata || {};
+          console.log("Successfully extracted mandate metadata:", meta);
+
+          const planTier = meta.plan_tier || "test";
+          const frequency = meta.frequency || "Weekly";
+          const orderNotes = meta.order_notes || "Provided on file";
 
           // 2. Fetch Customer Details from GoCardless to assemble Shopify order payload
           const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
@@ -121,7 +132,7 @@ export async function POST({ request, locals }) {
                   last_name: customer.family_name,
                   email: customer.email
                 },
-                note: `Subscription Details:\nFrequency: ${meta.frequency || "Weekly"}\nReason: ${meta.reason || "Gift/Treat"}\nDelivery Address:\n${meta.delivery_address || "Provided on file"}`,
+                note: `Subscription Details:\nFrequency: ${frequency}\nNotes & Address: ${orderNotes}`,
                 financial_status: "paid"
               }
             })
@@ -135,9 +146,9 @@ export async function POST({ request, locals }) {
           }
 
           // 4. Establish the Automated GoCardless Subscription Schedule
-          const schedule = FREQUENCY_INTERVALS[meta.frequency || "Weekly"];
+          const schedule = FREQUENCY_INTERVALS[frequency];
           if (schedule) {
-            console.log(`Setting up automated subscription schedule for ${fullName} (${meta.frequency || "Weekly"})`);
+            console.log(`Setting up automated subscription schedule for ${fullName} (${frequency})`);
             
             const subRes = await fetch(`${apiBase}/subscriptions`, {
               method: 'POST',
