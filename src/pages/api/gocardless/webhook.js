@@ -16,7 +16,7 @@ const FREQUENCY_INTERVALS = {
 };
 
 export async function POST({ request, locals }) {
-  const env = locals.runtime?.env || process.env;
+  const env = locals.runtime?.env || import.meta.env || process.env || {};
   const gcToken = env.GOCARDLESS_ACCESS_TOKEN;
   const webhookSecret = env.GOCARDLESS_WEBHOOK_SECRET;
   const shopifyToken = env.SHOPIFY_ADMIN_TOKEN;
@@ -59,50 +59,34 @@ export async function POST({ request, locals }) {
             continue;
           }
 
-          // FALLBACK LOGIC: Check if mandate or customer link is directly missing from webhook payload
-          let mandateId = event.links?.mandate_request_mandate || event.links?.mandate;
-          let customerId = event.links?.customer;
-
-          if (!mandateId || !customerId) {
-            console.log(`Missing mandate or customer link directly in event. Querying GoCardless Billing Request API for ${billingRequestId}...`);
-            const brRes = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
-              headers: {
-                'Authorization': `Bearer ${gcToken}`,
-                'GoCardless-Version': '2015-07-06'
-              }
-            });
-            const brData = await brRes.json();
-            if (brRes.ok && brData.billing_requests) {
-              const br = brData.billing_requests;
-              mandateId = mandateId || br.links?.mandate || br.links?.mandate_request_mandate;
-              customerId = customerId || br.links?.customer;
-              console.log(`Successfully fetched links from API. Mandate: ${mandateId}, Customer: ${customerId}`);
-            } else {
-              console.error(`Failed to retrieve Billing Request details from API: ${JSON.stringify(brData)}`);
-            }
-          }
-
-          if (!mandateId || !customerId) {
-            console.error("Mandate ID or Customer ID could not be retrieved. Skipping event execution.");
-            continue;
-          }
-
-          // 2. Fetch Mandate details to extract checkout metadata configuration
-          const mandateRes = await fetch(`${apiBase}/mandates/${mandateId}`, {
+          // Fetch the parent Billing Request to reliably pull root metadata and links
+          console.log(`Querying GoCardless Billing Request API for ${billingRequestId}...`);
+          const brRes = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
             headers: {
               'Authorization': `Bearer ${gcToken}`,
               'GoCardless-Version': '2015-07-06'
             }
           });
-          const mandateData = await mandateRes.json();
-          if (!mandateRes.ok) throw new Error(`GoCardless Mandate Fetch Error: ${JSON.stringify(mandateData)}`);
+          const brData = await brRes.json();
+          if (!brRes.ok) {
+            console.error(`Failed to retrieve Billing Request details from API: ${JSON.stringify(brData)}`);
+            continue;
+          }
 
-          const meta = mandateData.mandates.metadata || {};
-          console.log("Successfully extracted mandate metadata:", meta);
+          const br = brData.billing_requests;
+          const meta = br.metadata || {};
+          console.log("Successfully extracted billing request metadata:", meta);
 
           const planTier = meta.plan_tier || "test";
+          const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
+          const customerId = br.links?.customer;
 
-          // 3. Fetch Customer Details from GoCardless to assemble Shopify order payload
+          if (!mandateId || !customerId) {
+            console.error(`Mandate ID (${mandateId}) or Customer ID (${customerId}) is missing from the Billing Request links. Skipping.`);
+            continue;
+          }
+
+          // 2. Fetch Customer Details from GoCardless to assemble Shopify order payload
           const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
             headers: {
               'Authorization': `Bearer ${gcToken}`,
@@ -115,7 +99,7 @@ export async function POST({ request, locals }) {
           const customer = customerData.customers;
           const fullName = `${customer.given_name} ${customer.family_name}`;
 
-          // 4. Fire the order injection into headless Shopify Admin API
+          // 3. Fire the order injection into headless Shopify Admin API
           const planInfo = PLAN_PRICES[planTier] || { amount: 1, description: "SB Floristry Subscription" };
           
           console.log(`Injecting paid subscription order into Shopify for ${customer.email}...`);
@@ -150,7 +134,7 @@ export async function POST({ request, locals }) {
             console.log(`Shopify Order created successfully: ${shopifyData.order.id}`);
           }
 
-          // 5. Establish the Automated GoCardless Subscription Schedule
+          // 4. Establish the Automated GoCardless Subscription Schedule
           const schedule = FREQUENCY_INTERVALS[meta.frequency || "Weekly"];
           if (schedule) {
             console.log(`Setting up automated subscription schedule for ${fullName} (${meta.frequency || "Weekly"})`);
