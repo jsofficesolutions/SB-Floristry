@@ -1,7 +1,8 @@
 export const prerender = false;
 
-// Define your pricing map
+// Define pricing structures for subscriptions (including QA developer sandbox)
 const PLAN_PRICES = {
+  test: { amount: 1, description: "SB Floristry - Developer Test Tier" }, // 1p Micro-Payment Sandbox
   classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
   signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
   luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
@@ -22,7 +23,9 @@ export async function POST({ request, locals }) {
     const body = await request.json();
     const { planTier, firstName, lastName, email, address, frequency, reason } = body;
     
+    // Check if the plan tier is valid
     if (!planTier || !PLAN_PRICES[planTier]) {
+      console.error(`Invalid plan tier selected: ${planTier}`);
       return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
     }
 
@@ -30,6 +33,8 @@ export async function POST({ request, locals }) {
     const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' 
       ? 'https://api.gocardless.com' 
       : 'https://api-sandbox.gocardless.com';
+
+    console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
 
     // 2. Create Billing Request (The Intent)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
@@ -52,7 +57,7 @@ export async function POST({ request, locals }) {
               frequency: frequency,
               reason: reason,
               delivery_address: address,
-              plan_tier: planTier // Stamped to easily fetch in the webhook
+              plan_tier: planTier // Stamped to retrieve in Webhook
             }
           }
         }
@@ -68,7 +73,7 @@ export async function POST({ request, locals }) {
     // 3. Create Flow (The Hosted UI)
     const billingRequestId = brData.billing_requests.id;
     
-    // Safely append the name and plan to the URL so the success page can read them instantly
+    // Safely append the customer name and plan description to the URL for the client success view
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName);
     successUrl.searchParams.set('plan', plan.description);
@@ -107,6 +112,6 @@ export async function POST({ request, locals }) {
 
   } catch (err) {
     console.error("CRITICAL CATCH ERROR:", err);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message || "Internal Server Error" }), { status: 500 });
   }
 }
