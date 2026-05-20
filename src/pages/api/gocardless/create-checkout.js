@@ -9,14 +9,14 @@ const PLAN_PRICES = {
 };
 
 export async function POST({ request, locals }) {
-  // Access environment variables with fallbacks
-  const env = locals.runtime?.env || process.env;
+  // Access environment variables with robust fallbacks
+  const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   
   // 1. Validate environment
   if (!token) {
     console.error("CRITICAL ERROR: GOCARDLESS_ACCESS_TOKEN is missing!");
-    return new Response(JSON.stringify({ error: "Configuration Error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Configuration Error: GOCARDLESS_ACCESS_TOKEN is missing." }), { status: 500 });
   }
 
   try {
@@ -37,6 +37,8 @@ export async function POST({ request, locals }) {
     console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
 
     // 2. Create Billing Request (The Intent)
+    // FIX: Moved metadata from nested mandate_request to the root of the billing_requests resource.
+    // GoCardless API rejects metadata inside mandate_request with a 422 Unprocessable Entity error.
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -52,13 +54,13 @@ export async function POST({ request, locals }) {
             description: plan.description
           },
           mandate_request: { 
-            scheme: 'bacs',
-            metadata: {
-              frequency: frequency,
-              reason: reason,
-              delivery_address: address,
-              plan_tier: planTier // Stamped to retrieve in Webhook
-            }
+            scheme: 'bacs'
+          },
+          metadata: {
+            frequency: frequency || "Weekly",
+            reason: reason || "Treat",
+            delivery_address: address || "No address provided",
+            plan_tier: planTier
           }
         }
       })
@@ -66,8 +68,8 @@ export async function POST({ request, locals }) {
 
     const brData = await brResponse.json();
     if (!brResponse.ok) {
-      console.error("GoCardless Billing Request Error:", brData);
-      throw new Error("Failed to create billing request");
+      console.error("GoCardless Billing Request Error payload:", brData);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}`);
     }
 
     // 3. Create Flow (The Hosted UI)
@@ -75,7 +77,7 @@ export async function POST({ request, locals }) {
     
     // Safely append the customer name and plan description to the URL for the client success view
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
-    successUrl.searchParams.set('name', firstName);
+    successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
@@ -91,9 +93,9 @@ export async function POST({ request, locals }) {
           exit_uri: `${new URL(request.url).origin}/subscriptions`,
           links: { billing_request: billingRequestId },
           prefilled_customer: {
-            given_name: firstName,
-            family_name: lastName,
-            email: email
+            given_name: firstName || '',
+            family_name: lastName || '',
+            email: email || ''
           }
         }
       })
@@ -102,7 +104,7 @@ export async function POST({ request, locals }) {
     const flowData = await flowResponse.json();
     if (!flowResponse.ok) {
       console.error("GoCardless Flow Error:", flowData);
-      throw new Error("Failed to create checkout flow");
+      throw new Error(`Failed to create checkout flow: ${flowData.error?.message || 'API Flow Error'}`);
     }
 
     return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), {
