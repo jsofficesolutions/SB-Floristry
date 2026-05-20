@@ -2,7 +2,7 @@ export const prerender = false;
 
 // Define pricing structures for subscriptions (including QA developer sandbox)
 const PLAN_PRICES = {
-  test: { amount: 1, description: "SB Floristry - Developer Test Tier" }, // 1p Micro-Payment Sandbox
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // FIX: Changed from 1 to 100 (£1.00 minimum for GoCardless)
   classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
   signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
   luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
@@ -37,8 +37,6 @@ export async function POST({ request, locals }) {
     console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
 
     // 2. Create Billing Request (The Intent)
-    // FIX: GoCardless has a strict 3-key maximum limit for metadata. 
-    // We must place it inside mandate_request and combine reason/address into a single string.
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
