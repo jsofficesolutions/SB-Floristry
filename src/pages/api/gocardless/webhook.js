@@ -2,7 +2,7 @@ export const prerender = false;
 
 // Define pricing structures for automated subscription generation (including Developer sandbox)
 const PLAN_PRICES = {
-  test: { amount: 1, description: "SB Floristry - Developer Test Tier" },
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // FIX: Synced to 100 (£1.00)
   classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
   signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
   luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
