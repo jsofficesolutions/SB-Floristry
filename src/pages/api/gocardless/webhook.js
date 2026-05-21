@@ -24,9 +24,20 @@ function cleanPhoneForShopify(phone) {
 function parseOrderNotes(notes) {
   const result = { name: "", email: "", phone: "", reason: "Subscription", address: "" };
   if (!notes || typeof notes !== 'string') return result;
+
   const parts = notes.split('|').map(p => p.trim());
   parts.forEach(part => {
-    if (part.startsWith("Name:")) result.name = part.replace("Name:", "").trim();
+    if (part.startsWith("Name:")) {
+      const rawName = part.replace("Name:", "").trim();
+      const nameParts = rawName.split(' ').filter(Boolean);
+      if (nameParts.length >= 2) {
+        result.name = rawName;
+      } else if (nameParts.length === 1) {
+        result.name = rawName + " Customer";
+      } else {
+        result.name = "Valued Customer";
+      }
+    }
     else if (part.startsWith("Email:")) result.email = part.replace("Email:", "").trim();
     else if (part.startsWith("Phone:")) result.phone = part.replace("Phone:", "").trim();
     else if (part.startsWith("Reason:")) result.reason = part.replace("Reason:", "").trim();
@@ -44,13 +55,12 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let zip = gcCustomer.postal_code || "";
   let phone = gcCustomer.phone_number || "";
 
-  // If the GoCardless customer is the default sandbox "John Doe", override with metadata
   const isSandboxName = !firstName || firstName.toLowerCase() === 'john' || firstName.toLowerCase() === 'jane' || lastName.toLowerCase() === 'doe';
   const isSandboxEmail = !email || email.toLowerCase().includes('gocardless') || email.toLowerCase().includes('sandbox');
   const isSandboxAddress = !address1 || address1 === "No address" || address1.toLowerCase().includes('gocardless') || address1.toLowerCase().includes('sandbox');
 
   if (isSandboxName && parsedMeta.name) {
-    const nameParts = parsedMeta.name.split(' ');
+    const nameParts = parsedMeta.name.split(' ').filter(Boolean);
     firstName = nameParts[0] || "Valued";
     lastName = nameParts.slice(1).join(' ') || "Customer";
   }
@@ -63,21 +73,8 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   }
   if (!phone && parsedMeta.phone) phone = parsedMeta.phone;
 
-  // --- NEW: SHOPIFY FALLBACKS ---
-  // Shopify strictly requires a last name. If it's still blank, salvage from meta or set a fallback.
-  if (!lastName || lastName.trim() === "") {
-    if (parsedMeta.name) {
-      const nameParts = parsedMeta.name.split(' ');
-      lastName = nameParts.slice(1).join(' ') || "Customer";
-    } else {
-      lastName = "Customer";
-    }
-  }
-
-  // Ensure first name isn't completely blank either
-  if (!firstName || firstName.trim() === "") {
-    firstName = "Valued";
-  }
+  // Final safety – ensure no blank last name sent to Shopify
+  if (!lastName) lastName = "Customer";
 
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
 }
@@ -186,7 +183,7 @@ async function handleWebhookEvents(payload, config) {
           }
         }
 
-        // If still no customer, skip this event (the billing_request.fulfilled handler will catch it later)
+        // If still no customer, skip this event
         if (!customerId) {
           console.error("No customer linked to subscription", subscriptionId);
           continue;
@@ -206,6 +203,9 @@ async function handleWebhookEvents(payload, config) {
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
+
+        // Final safety – ensure no blank last name sent to Shopify
+        if (!resolved.lastName) resolved.lastName = "Customer";
 
         console.log(`Creating initial Shopify order for ${resolved.email} (subscription ${subscriptionId})`);
 
@@ -306,6 +306,8 @@ async function handleWebhookEvents(payload, config) {
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
+
+        if (!resolved.lastName) resolved.lastName = "Customer";
 
         console.log(`Injecting initial order for ${resolved.email}...`);
         
@@ -415,6 +417,8 @@ async function handleWebhookEvents(payload, config) {
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
+
+        if (!resolved.lastName) resolved.lastName = "Customer";
 
         console.log(`Injecting recurring order for ${resolved.email}...`);
         await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
