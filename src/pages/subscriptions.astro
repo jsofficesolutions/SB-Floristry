@@ -1,25 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 ---
 
 <Layout title="Bespoke Fresh Flower Subscriptions | SB Floristry">
+  <Header />
+
   <!-- Hero Section -->
   <section class="relative bg-sb-cream pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       <div class="lg:col-span-6 z-10 text-left">
-        <span class="text-[11px] font-bold tracking-[0.3em] uppercase text-sb-gold block mb-4">An Unrivalled Floral Standard</span>
+        <span class="text-[11px] font-bold tracking-[0.3em] uppercase text-sb-gold block mb-4">Because one is never enough...</span>
         <h1 class="font-serif text-5xl md:text-6xl text-sb-black leading-tight mb-6">
-          Bespoke Flower Subscriptions
+          Subscription Flowers
         </h1>
         <p class="text-gray-600 text-lg mb-8 max-w-lg leading-relaxed font-light">
-          Artfully curated, master-florist-guided seasonal stem boxes delivered to your door. Hand-cut to order and packed in bud to unveil their breathtaking beauty at home.
+          A bunch of joy with every delivery, as often as you like. Arrives fresh in bud, straight from our amazing growers, ready for you to arrange.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <a href="#choose-size" class="bg-sb-black text-white hover:bg-sb-gold hover:text-sb-black px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all duration-300 shadow-xl">
-            Begin Your Subscription
+            Get Started
           </a>
           <p class="text-xs text-gray-500 font-medium tracking-wide pt-2 sm:pt-0">
-            From £45 a box. Fully flexible. Skip or cancel anytime.
+            From £28 a box. Skip or cancel at any time.
           </p>
         </div>
       </div>
@@ -38,33 +42,33 @@ import Layout from '../layouts/Layout.astro';
   <!-- How It Works Section -->
   <section class="bg-white py-24 border-y border-gray-100">
     <div class="max-w-6xl mx-auto px-6 text-center">
-      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">The Art of SB Floristry</span>
+      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Seamless & Flexible</span>
       <h2 class="font-serif text-4xl text-sb-black mb-16">How your flower subscription works...</h2>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Step 1 -->
         <div class="flex flex-col items-center text-center px-4">
           <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">1</div>
-          <h3 class="font-serif text-lg text-sb-black mb-3">Direct From Master Growers</h3>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Your stems are hand-selected at dawn, cut to order, and delivered straight to your home on your preferred schedule.</p>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Delivered to your door</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Get flowers on a set day at a frequency of your choice (weekly, fortnightly, or 3-weekly).</p>
         </div>
         <!-- Step 2 -->
         <div class="flex flex-col items-center text-center px-4">
           <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">2</div>
-          <h3 class="font-serif text-lg text-sb-black mb-3">Complete Calendar Freedom</h3>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Our bespoke digital portal allows you to easily skip deliveries, adjust delivery intervals, or pause for travel.</p>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Manage your calendar</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Completely flexible online system. Pause, skip, or cancel your flower deliveries at any time.</p>
         </div>
         <!-- Step 3 -->
         <div class="flex flex-col items-center text-center px-4">
           <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">3</div>
-          <h3 class="font-serif text-lg text-sb-black mb-3">Arrange Like an Artisan</h3>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Unleash your creative flair with our step-by-step masterclasses and luxury illustrated arranging blueprints.</p>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Arrange like a pro</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Unleash your inner florist using our beautiful, illustrated bespoke flower arranging guides.</p>
         </div>
         <!-- Step 4 -->
         <div class="flex flex-col items-center text-center px-4">
           <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">4</div>
-          <h3 class="font-serif text-lg text-sb-black mb-3">Bud to Breathtaking Bloom</h3>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">By packing your delicate stems in protective bud form, we preserve their energy, ensuring they bloom grandly and last twice as long.</p>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Bud to bloom!</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Our flower subscription deliveries arrive in bud to shield them in transit and guarantee they last for weeks.</p>
         </div>
       </div>
     </div>
@@ -74,33 +78,33 @@ import Layout from '../layouts/Layout.astro';
   <section class="bg-sb-cream py-24">
     <div class="max-w-6xl mx-auto px-6">
       <div class="text-center max-w-2xl mx-auto mb-16">
-        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">The SB Subscription Circle</span>
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Subscriber Perks</span>
         <h2 class="font-serif text-4xl text-sb-black">Why you’ll love our fresh flower subscriptions</h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
-          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-gem"></i></div>
-          <h4 class="font-serif text-lg text-sb-black mb-2">Exquisite & Rare Stems</h4>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Access coveted, premium focal varieties that are rarely found in standard flower delivery boxes.</p>
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-leaf"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Super long-lasting</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Arrive tightly in bud and expand to full magnificent bloom in your vase for up to 2 glorious weeks.</p>
         </div>
 
         <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
-          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-crown"></i></div>
-          <h4 class="font-serif text-lg text-sb-black mb-2">Uncompromising Freshness</h4>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Harvested-to-order from specialist growers, completely bypassing wholesale storage and floristry cold-chains.</p>
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-calendar-alt"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Always seasonal</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Never repetitive. We work directly with master growers to follow the natural seasons step-by-step.</p>
         </div>
 
         <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
           <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-sliders-h"></i></div>
-          <h4 class="font-serif text-lg text-sb-black mb-2">Sophisticated Flexibility</h4>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Choose from Weekly, Fortnightly, or Three-Weekly intervals. Pause or skip instantly with no locked contracts.</p>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Flex appeal</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Delivered as often as you request. Pause, skip, or cancel through your simple custom portal.</p>
         </div>
 
         <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
           <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-percentage"></i></div>
-          <h4 class="font-serif text-lg text-sb-black mb-2">Preferred Collector Rates</h4>
-          <p class="text-xs text-gray-500 leading-relaxed font-light">Subscribers receive exclusive access pricing, saving up to 20% compared to purchasing single bespoke collections.</p>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Subscribe & Save</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Enjoy preferred access pricing, saving up to 18% compared to single arrangements.</p>
         </div>
       </div>
     </div>
@@ -110,28 +114,28 @@ import Layout from '../layouts/Layout.astro';
   <section class="bg-white py-24 border-b border-gray-100">
     <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       <div class="lg:col-span-5">
-        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Unboxing Pure Luxury</span>
-        <h2 class="font-serif text-4xl text-sb-black mb-6">What's inside your curated subscription box?</h2>
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Unboxing Joy</span>
+        <h2 class="font-serif text-4xl text-sb-black mb-6">What's in your flower subscription box?</h2>
         <ul class="space-y-6">
           <li class="flex gap-4">
             <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
             <div>
-              <h4 class="font-serif text-base text-sb-black font-semibold">Prestige, hand-graded seasonal stems</h4>
-              <p class="text-xs text-gray-500 font-light mt-1">Stems are curated by color story, form, and height, then individually wrapped in breathable, recyclable protection.</p>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Perfect seasonal selections</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Stems are carefully curated by color, height, and flower variety, packed from farm-to-door without delays.</p>
             </div>
           </li>
           <li class="flex gap-4">
             <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
             <div>
-              <h4 class="font-serif text-base text-sb-black font-semibold">Fine Art illustrated arranging blueprints</h4>
-              <p class="text-xs text-gray-500 font-light mt-1">Our masterclass guides walk you through visual alignment, geometric structure, and professional stem-tapering.</p>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Illustrated arranging guides</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Our step-by-step maps and guides make it simple to display your flowers with florist-level balance.</p>
             </div>
           </li>
           <li class="flex gap-4">
             <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
             <div>
-              <h4 class="font-serif text-base text-sb-black font-semibold">Artisanal flower nutrition formula</h4>
-              <p class="text-xs text-gray-500 font-light mt-1">Our signature recipe provides complete macronutrient support to help fragile petals reach full, vibrant size.</p>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Super special flower food</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Our custom formulated nutritional food gives your arrangement the extra vitality boost it needs.</p>
             </div>
           </li>
         </ul>
@@ -147,9 +151,9 @@ import Layout from '../layouts/Layout.astro';
   <!-- Choose Size & Sign Up Section -->
   <section id="choose-size" class="bg-sb-cream py-24 scroll-mt-20">
     <div class="max-w-6xl mx-auto px-6 text-center">
-      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Bespoke Options</span>
-      <h2 class="font-serif text-4xl text-sb-black mb-6">Select your subscription scale</h2>
-      <p class="text-gray-500 max-w-xl mx-auto mb-16 text-sm font-light">Each scale delivers a fresh, uniquely custom layout of stems every single time. Adjust, skip, or terminate your service with total ease.</p>
+      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Choose Your Size</span>
+      <h2 class="font-serif text-4xl text-sb-black mb-6">Pick from our premium sizes</h2>
+      <p class="text-gray-500 max-w-xl mx-auto mb-16 text-sm font-light">All options are completely customizable. Skip a box, modify your delivery interval, or close your account anytime.</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
         <!-- Developer Sandbox Test Tier -->
@@ -162,7 +166,7 @@ import Layout from '../layouts/Layout.astro';
             <p class="text-gray-400 text-xs uppercase tracking-widest font-bold mb-4">£1.00 <span class="text-[10px] text-gray-300 font-normal">/ delivery</span></p>
             <p class="text-xs text-gray-500 leading-relaxed font-light mb-8">Used to safely execute a complete production or sandbox direct debit test with your bank.</p>
             <div class="border-t border-gray-100 pt-6 space-y-3">
-              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Perfect for QA & Live Tests</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Ideal for Sandbox & Live Tests</div>
               <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Verifies Shopify integration</div>
             </div>
           </div>
@@ -171,43 +175,43 @@ import Layout from '../layouts/Layout.astro';
           </button>
         </div>
 
-        <!-- Signature Classic Box -->
+        <!-- Classic Box -->
         <div class="bg-white border border-gray-200 p-8 flex flex-col justify-between text-left shadow-sm hover:shadow-md transition-shadow">
           <div>
             <div class="flex justify-between items-start mb-4">
-              <h3 class="font-serif text-2xl text-sb-black font-light">The Signature Classic</h3>
-              <span class="text-[9px] uppercase tracking-wider font-bold text-sb-gold bg-sb-cream px-2.5 py-1 rounded-full">Connoisseur Choice</span>
+              <h3 class="font-serif text-2xl text-sb-black font-light">Classic</h3>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-sb-gold bg-sb-cream px-2.5 py-1 rounded-full">Popular Choice</span>
             </div>
-            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£45.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
-            <p class="text-xs text-gray-500 leading-relaxed font-light mb-8">A curated select of premium seasonal stems. Designed to elevate dining tables, console entries, or private study rooms.</p>
+            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£28.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
+            <p class="text-xs text-gray-500 leading-relaxed font-light mb-8">Perfect for dynamic home styling, dining tables, or a luxurious coffee table centerpiece.</p>
             <div class="border-t border-gray-100 pt-6 space-y-3">
-              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> 18-22 premier-grade seasonal stems</div>
-              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Features high-end focal blooms and unique accents</div>
-              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Formulated artisan stem nutrition packs</div>
-              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Luxury illustrated design maps</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> 15-18 unbelievably seasonal stems</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> 5-7 different seasonal varieties</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Custom formulated flower food</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Beautiful illustrated styling map</div>
             </div>
           </div>
           <button data-plan="classic" class="subscribe-btn w-full bg-sb-black text-white hover:bg-sb-gold hover:text-sb-black transition-colors py-3.5 uppercase tracking-widest text-xs font-bold mt-8">
-            Select Signature Classic
+            Select Classic
           </button>
         </div>
 
-        <!-- Grand Showstopper Box -->
+        <!-- Showstopper Box -->
         <div class="bg-sb-black text-white p-8 flex flex-col justify-between text-left shadow-xl hover:shadow-2xl transition-shadow relative">
-          <div class="absolute top-4 right-4 bg-sb-gold text-sb-black text-[9px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full">Prestige Scale</div>
+          <div class="absolute top-4 right-4 bg-sb-gold text-sb-black text-[9px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full">Premium Size</div>
           <div>
-            <h3 class="font-serif text-2xl mb-4 mt-2">The Grand Showstopper</h3>
-            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£75.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
-            <p class="text-xs text-gray-400 leading-relaxed font-light mb-8">A lavish, tall-form statement piece. Curated with dramatic stem varieties to establish focus in luxury foyers, broad mantels, or wide entertaining spaces.</p>
+            <h3 class="font-serif text-2xl mb-4 mt-2">Showstopper</h3>
+            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£41.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
+            <p class="text-xs text-gray-400 leading-relaxed font-light mb-8">A massive, breathtaking arrangement designed to stand out in hallways, main foyers, or spacious rooms.</p>
             <div class="border-t border-white/10 pt-6 space-y-3">
-              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> 25-30 grand-scale, rare seasonal stems</div>
-              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Hand-graded majestic focal stems and rich texture foliage</div>
-              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Enhanced luxury nutrient supplies</div>
-              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Professional structural arranging blueprints</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> 18-22 premium seasonal stems</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Hand-selected, grower-direct varieties</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Double portions of special flower food</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> In-depth florist arranging blueprints</div>
             </div>
           </div>
           <button data-plan="showstopper" class="subscribe-btn w-full bg-sb-gold text-sb-black hover:bg-white hover:text-sb-black transition-colors py-3.5 uppercase tracking-widest text-xs font-bold mt-8">
-            Select Grand Showstopper
+            Select Showstopper
           </button>
         </div>
       </div>
@@ -218,25 +222,25 @@ import Layout from '../layouts/Layout.astro';
   <section class="bg-white py-24 border-t border-gray-100">
     <div class="max-w-5xl mx-auto px-6">
       <div class="text-center max-w-2xl mx-auto mb-16">
-        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Our Creative Philosophy</span>
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">The SB Promise</span>
         <h2 class="font-serif text-4xl text-sb-black">Sustainable Luxury, Crafted for You</h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-left leading-relaxed">
         <div class="space-y-6 text-gray-600 font-light text-sm">
           <p>
-            We operate on an uncompromising **grow-to-order** model, eliminating the excessive waste common to mainstream floristry. While standard florists routinely discard up to 40% of their stems due to prolonged storage, our conscious curation path targets under 5% total waste.
+            We pride ourselves on our **grow-to-order** model, which helps us completely bypass conventional floral waste. While standard florist networks waste up to 40% of their cut flowers, we operate on a strictly controlled process resulting in under 5% wastage.
           </p>
           <p>
-            By working with local specialist growers who share our standards of agricultural excellence, we bypass standard cold-storage holding phases completely. Stems are hand-wrapped and routed directly to your home inside our custom, protective, fully ventilated cases.
+            By working with local farming partners, we cut the storage phase. Stems are safely packed and routed directly to your home inside our specialized cardboard boxes. 
           </p>
         </div>
         <div class="space-y-6 text-gray-600 font-light text-sm">
           <p>
-            All shipping routes are optimized for maximum efficiency, and every piece of packaging we deliver is entirely recyclable or home-compostable, preserving the land that nurtures our beautiful varieties.
+            All delivery paths are mapped for carbon offset compatibility, and our entire packaging range is 100% recyclable or home-compostable, preserving the soil that grows our flowers.
           </p>
           <p>
-            Through this standard of luxury and meticulous care, we have built an elite community of flower enthusiasts who trust us to elevate their surroundings.
+            You can verify our standards across thousands of five-star reviews from verified flower enthusiasts who have transitioned to the beauty of hassle-free subscriptions.
           </p>
         </div>
       </div>
@@ -296,7 +300,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Interactive Checkout Modal with Explicit Address Fields -->
+  <!-- Interactive Checkout Modal without Address Fields -->
   <div id="subModal" class="fixed inset-0 bg-black/70 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div id="subModalContent" class="bg-white w-full max-w-lg relative transform scale-95 transition-transform duration-300 my-auto shadow-2xl rounded-sm">
       
@@ -323,31 +327,14 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Email Address</label>
-              <input type="email" name="email" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="jane@example.com">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Contact Mobile Number</label>
-              <input type="tel" name="phone" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="07123 456789">
-            </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Email Address</label>
+            <input type="email" name="email" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="jane@example.com">
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Address Line 1</label>
-            <input type="text" name="address1" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="123 Floral Street">
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Town / City</label>
-              <input type="text" name="city" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="London">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Postcode</label>
-              <input type="text" name="postcode" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="E1 8QA">
-            </div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Contact Mobile Number</label>
+            <input type="tel" name="phone" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="07123 456789">
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -371,15 +358,17 @@ import Layout from '../layouts/Layout.astro';
 
           <div class="pt-4">
             <button type="submit" id="submitFormBtn" class="w-full bg-sb-gold text-sb-black hover:bg-sb-black hover:text-white transition-colors duration-300 py-4 text-[11px] uppercase tracking-[0.25em] font-bold shadow-lg shadow-sb-gold/20 flex items-center justify-center gap-2">
-              Setup Direct Debit <i class="fas fa-lock text-[10px]"></i>
+              Proceed to Payment <i class="fas fa-lock text-[10px]"></i>
             </button>
-            <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to authorize your mandate.</p>
+            <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to complete your setup.</p>
           </div>
         </form>
 
       </div>
     </div>
   </div>
+
+  <Footer />
 </Layout>
 
 <script is:inline>
