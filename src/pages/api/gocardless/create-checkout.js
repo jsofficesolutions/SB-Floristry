@@ -1,10 +1,10 @@
 export const prerender = false;
 
-// Define pricing structures for subscriptions (including Developer testing)
+// Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
-  test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
-  classic: { amount: 2800, description: "SB Floristry - The Classic Subscription" },
-  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" }
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
+  classic: { amount: 2800, description: "SB Floristry - The Classic Subscription" }, // £28.00 per delivery
+  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" } // £41.00 per delivery
 };
 
 export async function POST({ request, locals }) {
@@ -19,7 +19,7 @@ export async function POST({ request, locals }) {
   try {
     const body = await request.json();
     
-    // Parse the separated address and contact fields from your Astro form
+    // Deconstruct the separate form inputs from subscriptions.astro
     const { planTier, firstName, lastName, email, phone, address1, city, postcode, frequency, reason } = body;
     
     if (!planTier || !PLAN_PRICES[planTier]) {
@@ -31,16 +31,16 @@ export async function POST({ request, locals }) {
       ? 'https://api.gocardless.com' 
       : 'https://api-sandbox.gocardless.com';
 
-    // Merge address parts for unified storage
+    // Combine address elements with commas to avoid exceeding GoCardless metadata 3-key limit
     const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
     const fullName = `${firstName} ${lastName}`;
 
-    // Combine all customer registration details into the single order_notes metadata string.
-    // This allows us to easily bypass GoCardless's strict 3-key metadata block limit.
+    // Combine all inputs into a single string under order_notes to respect GoCardless's 3-key limit
     const orderNotes = `Name: ${fullName} | Email: ${email} | Phone: ${phone || ""} | Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`;
 
-    console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
+    console.log(`Step 1: Generating Billing Request with dual-layered metadata for ${email}`);
 
+    // Create Billing Request (Specifying metadata on BOTH root and nested levels to protect against fulfillment deletion)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -50,6 +50,11 @@ export async function POST({ request, locals }) {
       },
       body: JSON.stringify({
         billing_requests: {
+          metadata: {
+            plan_tier: planTier,
+            frequency: frequency || "Weekly",
+            order_notes: orderNotes.substring(0, 500)
+          },
           payment_request: {
             amount: plan.amount,
             currency: 'GBP',
@@ -60,7 +65,7 @@ export async function POST({ request, locals }) {
             metadata: {
               plan_tier: planTier,
               frequency: frequency || "Weekly",
-              order_notes: orderNotes.substring(0, 500) // Stay safely within the 500-char API limit
+              order_notes: orderNotes.substring(0, 500)
             }
           }
         }
@@ -70,16 +75,19 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}.`);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Error'}`);
     }
 
     const billingRequestId = brData.billing_requests.id;
     
+    // Safely configure success callback URL
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // Prefill fields to slide customers through the checkout screens with ease
+    console.log("Step 2: Creating Billing Request Flow with prefill customer details.");
+
+    // Prefill parameters for the hosted checkout page flow UI
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
@@ -101,6 +109,7 @@ export async function POST({ request, locals }) {
       flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
     }
 
+    // Instantiate Billing Request Flow
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
