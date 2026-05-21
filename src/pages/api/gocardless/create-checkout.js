@@ -8,7 +8,6 @@ const PLAN_PRICES = {
 };
 
 export async function POST({ request, locals }) {
-  // Access environment variables with robust fallbacks
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   
@@ -55,10 +54,10 @@ export async function POST({ request, locals }) {
           mandate_request: { 
             scheme: 'bacs',
             metadata: {
-              plan_tier: planTier,
-              frequency: frequency || "Weekly",
-              order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500),
-              customer_phone: phone || "" // The phone number travels invisibly through metadata!
+              plan_tier: String(planTier),
+              frequency: String(frequency || "Weekly"),
+              // Combined into one key to strictly respect the GoCardless 3-key limit
+              order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress} | Phone: ${phone || ""}`.substring(0, 500)
             }
           }
         }
@@ -88,7 +87,7 @@ export async function POST({ request, locals }) {
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
-    // CRITICAL FIX: phone_number is strictly omitted here to prevent the 500 error!
+    // Phone intentionally omitted here to prevent flow validation errors
 
     const flowPayload = {
       billing_request_flows: {
