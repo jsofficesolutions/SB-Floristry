@@ -55,15 +55,23 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let zip = gcCustomer.postal_code || "";
   let phone = gcCustomer.phone_number || "";
 
-  const isSandboxName = !firstName || firstName.toLowerCase() === 'john' || firstName.toLowerCase() === 'jane' || lastName.toLowerCase() === 'doe';
-  const isSandboxEmail = !email || email.toLowerCase().includes('gocardless') || email.toLowerCase().includes('sandbox');
-  const isSandboxAddress = !address1 || address1 === "No address" || address1.toLowerCase().includes('gocardless') || address1.toLowerCase().includes('sandbox');
-
-  if (isSandboxName && parsedMeta.name) {
+  // 1. ALWAYS prefer the name from the metadata (the real form data)
+  if (parsedMeta.name) {
     const nameParts = parsedMeta.name.split(' ').filter(Boolean);
     firstName = nameParts[0] || "Valued";
     lastName = nameParts.slice(1).join(' ') || "Customer";
   }
+  // 2. If metadata is empty but GoCardless returned a full name in given_name, split it
+  else if (!lastName && firstName.includes(' ')) {
+    const nameParts = firstName.split(' ').filter(Boolean);
+    firstName = nameParts[0] || firstName;
+    lastName = nameParts.slice(1).join(' ') || "Customer";
+  }
+
+  // 3. Still handle the original sandbox fallbacks for email, address, etc.
+  const isSandboxEmail = !email || email.toLowerCase().includes('gocardless') || email.toLowerCase().includes('sandbox');
+  const isSandboxAddress = !address1 || address1 === "No address" || address1.toLowerCase().includes('gocardless') || address1.toLowerCase().includes('sandbox');
+
   if (isSandboxEmail && parsedMeta.email) email = parsedMeta.email;
   if (isSandboxAddress && parsedMeta.address) {
     const addrParts = parsedMeta.address.split(',').map(p => p.trim());
@@ -73,6 +81,8 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   }
   if (!phone && parsedMeta.phone) phone = parsedMeta.phone;
 
+  // final safety net
+  if (!firstName) firstName = "Valued";
   if (!lastName) lastName = "Customer";
 
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
