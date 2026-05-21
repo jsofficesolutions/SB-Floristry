@@ -16,15 +16,40 @@ export async function POST({ request, locals }) {
 
   try {
     const body = await request.json();
-    const { planTier, firstName, lastName, email, phone, address1, city, postcode, frequency, reason } = body;
     
+    // Fallback empty strings to null/undefined or clean defaults immediately
+    const planTier = body.planTier && body.planTier.trim() !== '' ? body.planTier.trim() : 'test';
+    const firstName = body.firstName && body.firstName.trim() !== '' ? body.firstName.trim() : '';
+    const lastName = body.lastName && body.lastName.trim() !== '' ? body.lastName.trim() : '';
+    const email = body.email && body.email.trim() !== '' ? body.email.trim() : '';
+    const phone = body.phone && body.phone.trim() !== '' ? body.phone.trim() : '';
+    const frequency = body.frequency && body.frequency.trim() !== '' ? body.frequency.trim() : 'Weekly';
+    const reason = body.reason && body.reason.trim() !== '' ? body.reason.trim() : 'Treating Myself';
+
     const plan = PLAN_PRICES[planTier] || PLAN_PRICES.test;
     const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
 
-    // Handle order notes cleanly without depending on frontend address inputs
-    const mergedAddress = [address1, city, postcode].filter(val => val && val.trim() !== '').join(', ') || 'Collected via GoCardless';
-    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
-    const orderNotes = `Name: ${fullName} | Email: ${email || ''} | Phone: ${phone || ''} | Reason: ${reason || 'Treat'} | Addr: ${mergedAddress}`;
+    // Build order notes cleanly
+    const fullName = `${firstName} ${lastName}`.trim() || 'Anonymous Customer';
+    const orderNotes = `Name: ${fullName} | Email: ${email} | Phone: ${phone} | Reason: ${reason} | Addr: Collected via GoCardless`;
+
+    const brPayload = {
+      billing_requests: {
+        payment_request: {
+          amount: plan.amount,
+          currency: 'GBP',
+          description: plan.description
+        },
+        mandate_request: { 
+          scheme: 'bacs',
+          metadata: {
+            plan_tier: String(planTier),
+            frequency: String(frequency),
+            order_notes: orderNotes.substring(0, 500)
+          }
+        }
+      }
+    };
 
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
@@ -33,23 +58,7 @@ export async function POST({ request, locals }) {
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        billing_requests: {
-          payment_request: {
-            amount: plan.amount,
-            currency: 'GBP',
-            description: plan.description
-          },
-          mandate_request: { 
-            scheme: 'bacs',
-            metadata: {
-              plan_tier: String(planTier || "test"),
-              frequency: String(frequency || "Weekly"),
-              order_notes: orderNotes.substring(0, 500)
-            }
-          }
-        }
-      })
+      body: JSON.stringify(brPayload)
     });
 
     const brData = await brResponse.json();
@@ -60,31 +69,26 @@ export async function POST({ request, locals }) {
 
     const billingRequestId = brData.billing_requests?.id;
     if (!billingRequestId) {
-      return new Response(JSON.stringify({ error: "Failed to generate valid Billing Request ID from GoCardless." }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Failed to generate valid Billing Request ID." }), { status: 400 });
     }
     
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
-    successUrl.searchParams.set('name', firstName || '');
+    successUrl.searchParams.set('name', firstName);
     successUrl.searchParams.set('plan', plan.description);
 
-    // Build prefilled_customer dynamically to prevent validation failures.
+    // Build prefilled_customer dynamically without empty properties
     const customerData = {};
-    if (firstName && firstName.trim() !== '') customerData.given_name = firstName.trim();
-    if (lastName && lastName.trim() !== '') customerData.family_name = lastName.trim();
-    if (email && email.trim() !== '') customerData.email = email.trim();
+    if (firstName) customerData.given_name = firstName;
+    if (lastName) customerData.family_name = lastName;
+    if (email) customerData.email = email;
     
-    // Sanitize phone number to prevent custom format syntax errors
-    if (phone && phone.trim() !== '') {
+    // Normalize phone formatting (remove spaces) to comply with international verification checks
+    if (phone) {
       customerData.phone_number = phone.replace(/\s+/g, ''); 
     }
     
-    // Always default country code to GB for BACS scheme processing
+    // Always default country code to GB for BACS processing
     customerData.country_code = "GB";
-
-    // Only inject individual address keys if they actually exist on our incoming object
-    if (address1 && address1.trim() !== '') customerData.address_line1 = address1.trim();
-    if (city && city.trim() !== '') customerData.city = city.trim();
-    if (postcode && postcode.trim() !== '') customerData.postal_code = postcode.trim();
 
     const flowPayload = {
       billing_request_flows: {
@@ -94,7 +98,7 @@ export async function POST({ request, locals }) {
       }
     };
 
-    // Only attach prefilled_customer if we have user metrics beyond just the default country_code
+    // Attach prefilled customer configurations safely
     if (Object.keys(customerData).length > 1) {
       flowPayload.billing_request_flows.prefilled_customer = customerData;
     }
