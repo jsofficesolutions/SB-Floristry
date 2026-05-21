@@ -15,17 +15,13 @@ const FREQUENCY_INTERVALS = {
 function cleanPhoneForShopify(phone) {
   if (!phone) return null;
   let cleaned = phone.replace(/[^\d+]/g, '');
-  if (cleaned.startsWith('0') && !cleaned.startsWith('00')) {
-    cleaned = '+44' + cleaned.slice(1);
-  }
-  if (!cleaned.startsWith('+') && cleaned.length >= 10) {
-    cleaned = '+' + cleaned;
-  }
+  if (cleaned.startsWith('0') && !cleaned.startsWith('00')) cleaned = '+44' + cleaned.slice(1);
+  if (!cleaned.startsWith('+') && cleaned.length >= 10) cleaned = '+' + cleaned;
   const e164Regex = /^\+[1-9]\d{1,14}$/;
   return e164Regex.test(cleaned) ? cleaned : null;
 }
 
-// 1. Unified Metadata Parser (Extracts the real data sent from create-checkout.js)
+// Extract real data sent from create-checkout.js
 function parseOrderNotes(notes) {
   const result = { name: "", email: "", phone: "", reason: "Subscription", address: "" };
   if (!notes || typeof notes !== 'string') return result;
@@ -41,7 +37,7 @@ function parseOrderNotes(notes) {
   return result;
 }
 
-// 2. Sandbox Override Engine (Replaces "John Doe" with your real customer metadata)
+// Replace "John Doe" with your real customer metadata
 function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let firstName = gcCustomer.given_name || "";
   let lastName = gcCustomer.family_name || "";
@@ -51,12 +47,10 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let zip = gcCustomer.postal_code || "";
   let phone = gcCustomer.phone_number || "";
 
-  // Detect GoCardless Sandbox Overrides
   const isSandboxName = !firstName || firstName.toLowerCase() === 'john' || firstName.toLowerCase() === 'jane' || lastName.toLowerCase() === 'doe';
   const isSandboxEmail = !email || email.toLowerCase().includes('gocardless') || email.toLowerCase().includes('sandbox');
   const isSandboxAddress = !address1 || address1 === "No address" || address1.toLowerCase().includes('gocardless') || address1.toLowerCase().includes('sandbox');
 
-  // Override with authentic metadata
   if (isSandboxName && parsedMeta.name) {
     const nameParts = parsedMeta.name.split(' ');
     firstName = nameParts[0] || "Valued";
@@ -145,7 +139,7 @@ async function handleWebhookEvents(payload, config) {
         });
         if (checkRes.ok) {
           const checkData = await checkRes.json();
-          if (checkData.orders && checkData.orders.length > 0) continue; // Prevent Duplicate
+          if (checkData.orders && checkData.orders.length > 0) continue; 
         }
 
         const brRes = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
@@ -155,12 +149,13 @@ async function handleWebhookEvents(payload, config) {
         if (!brRes.ok) continue;
 
         const br = brData.billing_requests;
-        const meta = { ...(br.metadata || {}), ...(br.mandate_request?.metadata || {}) };
+        const meta = br.mandate_request?.metadata || br.metadata || {};
         
         const planTier = meta.plan_tier || "test";
         const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
         const customerId = br.links?.customer;
         const frequency = meta.frequency || "Weekly";
+        const orderNotes = meta.order_notes || "";
 
         if (!mandateId || !customerId) continue;
 
@@ -170,13 +165,14 @@ async function handleWebhookEvents(payload, config) {
         const customerData = await customerRes.json();
         if (!customerRes.ok) continue;
 
-        // CRITICAL FIX: Extract Real Metadata & Resolve Sandbox Placeholders
-        const parsedMeta = parseOrderNotes(meta.order_notes);
+        // Extract Real Metadata & Resolve Sandbox Placeholders safely
+        const parsedMeta = parseOrderNotes(orderNotes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
 
         console.log(`Injecting initial order for ${resolved.email}...`);
+        
         const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
           method: 'POST',
           headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
@@ -202,11 +198,13 @@ async function handleWebhookEvents(payload, config) {
         });
 
         const shopifyData = await shopifyRes.json();
-        if (shopifyRes.ok && shopifyData.order?.customer?.id && cleanedPhone) {
-          await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
+        if (!shopifyRes.ok) {
+           console.error("Shopify Order Creation Failed:", shopifyData);
+        } else if (shopifyData.order?.customer?.id && cleanedPhone) {
+           await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
         }
 
-        // Establish Sub Schedule & PASS THE METADATA FORWARD TO PREVENT FUTURE JOHN DOES
+        // Establish Sub Schedule & PASS THE METADATA FORWARD
         const schedule = FREQUENCY_INTERVALS[frequency];
         if (schedule) {
           await fetch(`${apiBase}/subscriptions`, {
@@ -223,7 +221,7 @@ async function handleWebhookEvents(payload, config) {
                 metadata: {
                   plan_tier: String(planTier),
                   frequency: String(frequency),
-                  order_notes: meta.order_notes || "" // Passing the string forward!
+                  order_notes: orderNotes.substring(0, 500)
                 }
               }
             })
@@ -250,7 +248,7 @@ async function handleWebhookEvents(payload, config) {
 
         const payment = paymentData.payments;
         const subscriptionId = payment.links?.subscription;
-        if (!subscriptionId) continue; // Skip initial payments (handled by Event 1)
+        if (!subscriptionId) continue; 
 
         const checkRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-PM-${paymentId}`, {
           headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
@@ -277,14 +275,13 @@ async function handleWebhookEvents(payload, config) {
         const customerData = await customerRes.json();
         if (!customerRes.ok) continue;
 
-        // CRITICAL FIX: Resolve Sandbox Placeholders for Recurring Orders Too
         const parsedMeta = parseOrderNotes(subMeta.order_notes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
 
         console.log(`Injecting recurring order for ${resolved.email}...`);
-        const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
+        await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
           method: 'POST',
           headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -314,10 +311,9 @@ async function handleWebhookEvents(payload, config) {
     }
 
     // ==========================================
-    // EVENTS 3 & 4: Failures & Cancellations (Unchanged logic)
+    // EVENTS 3 & 4: Failures & Cancellations 
     // ==========================================
     if (event.resource_type === 'payments' && event.action === 'failed') {
-      // (Logic retained perfectly from your file...)
       const paymentId = event.links?.payment;
       if (!paymentId) continue;
       try {
@@ -344,7 +340,6 @@ async function handleWebhookEvents(payload, config) {
     }
 
     if (event.resource_type === 'subscriptions' && event.action === 'cancelled') {
-      // (Logic retained perfectly from your file...)
       const subscriptionId = event.links?.subscription;
       if (!subscriptionId) continue;
       try {
