@@ -3,8 +3,8 @@ export const prerender = false;
 // Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
-  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" }, // £45.00 per delivery
-  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" } // £75.00 per delivery
+  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" }, // Elevated to £45.00
+  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" } // Elevated to £75.00
 };
 
 export async function POST({ request, locals }) {
@@ -20,8 +20,8 @@ export async function POST({ request, locals }) {
   try {
     const body = await request.json();
     
-    // Deconstruct the separate form inputs from subscriptions.astro
-    const { planTier, firstName, lastName, email, address1, city, postcode, frequency, reason } = body;
+    // Deconstruct the separate form inputs from subscriptions.astro (including the new phone input)
+    const { planTier, firstName, lastName, email, phone, address1, city, postcode, frequency, reason } = body;
     
     if (!planTier || !PLAN_PRICES[planTier]) {
       return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
@@ -37,7 +37,7 @@ export async function POST({ request, locals }) {
 
     console.log(`Step 1: Creating Customer in GoCardless for ${email}`);
 
-    // 1. Create the customer record first to register identity and bypass "John Doe" sandbox fallback
+    // 1. Create the customer record first with contact numbers to securely lock customer identity
     const customerResponse = await fetch(`${apiBase}/customers`, {
       method: 'POST',
       headers: {
@@ -50,6 +50,7 @@ export async function POST({ request, locals }) {
           given_name: firstName || "Valued",
           family_name: lastName || "Customer",
           email: email || "",
+          phone_number: phone || "", // Native GoCardless property
           address_line1: address1 || "No address",
           city: city || "",
           postal_code: postcode || "",
@@ -111,11 +112,11 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('plan', plan.description);
 
     // 3. Build prefilled_customer parameters explicitly for the hosted checkout page flow UI
-    // This forces the hosted form fields to automatically pre-populate so the customer doesn't have to retype them
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
+    if (phone) prefilled_customer.phone_number = phone;
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
