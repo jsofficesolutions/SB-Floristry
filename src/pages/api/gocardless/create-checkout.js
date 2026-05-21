@@ -37,7 +37,7 @@ export async function POST({ request, locals }) {
 
     console.log(`Step 1: Generating Billing Request for ${email}`);
 
-    // 1. Create Billing Request (WITHOUT pre-creating the customer, so the flow UI can capture/prefill them)
+    // 1. Create Billing Request (No customer pre-creation here!)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -57,7 +57,8 @@ export async function POST({ request, locals }) {
             metadata: {
               plan_tier: planTier,
               frequency: frequency || "Weekly",
-              order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500)
+              order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500),
+              customer_phone: phone || "" // The phone number travels invisibly through metadata!
             }
           }
         }
@@ -67,7 +68,7 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Billing Request Error'}.`);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Error'}`);
     }
 
     const billingRequestId = brData.billing_requests.id;
@@ -80,17 +81,14 @@ export async function POST({ request, locals }) {
     console.log("Step 2: Creating Billing Request Flow with autofill data.");
 
     // 2. Build prefilled_customer parameters explicitly for the hosted checkout page flow UI
-    // By passing these here instead of pre-creating the customer, the GoCardless checkout screen
-    // will beautifully autofill the form so the user doesn't have to type it again.
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
-    if (phone) prefilled_customer.phone_number = phone;
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
-    prefilled_customer.country_code = "GB"; // Explicitly required for BACS formatting
+    // CRITICAL FIX: phone_number is strictly omitted here to prevent the 500 error!
 
     const flowPayload = {
       billing_request_flows: {
