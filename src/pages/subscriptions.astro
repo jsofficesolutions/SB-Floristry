@@ -282,56 +282,73 @@ import Footer from '../components/Footer.astro';
         <h2 class="font-serif text-3xl text-sb-black mb-1">Complete Setup</h2>
         <p id="modalPlanName" class="text-sb-gold font-bold tracking-wider text-xs uppercase mb-6">Your Subscription</p>
 
-        <form id="subscriptionForm" class="space-y-4">
-          <input type="hidden" id="planTier" name="planTier" value="">
+<form id="subscriptionForm" class="space-y-4">
+  <!-- Hidden plan tier -->
+  <input type="hidden" id="planTier" name="planTier" value="">
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">First Name</label>
-              <input type="text" name="firstName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Jane">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Last Name</label>
-              <input type="text" name="lastName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Doe">
-            </div>
-          </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">First Name</label>
+      <input type="text" name="firstName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Jane">
+    </div>
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Last Name</label>
+      <input type="text" name="lastName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Doe">
+    </div>
+  </div>
 
-          <div>
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Email Address</label>
-            <input type="email" name="email" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="jane@example.com">
-          </div>
+  <div>
+    <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Email Address</label>
+    <input type="email" name="email" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="jane@example.com">
+  </div>
 
-          <div>
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Contact Mobile Number</label>
-            <input type="tel" name="phone" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="07123456789">
-          </div>
+  <div>
+    <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Contact Mobile Number</label>
+    <input type="tel" name="phone" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="07123 456789">
+  </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Delivery Frequency</label>
-              <select name="frequency" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
-                <option value="Weekly">Weekly</option>
-                <option value="Fortnightly">Fortnightly</option>
-                <option value="Three-Weekly">Three-Weekly</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Reason</label>
-              <select name="reason" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
-                <option value="Treating Myself">Treating Myself</option>
-                <option value="Gift for Someone">Gift for Someone</option>
-                <option value="Corporate / Office">Corporate / Office</option>
-              </select>
-            </div>
-          </div>
+  <!-- NEW ADDRESS FIELDS -->
+  <div>
+    <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Address Line 1</label>
+    <input type="text" name="address1" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="123 High Street">
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">City</label>
+      <input type="text" name="city" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Romford">
+    </div>
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Postcode</label>
+      <input type="text" name="postcode" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="RM1 1AA">
+    </div>
+  </div>
 
-          <div class="pt-4">
-            <button type="submit" id="submitFormBtn" class="w-full bg-sb-gold text-sb-black hover:bg-sb-black hover:text-white transition-colors duration-300 py-4 text-[11px] uppercase tracking-[0.25em] font-bold shadow-lg shadow-sb-gold/20 flex items-center justify-center gap-2">
-              Proceed to Payment <i class="fas fa-lock text-[10px]"></i>
-            </button>
-            <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to complete your setup.</p>
-          </div>
-        </form>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Delivery Frequency</label>
+      <select name="frequency" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
+        <option value="Weekly">Weekly</option>
+        <option value="Fortnightly">Fortnightly</option>
+        <option value="Three-Weekly">Three-Weekly</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Reason</label>
+      <select name="reason" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
+        <option value="Treating Myself">Treating Myself</option>
+        <option value="Gift for Someone">Gift for Someone</option>
+        <option value="Corporate / Office">Corporate / Office</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="pt-4">
+    <button type="submit" id="submitFormBtn" class="w-full bg-sb-gold text-sb-black hover:bg-sb-black hover:text-white transition-colors duration-300 py-4 text-[11px] uppercase tracking-[0.25em] font-bold shadow-lg shadow-sb-gold/20 flex items-center justify-center gap-2">
+      Proceed to Payment <i class="fas fa-lock text-[10px]"></i>
+    </button>
+    <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to complete your setup.</p>
+  </div>
+</form>
       </div>
     </div>
   </div>
