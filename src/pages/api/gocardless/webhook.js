@@ -103,6 +103,25 @@ async function handleWebhookEvents(payload, config) {
       }
 
       try {
+        // IDEMPOTENCY CHECK: Query Shopify to check if an order with this Billing Request ID tag already exists
+        console.log(`Checking Shopify for existing orders tagged with: GC-BRQ-${billingRequestId}`);
+        const checkRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-BRQ-${billingRequestId}`, {
+          headers: {
+            'X-Shopify-Access-Token': shopifyToken,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          if (checkData.orders && checkData.orders.length > 0) {
+            console.log(`DUPLICATE DETECTED: Shopify order already exists (Order ID: ${checkData.orders[0].id}) for Billing Request ${billingRequestId}. Skipping duplicate generation.`);
+            continue;
+          }
+        } else {
+          console.warn(`Shopify existence check returned non-200 status: ${checkRes.status}. Attempting to proceed defensively.`);
+        }
+
         // Fetch the parent Billing Request to reliably pull root metadata and links
         console.log(`Querying GoCardless Billing Request API for ${billingRequestId}...`);
         const brRes = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
@@ -168,7 +187,8 @@ async function handleWebhookEvents(payload, config) {
                 email: customer.email
               },
               note: `Subscription Details:\nFrequency: ${frequency}\nNotes & Address: ${orderNotes}`,
-              financial_status: "paid"
+              financial_status: "paid",
+              tags: `GC-BRQ-${billingRequestId}` // Stamped to search and avoid future duplicates
             }
           })
         });
