@@ -35,40 +35,9 @@ export async function POST({ request, locals }) {
     // Combine address elements with commas to avoid exceeding GoCardless metadata 3-key limit
     const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
 
-    console.log(`Step 1: Creating Customer in GoCardless for ${email}`);
+    console.log(`Step 1: Generating Billing Request for ${email}`);
 
-    // 1. Create the customer record first to register identity and bypass "John Doe" sandbox fallback
-    const customerResponse = await fetch(`${apiBase}/customers`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'GoCardless-Version': '2015-07-06',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        customers: {
-          given_name: firstName || "Valued",
-          family_name: lastName || "Customer",
-          email: email || "",
-          phone_number: phone || "",
-          address_line1: address1 || "No address",
-          city: city || "",
-          postal_code: postcode || "",
-          country_code: "GB"
-        }
-      })
-    });
-
-    const customerData = await customerResponse.json();
-    if (!customerResponse.ok) {
-      console.error("GoCardless Customer Creation Error payload:", customerData);
-      throw new Error(`Failed to pre-create customer: ${customerData.error?.message || 'API Customer Validation Error'}`);
-    }
-
-    const customerId = customerData.customers.id;
-    console.log(`Customer successfully created: ${customerId}. Step 2: Generating Billing Request.`);
-
-    // 2. Create Billing Request (Linking the pre-created customer ID)
+    // 1. Create Billing Request (WITHOUT pre-creating the customer, so the flow UI can capture/prefill them)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -90,9 +59,6 @@ export async function POST({ request, locals }) {
               frequency: frequency || "Weekly",
               order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500)
             }
-          },
-          links: {
-            customer: customerId
           }
         }
       })
@@ -111,12 +77,32 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    console.log("Step 3: Creating Billing Request Flow.");
+    console.log("Step 2: Creating Billing Request Flow with autofill data.");
+
+    // 2. Build prefilled_customer parameters explicitly for the hosted checkout page flow UI
+    const prefilled_customer = {};
+    if (firstName) prefilled_customer.given_name = firstName;
+    if (lastName) prefilled_customer.family_name = lastName;
+    if (email) prefilled_customer.email = email;
+    if (phone) prefilled_customer.phone_number = phone;
+    if (address1) prefilled_customer.address_line1 = address1;
+    if (city) prefilled_customer.city = city;
+    if (postcode) prefilled_customer.postal_code = postcode;
+    prefilled_customer.country_code = "GB"; // Explicitly required for BACS formatting
+
+    const flowPayload = {
+      billing_request_flows: {
+        redirect_uri: successUrl.toString(),
+        exit_uri: `${new URL(request.url).origin}/subscriptions`,
+        links: { billing_request: billingRequestId }
+      }
+    };
+
+    if (Object.keys(prefilled_customer).length > 0) {
+      flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
+    }
 
     // 3. Instantiate Billing Request Flow (The hosted authorization interface)
-    // NOTE: We DO NOT pass a 'prefilled_customer' object here.
-    // Because the Customer (CU...) is already linked directly to the Billing Request,
-    // the hosted form automatically knows who they are and populates their details on the checkout page.
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -124,13 +110,7 @@ export async function POST({ request, locals }) {
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        billing_request_flows: {
-          redirect_uri: successUrl.toString(),
-          exit_uri: `${new URL(request.url).origin}/subscriptions`,
-          links: { billing_request: billingRequestId }
-        }
-      })
+      body: JSON.stringify(flowPayload)
     });
 
     const flowData = await flowResponse.json();
