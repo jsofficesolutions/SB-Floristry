@@ -73,10 +73,109 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   }
   if (!phone && parsedMeta.phone) phone = parsedMeta.phone;
 
-  // Final safety – ensure no blank last name sent to Shopify
   if (!lastName) lastName = "Customer";
 
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
+}
+
+async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken) {
+  // 1) Search by email
+  if (resolved.email) {
+    const searchRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/search.json?query=email:${encodeURIComponent(resolved.email)}`, {
+      headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+    });
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      if (searchData.customers?.length > 0) {
+        return searchData.customers[0].id;
+      }
+    }
+  }
+
+  // 2) Search by phone (if no email match and phone is present)
+  if (resolved.phone) {
+    const searchRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/search.json?query=phone:${encodeURIComponent(resolved.phone)}`, {
+      headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+    });
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      if (searchData.customers?.length > 0) {
+        return searchData.customers[0].id;
+      }
+    }
+  }
+
+  // 3) No existing customer – will be created implicitly by the order
+  return null;
+}
+
+async function createShopifyOrder(customerDetails, planInfo, frequency, reason, tag, shopifyDomain, shopifyToken) {
+  const resolved = customerDetails;
+  const cleanedPhone = cleanPhoneForShopify(resolved.phone);
+
+  // Find existing customer or let Shopify create a new one
+  const existingCustomerId = await findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken);
+
+  const orderPayload = {
+    order: {
+      line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
+      shipping_address: { 
+        first_name: resolved.firstName, last_name: resolved.lastName, 
+        address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
+        country_code: resolved.countryCode, phone: resolved.phone || undefined
+      },
+      billing_address: { 
+        first_name: resolved.firstName, last_name: resolved.lastName, 
+        address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
+        country_code: resolved.countryCode, phone: resolved.phone || undefined
+      },
+      note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reason}`,
+      financial_status: "paid",
+      tags: tag
+    }
+  };
+
+  if (existingCustomerId) {
+    // Attach to existing customer
+    orderPayload.order.customer = { id: existingCustomerId };
+  } else {
+    // Create a new customer
+    orderPayload.order.customer = {
+      first_name: resolved.firstName,
+      last_name: resolved.lastName,
+      email: resolved.email,
+      phone: cleanedPhone || undefined
+    };
+  }
+
+  const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
+    method: 'POST',
+    headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderPayload)
+  });
+
+  const shopifyData = await shopifyRes.json();
+  if (!shopifyRes.ok) {
+    console.error("Shopify Order Creation Failed:", JSON.stringify(shopifyData, null, 2));
+    return { success: false, error: shopifyData };
+  }
+
+  // Update phone if missing on existing customer
+  if (existingCustomerId && cleanedPhone) {
+    // Fetch customer to see if phone is blank
+    const custRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${existingCustomerId}.json`, {
+      headers: { 'X-Shopify-Access-Token': shopifyToken }
+    });
+    if (custRes.ok) {
+      const custData = await custRes.json();
+      if (!custData.customer.phone) {
+        await forceShopifyCustomerPhoneUpdate(existingCustomerId, cleanedPhone, shopifyDomain, shopifyToken);
+      }
+    }
+  }
+
+  console.log(`Successfully created Shopify order for ${resolved.email}`);
+  return { success: true, orderId: shopifyData.order?.id };
 }
 
 async function forceShopifyCustomerPhoneUpdate(customerId, phone, shopifyDomain, shopifyToken) {
@@ -170,7 +269,6 @@ async function handleWebhookEvents(payload, config) {
         let customerId = subData.subscriptions.links?.customer;
         
         if (!customerId) {
-          // Try fetching the mandate linked to this subscription
           const mandateId = subData.subscriptions.links?.mandate;
           if (mandateId) {
             const mandateRes = await fetch(`${apiBase}/mandates/${mandateId}`, {
@@ -183,7 +281,6 @@ async function handleWebhookEvents(payload, config) {
           }
         }
 
-        // If still no customer, skip this event
         if (!customerId) {
           console.error("No customer linked to subscription", subscriptionId);
           continue;
@@ -201,47 +298,10 @@ async function handleWebhookEvents(payload, config) {
 
         const parsedMeta = parseOrderNotes(orderNotes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
-        const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
 
-        // Final safety – ensure no blank last name sent to Shopify
-        if (!resolved.lastName) resolved.lastName = "Customer";
-
         console.log(`Creating initial Shopify order for ${resolved.email} (subscription ${subscriptionId})`);
-
-        const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
-          method: 'POST',
-          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: {
-              line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
-              customer: { first_name: resolved.firstName, last_name: resolved.lastName, email: resolved.email, phone: cleanedPhone || undefined },
-              shipping_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              billing_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${parsedMeta.reason}`,
-              financial_status: "paid",
-              tags: `GC-SUB-${subscriptionId}, Active-Subscriber`
-            }
-          })
-        });
-
-        const shopifyData = await shopifyRes.json();
-        if (!shopifyRes.ok) {
-          console.error("Shopify Order Creation Failed:", JSON.stringify(shopifyData, null, 2));
-        } else {
-          console.log(`Successfully created Shopify order for ${resolved.email}`);
-          if (shopifyData.order?.customer?.id && cleanedPhone) {
-            await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
-          }
-        }
+        await createShopifyOrder(resolved, planInfo, frequency, parsedMeta.reason, `GC-SUB-${subscriptionId}, Active-Subscriber`, shopifyDomain, shopifyToken);
 
         // Update subscription metadata
         await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
@@ -304,43 +364,10 @@ async function handleWebhookEvents(payload, config) {
 
         const parsedMeta = parseOrderNotes(orderNotes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
-        const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
 
-        if (!resolved.lastName) resolved.lastName = "Customer";
-
         console.log(`Injecting initial order for ${resolved.email}...`);
-        
-        const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
-          method: 'POST',
-          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: {
-              line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
-              customer: { first_name: resolved.firstName, last_name: resolved.lastName, email: resolved.email, phone: cleanedPhone || undefined },
-              shipping_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              billing_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${parsedMeta.reason}`,
-              financial_status: "paid",
-              tags: `GC-BRQ-${billingRequestId}, Active-Subscriber`
-            }
-          })
-        });
-
-        const shopifyData = await shopifyRes.json();
-        if (!shopifyRes.ok) {
-           console.error("Shopify Order Creation Failed:", shopifyData);
-        } else if (shopifyData.order?.customer?.id && cleanedPhone) {
-           await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
-        }
+        await createShopifyOrder(resolved, planInfo, frequency, parsedMeta.reason, `GC-BRQ-${billingRequestId}, Active-Subscriber`, shopifyDomain, shopifyToken);
 
         // Establish subscription schedule
         const schedule = FREQUENCY_INTERVALS[frequency];
@@ -415,35 +442,10 @@ async function handleWebhookEvents(payload, config) {
 
         const parsedMeta = parseOrderNotes(subMeta.order_notes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
-        const cleanedPhone = cleanPhoneForShopify(resolved.phone);
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
 
-        if (!resolved.lastName) resolved.lastName = "Customer";
-
         console.log(`Injecting recurring order for ${resolved.email}...`);
-        await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
-          method: 'POST',
-          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: {
-              line_items: [{ title: `${planInfo.description} (Renewal)`, quantity: 1, price: (payment.amount / 100).toString() }],
-              customer: { first_name: resolved.firstName, last_name: resolved.lastName, email: resolved.email, phone: cleanedPhone || undefined },
-              shipping_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              billing_address: { 
-                first_name: resolved.firstName, last_name: resolved.lastName, 
-                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
-                country_code: resolved.countryCode, phone: resolved.phone || undefined
-              },
-              note: `Subscription Renewal Order:\nFrequency: ${frequency}\nReason: ${parsedMeta.reason}\nLinked Subscription ID: ${subscriptionId}`,
-              financial_status: "paid",
-              tags: `GC-PM-${paymentId}, Subscription-Renewal`
-            }
-          })
-        });
+        await createShopifyOrder(resolved, { amount: payment.amount, description: `${planInfo.description} (Renewal)` }, frequency, parsedMeta.reason, `GC-PM-${paymentId}, Subscription-Renewal`, shopifyDomain, shopifyToken);
 
       } catch (err) {
         console.error(`Error processing recurring payment:`, err);
