@@ -312,8 +312,7 @@ import Footer from '../components/Footer.astro';
         <h2 class="font-serif text-3xl text-sb-black mb-1">Complete Setup</h2>
         <p id="modalPlanName" class="text-sb-gold font-bold tracking-wider text-xs uppercase mb-6">Your Subscription</p>
 
-        <form id="subscriptionForm" class="space-y-4">
-          <!-- Stamped Plan Tier parameter identifier -->
+<form id="subscriptionForm" class="space-y-4">
           <input type="hidden" id="planTier" name="planTier" value="">
 
           <div class="grid grid-cols-2 gap-4">
@@ -337,6 +336,21 @@ import Footer from '../components/Footer.astro';
             <input type="tel" name="phone" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="07123 456789">
           </div>
 
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Delivery Address</label>
+            <input type="text" name="address1" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="123 Floral Lane">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Town / City</label>
+              <input type="text" name="city" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="London">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Postcode</label>
+              <input type="text" name="postcode" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="SW1A 1AA">
+            </div>
+          </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Delivery Frequency</label>
@@ -363,10 +377,6 @@ import Footer from '../components/Footer.astro';
             <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to complete your setup.</p>
           </div>
         </form>
-
-      </div>
-    </div>
-  </div>
 
   <Footer />
 </Layout>
