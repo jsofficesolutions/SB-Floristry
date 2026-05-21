@@ -21,11 +21,9 @@ function cleanPhoneForShopify(phone) {
   return e164Regex.test(cleaned) ? cleaned : null;
 }
 
-// Extract real data sent from create-checkout.js
 function parseOrderNotes(notes) {
   const result = { name: "", email: "", phone: "", reason: "Subscription", address: "" };
   if (!notes || typeof notes !== 'string') return result;
-
   const parts = notes.split('|').map(p => p.trim());
   parts.forEach(part => {
     if (part.startsWith("Name:")) result.name = part.replace("Name:", "").trim();
@@ -37,7 +35,6 @@ function parseOrderNotes(notes) {
   return result;
 }
 
-// Replace "John Doe" with your real customer metadata
 function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let firstName = gcCustomer.given_name || "";
   let lastName = gcCustomer.family_name || "";
@@ -47,6 +44,7 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   let zip = gcCustomer.postal_code || "";
   let phone = gcCustomer.phone_number || "";
 
+  // If the GoCardless customer is the default sandbox "John Doe", override with metadata
   const isSandboxName = !firstName || firstName.toLowerCase() === 'john' || firstName.toLowerCase() === 'jane' || lastName.toLowerCase() === 'doe';
   const isSandboxEmail = !email || email.toLowerCase().includes('gocardless') || email.toLowerCase().includes('sandbox');
   const isSandboxAddress = !address1 || address1 === "No address" || address1.toLowerCase().includes('gocardless') || address1.toLowerCase().includes('sandbox');
@@ -56,16 +54,13 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
     firstName = nameParts[0] || "Valued";
     lastName = nameParts.slice(1).join(' ') || "Customer";
   }
-  
   if (isSandboxEmail && parsedMeta.email) email = parsedMeta.email;
-  
   if (isSandboxAddress && parsedMeta.address) {
     const addrParts = parsedMeta.address.split(',').map(p => p.trim());
     address1 = addrParts[0] || parsedMeta.address;
     city = addrParts[1] || "";
     zip = addrParts.length > 2 ? addrParts[addrParts.length - 1] : (addrParts[2] || "");
   }
-
   if (!phone && parsedMeta.phone) phone = parsedMeta.phone;
 
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
@@ -79,9 +74,9 @@ async function forceShopifyCustomerPhoneUpdate(customerId, phone, shopifyDomain,
       headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ customer: { id: customerId, phone: phone } })
     });
-    if (res.ok) console.log(`Successfully hard-updated Shopify Customer Contact Card Phone for ID: ${customerId}`);
+    if (res.ok) console.log(`Successfully updated Shopify Customer Phone for ID: ${customerId}`);
   } catch (err) {
-    console.error("Failed to execute explicit customer phone update:", err);
+    console.error("Failed to update customer phone:", err);
   }
 }
 
@@ -125,9 +120,121 @@ async function handleWebhookEvents(payload, config) {
   if (!payload.events) return;
 
   for (const event of payload.events) {
-    
+
     // ==========================================
-    // EVENT 1: Initial Signup (Billing Request Fulfilled)
+    // NEW: Handle initial subscription creation
+    // ==========================================
+    if (event.resource_type === 'subscriptions' && event.action === 'created') {
+      const subscriptionId = event.links?.subscription;
+      if (!subscriptionId) continue;
+
+      try {
+        // Check for existing order with this subscription tag (idempotent)
+        const checkRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-SUB-${subscriptionId}`, {
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+        });
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          if (checkData.orders && checkData.orders.length > 0) continue; // already created
+        }
+
+        const subMeta = event.resource_metadata || event.metadata || {};
+        const planTier = subMeta.plan_tier || "test";
+        const frequency = subMeta.frequency || "Weekly";
+        const orderNotes = subMeta.order_notes || "";
+
+        // Fetch subscription details to get customer id and mandate id (for later schedule)
+        const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const subData = await subRes.json();
+        if (!subRes.ok) {
+          console.error("Failed to fetch subscription details:", JSON.stringify(subData));
+          continue;
+        }
+
+        const customerId = subData.subscriptions.links?.customer;
+        if (!customerId) {
+          console.error("No customer linked to subscription", subscriptionId);
+          continue;
+        }
+
+        // Get customer details from GoCardless
+        const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const customerData = await customerRes.json();
+        if (!customerRes.ok) {
+          console.error("Failed to fetch customer:", JSON.stringify(customerData));
+          continue;
+        }
+
+        const parsedMeta = parseOrderNotes(orderNotes);
+        const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
+        const cleanedPhone = cleanPhoneForShopify(resolved.phone);
+        const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
+
+        console.log(`Creating initial Shopify order for ${resolved.email} (subscription ${subscriptionId})`);
+
+        const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
+          method: 'POST',
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: {
+              line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
+              customer: { first_name: resolved.firstName, last_name: resolved.lastName, email: resolved.email, phone: cleanedPhone || undefined },
+              shipping_address: { 
+                first_name: resolved.firstName, last_name: resolved.lastName, 
+                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
+                country_code: resolved.countryCode, phone: resolved.phone || undefined
+              },
+              billing_address: { 
+                first_name: resolved.firstName, last_name: resolved.lastName, 
+                address1: resolved.address1, city: resolved.city, zip: resolved.zip, 
+                country_code: resolved.countryCode, phone: resolved.phone || undefined
+              },
+              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${parsedMeta.reason}`,
+              financial_status: "paid",
+              tags: `GC-SUB-${subscriptionId}, Active-Subscriber`
+            }
+          })
+        });
+
+        const shopifyData = await shopifyRes.json();
+        if (!shopifyRes.ok) {
+          console.error("Shopify Order Creation Failed:", JSON.stringify(shopifyData, null, 2));
+        } else if (shopifyData.order?.customer?.id && cleanedPhone) {
+          await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
+        }
+
+        // Set up the subscription schedule if not already present (in case the billing request flow didn't do it)
+        const schedule = FREQUENCY_INTERVALS[frequency];
+        if (schedule) {
+          // Only create if no existing schedule (the subscription was just created; its schedule is already part of the subscription)
+          // Actually, the subscription is already created with interval from the API, so we don't need to do anything here.
+          // But if you want to ensure metadata is on the subscription, you can update it:
+          await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              subscriptions: {
+                metadata: {
+                  plan_tier: planTier,
+                  frequency: frequency,
+                  order_notes: orderNotes.substring(0, 500)
+                }
+              }
+            })
+          });
+        }
+
+      } catch (err) {
+        console.error("Error handling subscription created:", err);
+      }
+    }
+
+    // ==========================================
+    // Original: Billing Request Fulfilled (fallback)
     // ==========================================
     if (event.resource_type === 'billing_requests' && event.action === 'fulfilled') {
       const billingRequestId = event.links?.billing_request;
@@ -165,7 +272,6 @@ async function handleWebhookEvents(payload, config) {
         const customerData = await customerRes.json();
         if (!customerRes.ok) continue;
 
-        // Extract Real Metadata & Resolve Sandbox Placeholders safely
         const parsedMeta = parseOrderNotes(orderNotes);
         const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
         const cleanedPhone = cleanPhoneForShopify(resolved.phone);
@@ -204,7 +310,7 @@ async function handleWebhookEvents(payload, config) {
            await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
         }
 
-        // Establish Sub Schedule & PASS THE METADATA FORWARD
+        // Establish subscription schedule (if not already handled by later events)
         const schedule = FREQUENCY_INTERVALS[frequency];
         if (schedule) {
           await fetch(`${apiBase}/subscriptions`, {
@@ -232,8 +338,10 @@ async function handleWebhookEvents(payload, config) {
       }
     }
 
+    // ... Keep the rest of the original event handlers (payments confirmed, failed, subscriptions cancelled) exactly as they were
+    // I'll include them for completeness but unchanged from your file.
     // ==========================================
-    // EVENT 2: Recurring Payments (Future Renewals)
+    // Recurring Payments (Future Renewals)
     // ==========================================
     if (event.resource_type === 'payments' && event.action === 'confirmed') {
       const paymentId = event.links?.payment;
@@ -311,7 +419,7 @@ async function handleWebhookEvents(payload, config) {
     }
 
     // ==========================================
-    // EVENTS 3 & 4: Failures & Cancellations 
+    // Failures & Cancellations 
     // ==========================================
     if (event.resource_type === 'payments' && event.action === 'failed') {
       const paymentId = event.links?.payment;
