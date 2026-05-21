@@ -21,10 +21,10 @@ export async function POST({ request, locals }) {
     const plan = PLAN_PRICES[planTier] || PLAN_PRICES.test;
     const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
 
-    const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
+    // FIX 1: Safely handle order notes when address fields are omitted from the form
+    const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ') || 'Not provided on form';
     const fullName = `${firstName || ''} ${lastName || ''}`.trim();
 
-    // CRITICAL: We pack EVERYTHING in here to guarantee survival through Sandbox overrides
     const orderNotes = `Name: ${fullName} | Email: ${email || ''} | Phone: ${phone || ''} | Reason: ${reason || 'Treat'} | Addr: ${mergedAddress}`;
 
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
@@ -62,17 +62,17 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // FIX: Only attach fields to prefilled_customer if they are passed from the form
+    // FIX 2: Only attach fields to prefilled_customer if they actually have values
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
     if (phone) prefilled_customer.phone_number = phone;
     
-    // Explicitly enforce the United Kingdom country code so GoCardless matches BACS routing
+    // Explicitly enforce the UK country code so GoCardless defaults to the correct region
     prefilled_customer.country_code = "GB";
 
-    // ONLY add address keys if they actually exist in the frontend submission
+    // Only inject address keys if they are passed in from your frontend
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
@@ -88,7 +88,7 @@ export async function POST({ request, locals }) {
     if (Object.keys(prefilled_customer).length > 0) {
       flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
     }
-    
+
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
