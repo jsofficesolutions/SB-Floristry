@@ -124,6 +124,7 @@ async function handleWebhookEvents(payload, config) {
     // ==========================================
     // NEW: Handle initial subscription creation
     // ==========================================
+
     if (event.resource_type === 'subscriptions' && event.action === 'created') {
       const subscriptionId = event.links?.subscription;
       if (!subscriptionId) continue;
@@ -135,7 +136,7 @@ async function handleWebhookEvents(payload, config) {
         });
         if (checkRes.ok) {
           const checkData = await checkRes.json();
-          if (checkData.orders && checkData.orders.length > 0) continue; // already created
+          if (checkData.orders && checkData.orders.length > 0) continue;
         }
 
         const subMeta = event.resource_metadata || event.metadata || {};
@@ -143,7 +144,7 @@ async function handleWebhookEvents(payload, config) {
         const frequency = subMeta.frequency || "Weekly";
         const orderNotes = subMeta.order_notes || "";
 
-        // Fetch subscription details to get customer id and mandate id (for later schedule)
+        // Fetch subscription details
         const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
           headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
         });
@@ -153,7 +154,24 @@ async function handleWebhookEvents(payload, config) {
           continue;
         }
 
-        const customerId = subData.subscriptions.links?.customer;
+        // Try to get customer ID from subscription, mandate, or billing request
+        let customerId = subData.subscriptions.links?.customer;
+        
+        if (!customerId) {
+          // Try fetching the mandate linked to this subscription
+          const mandateId = subData.subscriptions.links?.mandate;
+          if (mandateId) {
+            const mandateRes = await fetch(`${apiBase}/mandates/${mandateId}`, {
+              headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+            });
+            const mandateData = await mandateRes.json();
+            if (mandateRes.ok) {
+              customerId = mandateData.mandates.links?.customer;
+            }
+          }
+        }
+
+        // If still no customer, skip this event (the billing_request.fulfilled handler will catch it later)
         if (!customerId) {
           console.error("No customer linked to subscription", subscriptionId);
           continue;
@@ -203,30 +221,27 @@ async function handleWebhookEvents(payload, config) {
         const shopifyData = await shopifyRes.json();
         if (!shopifyRes.ok) {
           console.error("Shopify Order Creation Failed:", JSON.stringify(shopifyData, null, 2));
-        } else if (shopifyData.order?.customer?.id && cleanedPhone) {
-          await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
+        } else {
+          console.log(`Successfully created Shopify order for ${resolved.email}`);
+          if (shopifyData.order?.customer?.id && cleanedPhone) {
+            await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
+          }
         }
 
-        // Set up the subscription schedule if not already present (in case the billing request flow didn't do it)
-        const schedule = FREQUENCY_INTERVALS[frequency];
-        if (schedule) {
-          // Only create if no existing schedule (the subscription was just created; its schedule is already part of the subscription)
-          // Actually, the subscription is already created with interval from the API, so we don't need to do anything here.
-          // But if you want to ensure metadata is on the subscription, you can update it:
-          await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06', 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              subscriptions: {
-                metadata: {
-                  plan_tier: planTier,
-                  frequency: frequency,
-                  order_notes: orderNotes.substring(0, 500)
-                }
+        // Update subscription metadata
+        await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscriptions: {
+              metadata: {
+                plan_tier: planTier,
+                frequency: frequency,
+                order_notes: orderNotes.substring(0, 500)
               }
-            })
-          });
-        }
+            }
+          })
+        });
 
       } catch (err) {
         console.error("Error handling subscription created:", err);
