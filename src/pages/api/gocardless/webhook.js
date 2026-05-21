@@ -63,7 +63,6 @@ export async function POST(context) {
   }
 
   // 2. DEFENSIVE ARCHITECTURE: Process events in the background and respond instantly!
-  // This tells Cloudflare to keep the thread alive to run the async task *after* returning a 200 OK response.
   const processPromise = handleWebhookEvents(payload, {
     apiBase,
     gcToken,
@@ -162,10 +161,29 @@ async function handleWebhookEvents(payload, config) {
         const customer = customerData.customers;
         const fullName = `${customer.given_name} ${customer.family_name}`;
 
-        // Inject order into Shopify Admin API
+        // Prepare Shopify Data
         const planInfo = PLAN_PRICES[planTier] || { amount: 100, description: "SB Floristry Subscription" };
         const frequency = meta.frequency || "Weekly";
         const orderNotes = meta.order_notes || "Provided on file";
+
+        // Parse the merged address and reason back out
+        let reasonPart = "Subscription";
+        let rawAddress = "Address on file";
+        
+        if (orderNotes.includes('| Addr: ')) {
+            const parts = orderNotes.split('| Addr: ');
+            reasonPart = parts[0].replace('Reason:', '').trim();
+            rawAddress = parts[1].trim();
+        } else {
+            rawAddress = orderNotes;
+        }
+
+        // Split by commas to find explicitly separated address1, city, and postcode for Shopify
+        const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
+        const address1 = addressLines[0] || rawAddress;
+        const city = addressLines[1] || "";
+        // Safely extract postcode (handles cases where city might be the last array element)
+        const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
 
         console.log(`Injecting paid subscription order into Shopify for ${customer.email}...`);
         const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
@@ -186,7 +204,14 @@ async function handleWebhookEvents(payload, config) {
                 last_name: customer.family_name,
                 email: customer.email
               },
-              note: `Subscription Details:\nFrequency: ${frequency}\nNotes & Address: ${orderNotes}`,
+              shipping_address: {
+                first_name: customer.given_name,
+                last_name: customer.family_name,
+                address1: address1.substring(0, 255),
+                city: city.substring(0, 255),
+                zip: zip.substring(0, 255)
+              },
+              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reasonPart}`,
               financial_status: "paid",
               tags: `GC-BRQ-${billingRequestId}` // Stamped to search and avoid future duplicates
             }
