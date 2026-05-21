@@ -39,7 +39,7 @@ export async function POST(context) {
 
   console.log("Webhook triggered. Signature present:", !!signature);
 
-  // 1. Verify Webhook Signature securely via Web Crypto API (required for Cloudflare worker environments)
+  // 1. Verify Webhook Signature securely via Web Crypto API
   if (webhookSecret && signature) {
     const verified = await verifySignature(signature, bodyText, webhookSecret);
     if (!verified) {
@@ -123,7 +123,9 @@ async function handleWebhookEvents(payload, config) {
         if (!brRes.ok) continue;
 
         const br = brData.billing_requests;
-        const meta = br.metadata || {};
+        
+        // FIX: Metadata in create-checkout is nested under mandate_request.metadata, fallback to root metadata
+        const meta = br.mandate_request?.metadata || br.metadata || {};
         const planTier = meta.plan_tier || "test";
         const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
         const customerId = br.links?.customer;
@@ -143,7 +145,7 @@ async function handleWebhookEvents(payload, config) {
         const frequency = meta.frequency || "Weekly";
         const orderNotes = meta.order_notes || "Provided on file";
 
-        // Parse address
+        // Parse fallback address from order notes in case GoCardless fields are missing
         let reasonPart = "Subscription";
         let rawAddress = "Address on file";
         if (orderNotes.includes('| Addr: ')) {
@@ -155,9 +157,17 @@ async function handleWebhookEvents(payload, config) {
         }
 
         const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
-        const address1 = addressLines[0] || rawAddress;
-        const city = addressLines[1] || "";
-        const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
+        const fallbackAddress1 = addressLines[0] || rawAddress;
+        const fallbackCity = addressLines[1] || "";
+        const fallbackZip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
+
+        // Build precise Shipping & Billing Addresses using verified GoCardless Customer fields
+        const finalAddress1 = customer.address_line1 || fallbackAddress1;
+        const finalAddress2 = customer.address_line2 || "";
+        const finalCity = customer.city || fallbackCity;
+        const finalProvince = customer.region || "";
+        const finalZip = customer.postal_code || fallbackZip;
+        const finalCountryCode = customer.country_code || "GB";
 
         // Inject first order into Shopify
         console.log(`Injecting initial subscription order into Shopify for ${customer.email}...`);
@@ -167,8 +177,31 @@ async function handleWebhookEvents(payload, config) {
           body: JSON.stringify({
             order: {
               line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
-              customer: { first_name: customer.given_name, last_name: customer.family_name, email: customer.email },
-              shipping_address: { first_name: customer.given_name, last_name: customer.family_name, address1, city, zip },
+              customer: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                email: customer.email 
+              },
+              shipping_address: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                address1: finalAddress1,
+                address2: finalAddress2,
+                city: finalCity,
+                province: finalProvince,
+                zip: finalZip,
+                country_code: finalCountryCode
+              },
+              billing_address: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                address1: finalAddress1,
+                address2: finalAddress2,
+                city: finalCity,
+                province: finalProvince,
+                zip: finalZip,
+                country_code: finalCountryCode
+              },
               note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reasonPart}`,
               financial_status: "paid",
               tags: `GC-BRQ-${billingRequestId}, Active-Subscriber`
@@ -224,7 +257,7 @@ async function handleWebhookEvents(payload, config) {
         const payment = paymentData.payments;
         const subscriptionId = payment.links?.subscription;
 
-        // CRITICAL CHECK: Only process if the payment came from an active subscription schedule
+        // Only process if the payment came from an active subscription schedule
         if (!subscriptionId) {
           console.log(`Payment ${paymentId} is a one-off payment, not a subscription renewal. Skipping order generation.`);
           continue;
@@ -269,9 +302,17 @@ async function handleWebhookEvents(payload, config) {
         const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
 
         const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
-        const address1 = addressLines[0] || rawAddress;
-        const city = addressLines[1] || "";
-        const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
+        const fallbackAddress1 = addressLines[0] || rawAddress;
+        const fallbackCity = addressLines[1] || "";
+        const fallbackZip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
+
+        // Build final validated address properties
+        const finalAddress1 = customer.address_line1 || fallbackAddress1;
+        const finalAddress2 = customer.address_line2 || "";
+        const finalCity = customer.city || fallbackCity;
+        const finalProvince = customer.region || "";
+        const finalZip = customer.postal_code || fallbackZip;
+        const finalCountryCode = customer.country_code || "GB";
 
         // Inject the recurring shipment order into Shopify automatically
         console.log(`Injecting recurring subscription shipment into Shopify for ${customer.email} (Payment: ${paymentId})`);
@@ -281,8 +322,31 @@ async function handleWebhookEvents(payload, config) {
           body: JSON.stringify({
             order: {
               line_items: [{ title: `${planInfo.description} (Renewal)`, quantity: 1, price: (payment.amount / 100).toString() }],
-              customer: { first_name: customer.given_name, last_name: customer.family_name, email: customer.email },
-              shipping_address: { first_name: customer.given_name, last_name: customer.family_name, address1, city, zip },
+              customer: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                email: customer.email 
+              },
+              shipping_address: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                address1: finalAddress1,
+                address2: finalAddress2,
+                city: finalCity,
+                province: finalProvince,
+                zip: finalZip,
+                country_code: finalCountryCode
+              },
+              billing_address: { 
+                first_name: customer.given_name, 
+                last_name: customer.family_name, 
+                address1: finalAddress1,
+                address2: finalAddress2,
+                city: finalCity,
+                province: finalProvince,
+                zip: finalZip,
+                country_code: finalCountryCode
+              },
               note: `Subscription Renewal Order:\nFrequency: ${frequency}\nReason: ${reason}\nLinked Subscription ID: ${subscriptionId}`,
               financial_status: "paid",
               tags: `GC-PM-${paymentId}, Subscription-Renewal`
@@ -328,7 +392,6 @@ async function handleWebhookEvents(payload, config) {
           const searchData = await shopifyCustomerSearch.json();
           const shopifyCustomer = searchData.customers?.[0];
           if (shopifyCustomer) {
-            // Add lockout tags so your warehouse is warned instantly
             const currentTags = shopifyCustomer.tags ? shopifyCustomer.tags.split(',').map(t => t.trim()) : [];
             const newTags = [...new Set([...currentTags, 'Payment-Failed-Hold'])].filter(t => t !== 'Active-Subscriber').join(', ');
 
