@@ -21,10 +21,9 @@ export async function POST({ request, locals }) {
     const plan = PLAN_PRICES[planTier] || PLAN_PRICES.test;
     const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
 
-    // FIX 1: Safely handle order notes when address fields are omitted from the form
-    const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ') || 'Not provided on form';
+    // 1. Handle order notes cleanly without depending on frontend address inputs
+    const mergedAddress = [address1, city, postcode].filter(val => val && val.trim() !== '').join(', ') || 'Collected via GoCardless';
     const fullName = `${firstName || ''} ${lastName || ''}`.trim();
-
     const orderNotes = `Name: ${fullName} | Email: ${email || ''} | Phone: ${phone || ''} | Reason: ${reason || 'Treat'} | Addr: ${mergedAddress}`;
 
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
@@ -54,7 +53,10 @@ export async function POST({ request, locals }) {
     });
 
     const brData = await brResponse.json();
-    if (!brResponse.ok) throw new Error(brData.error?.message || 'API Error');
+    if (!brResponse.ok) {
+      console.error("GoCardless Billing Request API Error Detail:", brData.error);
+      throw new Error(brData.error?.message || 'API Error');
+    }
 
     const billingRequestId = brData.billing_requests.id;
     
@@ -62,20 +64,21 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // FIX 2: Only attach fields to prefilled_customer if they actually have values
-    const prefilled_customer = {};
-    if (firstName) prefilled_customer.given_name = firstName;
-    if (lastName) prefilled_customer.family_name = lastName;
-    if (email) prefilled_customer.email = email;
-    if (phone) prefilled_customer.phone_number = phone;
+    // 2. Build prefilled_customer dynamically to prevent validation failures.
+    // GoCardless strictly rejects parameters passed as empty strings ("").
+    const customerData = {};
+    if (firstName && firstName.trim() !== '') customerData.given_name = firstName.trim();
+    if (lastName && lastName.trim() !== '') customerData.family_name = lastName.trim();
+    if (email && email.trim() !== '') customerData.email = email.trim();
+    if (phone && phone.trim() !== '') customerData.phone_number = phone.trim();
     
-    // Explicitly enforce the UK country code so GoCardless defaults to the correct region
-    prefilled_customer.country_code = "GB";
+    // Always default country code to GB for BACS scheme processing
+    customerData.country_code = "GB";
 
-    // Only inject address keys if they are passed in from your frontend
-    if (address1) prefilled_customer.address_line1 = address1;
-    if (city) prefilled_customer.city = city;
-    if (postcode) prefilled_customer.postal_code = postcode;
+    // Only inject individual address keys if they actually exist on our incoming object
+    if (address1 && address1.trim() !== '') customerData.address_line1 = address1.trim();
+    if (city && city.trim() !== '') customerData.city = city.trim();
+    if (postcode && postcode.trim() !== '') customerData.postal_code = postcode.trim();
 
     const flowPayload = {
       billing_request_flows: {
@@ -85,8 +88,9 @@ export async function POST({ request, locals }) {
       }
     };
 
-    if (Object.keys(prefilled_customer).length > 0) {
-      flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
+    // Only attach prefilled_customer if we have user metrics beyond just the default country_code
+    if (Object.keys(customerData).length > 1) {
+      flowPayload.billing_request_flows.prefilled_customer = customerData;
     }
 
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
@@ -100,7 +104,10 @@ export async function POST({ request, locals }) {
     });
 
     const flowData = await flowResponse.json();
-    if (!flowResponse.ok) throw new Error(flowData.error?.message || 'API Flow Error');
+    if (!flowResponse.ok) {
+      console.error("GoCardless Flow API Error Detail:", flowData.error);
+      throw new Error(flowData.error?.message || 'API Flow Error');
+    }
 
     return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), {
       status: 200,
