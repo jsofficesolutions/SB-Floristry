@@ -6,6 +6,28 @@ const PLAN_PRICES = {
   showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" }
 };
 
+/**
+ * Attempt to convert a UK phone number to E.164 format.
+ * Returns null if the input is clearly not a valid number.
+ */
+function toE164(phone) {
+  if (!phone) return null;
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  // UK mobile: 07xxx -> +447xxx
+  if (cleaned.startsWith('0') && !cleaned.startsWith('00')) {
+    cleaned = '+44' + cleaned.slice(1);
+  }
+  // Basic E.164 check: starts with + and has at least 10 digits
+  if (/^\+[1-9]\d{6,14}$/.test(cleaned)) {
+    return cleaned;
+  }
+  // If it already looks like a valid international number (e.g. +44...)
+  if (cleaned.startsWith('+') && cleaned.length >= 10) {
+    return cleaned;
+  }
+  return null;
+}
+
 export async function POST({ request, locals }) {
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
@@ -61,7 +83,6 @@ export async function POST({ request, locals }) {
 
     const brData = await brResponse.json();
     if (!brResponse.ok) {
-      // Log full error for debugging
       console.error("GoCardless billing_request error:", JSON.stringify(brData, null, 2));
       return new Response(JSON.stringify({ 
         error: brData.error?.message || 'Failed to create billing request',
@@ -76,17 +97,22 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // Prepare prefilled customer data (always include address)
+    // Prepare prefilled customer data (always include address, format phone if possible)
+    const e164Phone = toE164(phone);
+    
     const prefilled_customer = {
       given_name: firstName || '',
       family_name: lastName || '',
       email: email || '',
-      phone_number: phone || '',
       address_line1: address1,
       city: city,
       postal_code: postcode,
       country_code: 'GB'
     };
+    // Only add phone_number if it's valid E.164
+    if (e164Phone) {
+      prefilled_customer.phone_number = e164Phone;
+    }
 
     // Step 2: Create billing request flow
     const flowPayload = {
