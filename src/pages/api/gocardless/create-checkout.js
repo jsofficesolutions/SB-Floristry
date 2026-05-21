@@ -1,14 +1,14 @@
 export const prerender = false;
 
-// Define pricing structures for subscriptions (including Developer testing)
+// Define pricing structures for subscriptions matching Freddie's size classes (with Sandbox Developer test)
 const PLAN_PRICES = {
-  test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
-  classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
-  signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
-  luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
+  classic: { amount: 2800, description: "SB Floristry - The Classic Box" }, // £28.00 per delivery
+  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Box" } // £41.00 per delivery
 };
 
 export async function POST({ request, locals }) {
+  // Access environment variables with robust fallbacks
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   
@@ -20,7 +20,7 @@ export async function POST({ request, locals }) {
   try {
     const body = await request.json();
     
-    // Explicitly parse the separated address fields from the new frontend form
+    // Deconstruct the separate form inputs
     const { planTier, firstName, lastName, email, address1, city, postcode, frequency, reason } = body;
     
     if (!planTier || !PLAN_PRICES[planTier]) {
@@ -32,11 +32,12 @@ export async function POST({ request, locals }) {
       ? 'https://api.gocardless.com' 
       : 'https://api-sandbox.gocardless.com';
 
-    // Merge the explicit address parts into a single string to bypass the GoCardless 3-key metadata limit
+    // Combine address elements with commas to avoid exceeding GoCardless metadata 3-key limit
     const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
 
-    console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
+    console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (£${plan.amount / 100})`);
 
+    // 1. Create Billing Request (The Intent)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -71,11 +72,12 @@ export async function POST({ request, locals }) {
 
     const billingRequestId = brData.billing_requests.id;
     
+    // Safely configure success callback URL
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // Conditionally build customer payload to prevent GoCardless throwing 422 for empty strings
+    // Build user prefill data avoiding empty validation failures
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
@@ -96,6 +98,7 @@ export async function POST({ request, locals }) {
       flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
     }
 
+    // 2. Instantiate Billing Request Flow (The hosted authorization interface)
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
