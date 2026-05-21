@@ -1,10 +1,10 @@
 export const prerender = false;
 
-// Define pricing structures for subscriptions matching Freddie's size classes (with Sandbox Developer test)
+// Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
-  classic: { amount: 2800, description: "SB Floristry - The Classic Box" }, // £28.00 per delivery
-  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Box" } // £41.00 per delivery
+  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" }, // Elevated to £45.00
+  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" } // Elevated to £75.00
 };
 
 export async function POST({ request, locals }) {
@@ -20,7 +20,7 @@ export async function POST({ request, locals }) {
   try {
     const body = await request.json();
     
-    // Deconstruct the separate form inputs
+    // Deconstruct the separate form inputs from subscriptions.astro
     const { planTier, firstName, lastName, email, address1, city, postcode, frequency, reason } = body;
     
     if (!planTier || !PLAN_PRICES[planTier]) {
@@ -37,7 +37,9 @@ export async function POST({ request, locals }) {
 
     console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (£${plan.amount / 100})`);
 
-    // 1. Create Billing Request (The Intent)
+    // 1. Create Billing Request (With Inline Customer Creation)
+    // FIX: Moving customer creation directly inside the billing request locks the customer identity
+    // instantly and prevents the Sandbox flow from falling back to "John Doe".
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -59,6 +61,15 @@ export async function POST({ request, locals }) {
               frequency: frequency || "Weekly",
               order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500)
             }
+          },
+          customer: {
+            given_name: firstName || "Valued",
+            family_name: lastName || "Customer",
+            email: email || "",
+            address_line1: address1 || "No address",
+            city: city || "",
+            postal_code: postcode || "",
+            country_code: "GB"
           }
         }
       })
@@ -77,15 +88,6 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // Build user prefill data avoiding empty validation failures
-    const prefilled_customer = {};
-    if (firstName) prefilled_customer.given_name = firstName;
-    if (lastName) prefilled_customer.family_name = lastName;
-    if (email) prefilled_customer.email = email;
-    if (address1) prefilled_customer.address_line1 = address1;
-    if (city) prefilled_customer.city = city;
-    if (postcode) prefilled_customer.postal_code = postcode;
-
     const flowPayload = {
       billing_request_flows: {
         redirect_uri: successUrl.toString(),
@@ -93,10 +95,6 @@ export async function POST({ request, locals }) {
         links: { billing_request: billingRequestId }
       }
     };
-
-    if (Object.keys(prefilled_customer).length > 0) {
-      flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
-    }
 
     // 2. Instantiate Billing Request Flow (The hosted authorization interface)
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
