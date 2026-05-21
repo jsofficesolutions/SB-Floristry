@@ -110,9 +110,31 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // 3. Instantiate Billing Request Flow (The hosted authorization interface)
-    // We do not need to send prefilled_customer parameters here anymore because the customer
-    // is already securely linked directly inside the Billing Request itself.
+    // 3. Build prefilled_customer parameters explicitly for the hosted checkout page flow UI
+    // This forces the hosted form fields to automatically pre-populate so the customer doesn't have to retype them
+    const prefilled_customer = {};
+    if (firstName) prefilled_customer.given_name = firstName;
+    if (lastName) prefilled_customer.family_name = lastName;
+    if (email) prefilled_customer.email = email;
+    if (address1) prefilled_customer.address_line1 = address1;
+    if (city) prefilled_customer.city = city;
+    if (postcode) prefilled_customer.postal_code = postcode;
+
+    const flowPayload = {
+      billing_request_flows: {
+        redirect_uri: successUrl.toString(),
+        exit_uri: `${new URL(request.url).origin}/subscriptions`,
+        links: { billing_request: billingRequestId }
+      }
+    };
+
+    if (Object.keys(prefilled_customer).length > 0) {
+      flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
+    }
+
+    console.log("Step 3: Creating Billing Request Flow with autofill metadata.");
+
+    // 4. Instantiate Billing Request Flow (The hosted authorization interface)
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -120,13 +142,7 @@ export async function POST({ request, locals }) {
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        billing_request_flows: {
-          redirect_uri: successUrl.toString(),
-          exit_uri: `${new URL(request.url).origin}/subscriptions`,
-          links: { billing_request: billingRequestId }
-        }
-      })
+      body: JSON.stringify(flowPayload)
     });
 
     const flowData = await flowResponse.json();
