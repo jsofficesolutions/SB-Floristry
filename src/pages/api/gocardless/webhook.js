@@ -1,10 +1,10 @@
 export const prerender = false;
 
-// Define pricing structures for automated subscription generation (including Developer sandbox)
+// Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
-  classic: { amount: 2800, description: "SB Floristry - The Classic Box" },
-  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Box" }
+  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" },
+  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" }
 };
 
 // Map customer frequency selections (including Three-Weekly) to GoCardless subscription parameters
@@ -39,7 +39,7 @@ export async function POST(context) {
 
   console.log("Webhook triggered. Signature present:", !!signature);
 
-  // 1. Verify Webhook Signature securely via Web Crypto API
+  // 1. Verify Webhook Signature securely via Web Crypto API (required for Cloudflare worker environments)
   if (webhookSecret && signature) {
     const verified = await verifySignature(signature, bodyText, webhookSecret);
     if (!verified) {
@@ -91,84 +91,61 @@ async function handleWebhookEvents(payload, config) {
   if (!payload.events) return;
 
   for (const event of payload.events) {
+    const eventId = event.id;
+    console.log(`Processing Webhook Event ID: ${eventId} | Resource: ${event.resource_type} | Action: ${event.action}`);
+
+    // ==========================================
+    // LIFECYCLE EVENT 1: Initial Signup (Billing Request Fulfilled)
+    // ==========================================
     if (event.resource_type === 'billing_requests' && event.action === 'fulfilled') {
       const billingRequestId = event.links?.billing_request;
-      console.log(`Processing fulfilled Billing Request in background: ${billingRequestId}`);
-
-      if (!billingRequestId) {
-        console.error("Event payload lacks billing_request ID link. Skipping.");
-        continue;
-      }
+      if (!billingRequestId) continue;
 
       try {
         // IDEMPOTENCY CHECK: Query Shopify to check if an order with this Billing Request ID tag already exists
-        console.log(`Checking Shopify for existing orders tagged with: GC-BRQ-${billingRequestId}`);
         const checkRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-BRQ-${billingRequestId}`, {
-          headers: {
-            'X-Shopify-Access-Token': shopifyToken,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
         });
         
         if (checkRes.ok) {
           const checkData = await checkRes.json();
           if (checkData.orders && checkData.orders.length > 0) {
-            console.log(`DUPLICATE DETECTED: Shopify order already exists (Order ID: ${checkData.orders[0].id}) for Billing Request ${billingRequestId}. Skipping duplicate generation.`);
+            console.log(`DUPLICATE DETECTED: Shopify order already exists for Billing Request ${billingRequestId}. Skipping.`);
             continue;
           }
-        } else {
-          console.warn(`Shopify existence check returned non-200 status: ${checkRes.status}. Attempting to proceed defensively.`);
         }
 
-        // Fetch the parent Billing Request to reliably pull root metadata and links
-        console.log(`Querying GoCardless Billing Request API for ${billingRequestId}...`);
+        // Fetch parent Billing Request
         const brRes = await fetch(`${apiBase}/billing_requests/${billingRequestId}`, {
-          headers: {
-            'Authorization': `Bearer ${gcToken}`,
-            'GoCardless-Version': '2015-07-06'
-          }
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
         });
         const brData = await brRes.json();
-        if (!brRes.ok) {
-          console.error(`Failed to retrieve Billing Request details from API: ${JSON.stringify(brData)}`);
-          continue;
-        }
+        if (!brRes.ok) continue;
 
         const br = brData.billing_requests;
         const meta = br.metadata || {};
-        console.log("Successfully extracted billing request metadata:", meta);
-
         const planTier = meta.plan_tier || "test";
         const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
         const customerId = br.links?.customer;
 
-        if (!mandateId || !customerId) {
-          console.error(`Mandate ID (${mandateId}) or Customer ID (${customerId}) is missing from the Billing Request links. Skipping.`);
-          continue;
-        }
+        if (!mandateId || !customerId) continue;
 
-        // Fetch Customer Details from GoCardless
+        // Fetch Customer Details
         const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
-          headers: {
-            'Authorization': `Bearer ${gcToken}`,
-            'GoCardless-Version': '2015-07-06'
-          }
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
         });
         const customerData = await customerRes.json();
-        if (!customerRes.ok) throw new Error(`GoCardless Customer Fetch Error: ${JSON.stringify(customerData)}`);
+        if (!customerRes.ok) continue;
 
         const customer = customerData.customers;
         const fullName = `${customer.given_name} ${customer.family_name}`;
-
-        // Prepare Shopify Data
         const planInfo = PLAN_PRICES[planTier] || { amount: 100, description: "SB Floristry Subscription" };
         const frequency = meta.frequency || "Weekly";
         const orderNotes = meta.order_notes || "Provided on file";
 
-        // Parse the merged address and reason back out
+        // Parse address
         let reasonPart = "Subscription";
         let rawAddress = "Address on file";
-        
         if (orderNotes.includes('| Addr: ')) {
             const parts = orderNotes.split('| Addr: ');
             reasonPart = parts[0].replace('Reason:', '').trim();
@@ -177,64 +154,35 @@ async function handleWebhookEvents(payload, config) {
             rawAddress = orderNotes;
         }
 
-        // Split by commas to find explicitly separated address1, city, and postcode for Shopify
         const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
         const address1 = addressLines[0] || rawAddress;
         const city = addressLines[1] || "";
         const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
 
-        console.log(`Injecting paid subscription order into Shopify for ${customer.email}...`);
+        // Inject first order into Shopify
+        console.log(`Injecting initial subscription order into Shopify for ${customer.email}...`);
         const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
           method: 'POST',
-          headers: {
-            'X-Shopify-Access-Token': shopifyToken,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             order: {
-              line_items: [{
-                title: planInfo.description,
-                quantity: 1,
-                price: (planInfo.amount / 100).toString()
-              }],
-              customer: {
-                first_name: customer.given_name,
-                last_name: customer.family_name,
-                email: customer.email
-              },
-              shipping_address: {
-                first_name: customer.given_name,
-                last_name: customer.family_name,
-                address1: address1.substring(0, 255),
-                city: city.substring(0, 255),
-                zip: zip.substring(0, 255)
-              },
+              line_items: [{ title: planInfo.description, quantity: 1, price: (planInfo.amount / 100).toString() }],
+              customer: { first_name: customer.given_name, last_name: customer.family_name, email: customer.email },
+              shipping_address: { first_name: customer.given_name, last_name: customer.family_name, address1, city, zip },
               note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reasonPart}`,
               financial_status: "paid",
-              tags: `GC-BRQ-${billingRequestId}` // Stamped to search and avoid future duplicates
+              tags: `GC-BRQ-${billingRequestId}, Active-Subscriber`
             }
           })
         });
 
-        const shopifyData = await shopifyRes.json();
-        if (!shopifyRes.ok) {
-          console.error("Shopify Order Creation Failed:", shopifyData);
-        } else {
-          console.log(`Shopify Order created successfully: ${shopifyData.order.id}`);
-        }
-
-        // Establish the Automated GoCardless Subscription Schedule
+        // Establish GoCardless Subscription Schedule
         const schedule = FREQUENCY_INTERVALS[frequency];
         if (schedule) {
           console.log(`Setting up automated subscription schedule for ${fullName} (${frequency})`);
-          
-          const subRes = await fetch(`${apiBase}/subscriptions`, {
+          await fetch(`${apiBase}/subscriptions`, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${gcToken}`,
-              'GoCardless-Version': '2015-07-06',
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06', 'Content-Type': 'application/json' },
             body: JSON.stringify({
               subscriptions: {
                 amount: planInfo.amount,
@@ -242,23 +190,206 @@ async function handleWebhookEvents(payload, config) {
                 name: planInfo.description,
                 interval_unit: schedule.interval_unit,
                 interval: schedule.interval,
-                links: { mandate: mandateId }
+                links: { mandate: mandateId },
+                metadata: {
+                  plan_tier: planTier,
+                  frequency: frequency,
+                  shipping_address: rawAddress,
+                  reason: reasonPart
+                }
               }
             })
           });
+        }
+      } catch (err) {
+        console.error("Error handling billing request fulfilled event:", err);
+      }
+    }
 
-          const subData = await subRes.json();
-          if (!subRes.ok) {
-            console.error("GoCardless Subscription Scheduling Failed:", subData);
-          } else {
-            console.log(`Subscription schedule established: ${subData.subscriptions.id}`);
-          }
-        } else {
-          console.warn(`No schedule frequency match found for metadata frequency: ${frequency}. Skipping automated scheduler.`);
+    // ==========================================
+    // LIFECYCLE EVENT 2: Automated Subscription Charges (Future Orders)
+    // ==========================================
+    if (event.resource_type === 'payments' && event.action === 'confirmed') {
+      const paymentId = event.links?.payment;
+      if (!paymentId) continue;
+
+      try {
+        // Query GoCardless to fetch payment details
+        const paymentRes = await fetch(`${apiBase}/payments/${paymentId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const paymentData = await paymentRes.json();
+        if (!paymentRes.ok) continue;
+
+        const payment = paymentData.payments;
+        const subscriptionId = payment.links?.subscription;
+
+        // CRITICAL CHECK: Only process if the payment came from an active subscription schedule
+        if (!subscriptionId) {
+          console.log(`Payment ${paymentId} is a one-off payment, not a subscription renewal. Skipping order generation.`);
+          continue;
         }
 
+        // IDEMPOTENCY CHECK: Ensure we haven't already processed this recurring payment ID
+        const checkRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-PM-${paymentId}`, {
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+        });
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          if (checkData.orders && checkData.orders.length > 0) {
+            console.log(`DUPLICATE DETECTED: Shopify order already exists for Subscription Payment ${paymentId}. Skipping.`);
+            continue;
+          }
+        }
+
+        // Fetch parent Subscription metadata to get shipping details & plans
+        const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const subData = await subRes.json();
+        if (!subRes.ok) continue;
+
+        const sub = subData.subscriptions;
+        const subMeta = sub.metadata || {};
+
+        const planTier = subMeta.plan_tier || "classic";
+        const frequency = subMeta.frequency || "Weekly";
+        const rawAddress = subMeta.shipping_address || "Address on file";
+        const reason = subMeta.reason || "Subscription";
+
+        // Fetch Customer details to get email and names
+        const customerId = sub.links?.customer || payment.links?.customer;
+        const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const customerData = await customerRes.json();
+        if (!customerRes.ok) continue;
+
+        const customer = customerData.customers;
+        const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
+
+        const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
+        const address1 = addressLines[0] || rawAddress;
+        const city = addressLines[1] || "";
+        const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
+
+        // Inject the recurring shipment order into Shopify automatically
+        console.log(`Injecting recurring subscription shipment into Shopify for ${customer.email} (Payment: ${paymentId})`);
+        await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
+          method: 'POST',
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: {
+              line_items: [{ title: `${planInfo.description} (Renewal)`, quantity: 1, price: (payment.amount / 100).toString() }],
+              customer: { first_name: customer.given_name, last_name: customer.family_name, email: customer.email },
+              shipping_address: { first_name: customer.given_name, last_name: customer.family_name, address1, city, zip },
+              note: `Subscription Renewal Order:\nFrequency: ${frequency}\nReason: ${reason}\nLinked Subscription ID: ${subscriptionId}`,
+              financial_status: "paid",
+              tags: `GC-PM-${paymentId}, Subscription-Renewal`
+            }
+          })
+        });
+
       } catch (err) {
-        console.error(`Error processing event inside webhook background loop for ${billingRequestId}:`, err);
+        console.error(`Error processing recurring subscription payment ${paymentId}:`, err);
+      }
+    }
+
+    // ==========================================
+    // LIFECYCLE EVENT 3: Failed Payments & Protection (Fulfillment Lockout)
+    // ==========================================
+    if (event.resource_type === 'payments' && event.action === 'failed') {
+      const paymentId = event.links?.payment;
+      if (!paymentId) continue;
+
+      try {
+        const paymentRes = await fetch(`${apiBase}/payments/${paymentId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const paymentData = await paymentRes.json();
+        if (!paymentRes.ok) continue;
+
+        const customerId = paymentData.payments.links?.customer;
+        const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const customerData = await customerRes.json();
+        if (!customerRes.ok) continue;
+
+        const customerEmail = customerData.customers.email;
+
+        // Query Shopify for this customer profile to lock fulfillment
+        console.log(`CRITICAL: Payment failed for subscriber email: ${customerEmail}. Querying Shopify to hold customer orders.`);
+        const shopifyCustomerSearch = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/search.json?query=email:${customerEmail}`, {
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+        });
+
+        if (shopifyCustomerSearch.ok) {
+          const searchData = await shopifyCustomerSearch.json();
+          const shopifyCustomer = searchData.customers?.[0];
+          if (shopifyCustomer) {
+            // Add lockout tags so your warehouse is warned instantly
+            const currentTags = shopifyCustomer.tags ? shopifyCustomer.tags.split(',').map(t => t.trim()) : [];
+            const newTags = [...new Set([...currentTags, 'Payment-Failed-Hold'])].filter(t => t !== 'Active-Subscriber').join(', ');
+
+            await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${shopifyCustomer.id}.json`, {
+              method: 'PUT',
+              headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ customer: { id: shopifyCustomer.id, tags: newTags } })
+            });
+            console.log(`Successfully locked customer ${shopifyCustomer.id} in Shopify with 'Payment-Failed-Hold' tag.`);
+          }
+        }
+      } catch (err) {
+        console.error(`Error handling failed payment ${paymentId}:`, err);
+      }
+    }
+
+    // ==========================================
+    // LIFECYCLE EVENT 4: Subscription Cancellation
+    // ==========================================
+    if (event.resource_type === 'subscriptions' && event.action === 'cancelled') {
+      const subscriptionId = event.links?.subscription;
+      if (!subscriptionId) continue;
+
+      try {
+        const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const subData = await subRes.json();
+        if (!subRes.ok) continue;
+
+        const customerId = subData.subscriptions.links?.customer;
+        const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const customerData = await customerRes.json();
+        if (!customerRes.ok) continue;
+
+        const customerEmail = customerData.customers.email;
+
+        console.log(`Subscription ${subscriptionId} cancelled. Adjusting Shopify tags for subscriber email: ${customerEmail}`);
+        const shopifyCustomerSearch = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/search.json?query=email:${customerEmail}`, {
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+        });
+
+        if (shopifyCustomerSearch.ok) {
+          const searchData = await shopifyCustomerSearch.json();
+          const shopifyCustomer = searchData.customers?.[0];
+          if (shopifyCustomer) {
+            const currentTags = shopifyCustomer.tags ? shopifyCustomer.tags.split(',').map(t => t.trim()) : [];
+            const newTags = [...new Set([...currentTags, 'Subscription-Cancelled'])].filter(t => t !== 'Active-Subscriber').join(', ');
+
+            await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${shopifyCustomer.id}.json`, {
+              method: 'PUT',
+              headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ customer: { id: shopifyCustomer.id, tags: newTags } })
+            });
+            console.log(`Removed active state and applied 'Subscription-Cancelled' to Shopify customer ${shopifyCustomer.id}.`);
+          }
+        }
+      } catch (err) {
+        console.error(`Error processing subscription cancellation for ${subscriptionId}:`, err);
       }
     }
   }
