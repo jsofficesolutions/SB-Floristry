@@ -62,15 +62,20 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
+    // FIX: Only attach fields to prefilled_customer if they are passed from the form
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
     if (phone) prefilled_customer.phone_number = phone;
+    
+    // Explicitly enforce the United Kingdom country code so GoCardless matches BACS routing
+    prefilled_customer.country_code = "GB";
+
+    // ONLY add address keys if they actually exist in the frontend submission
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
-    prefilled_customer.country_code = "GB";
 
     const flowPayload = {
       billing_request_flows: {
@@ -83,7 +88,7 @@ export async function POST({ request, locals }) {
     if (Object.keys(prefilled_customer).length > 0) {
       flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
     }
-
+    
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
