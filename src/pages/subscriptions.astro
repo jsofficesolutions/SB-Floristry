@@ -4,70 +4,316 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Luxury Floral Subscriptions | SB Floristry">
+<Layout title="Bespoke Fresh Flower Subscriptions | SB Floristry">
   <Header />
 
-  <main class="pt-24 pb-20 bg-[#F9F8F6]">
-    <div class="max-w-7xl mx-auto px-6 text-center">
-      <h1 class="font-serif text-4xl md:text-5xl text-sb-black mb-6">Floral Subscriptions</h1>
-      <p class="text-gray-600 max-w-2xl mx-auto mb-16 tracking-wide">Enjoy fresh, luxury seasonal blooms delivered directly to your door. Choose your tier, set your frequency, and let us handle the rest.</p>
-
-      <!-- Pricing Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-        <!-- Developer Test Tier (For Sandbox Banking Tests) -->
-        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
-          <div>
-            <h3 class="font-serif text-2xl text-sb-black mb-2">Developer Test</h3>
-            <p class="text-sb-gold font-bold text-xl mb-4">£1.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
-            <p class="text-sm text-gray-500 mb-6">QA Testing Tier</p>
-          </div>
-          <button data-plan="test" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Test Flow</button>
+  <!-- Hero Section -->
+  <section class="relative bg-sb-cream pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-6 z-10 text-left">
+        <span class="text-[11px] font-bold tracking-[0.3em] uppercase text-sb-gold block mb-4">Because one is never enough...</span>
+        <h1 class="font-serif text-5xl md:text-6xl text-sb-black leading-tight mb-6">
+          Subscription Flowers
+        </h1>
+        <p class="text-gray-600 text-lg mb-8 max-w-lg leading-relaxed font-light">
+          A bunch of joy with every delivery, as often as you like. Arrives fresh in bud, straight from our amazing growers, ready for you to arrange.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <a href="#choose-size" class="bg-sb-black text-white hover:bg-sb-gold hover:text-sb-black px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all duration-300 shadow-xl">
+            Get Started
+          </a>
+          <p class="text-xs text-gray-500 font-medium tracking-wide pt-2 sm:pt-0">
+            From £28 a box. Skip or cancel at any time.
+          </p>
         </div>
-
-        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
-          <div>
-            <h3 class="font-serif text-2xl text-sb-black mb-2">The Classic</h3>
-            <p class="text-sb-gold font-bold text-xl mb-4">£40.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
-            <p class="text-sm text-gray-500 mb-6">Beautiful, seasonal stems arranged elegantly for your home.</p>
-          </div>
-          <button data-plan="classic" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Select Classic</button>
+      </div>
+      <div class="lg:col-span-6 relative flex justify-center">
+        <!-- Main Hero Image Showcase -->
+        <div class="relative w-full max-w-lg aspect-[4/5] overflow-hidden shadow-2xl rounded-sm">
+          <img src="/images/story-arranging.jpg" alt="SB Floristry arranging table with fresh seasonal stems" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-black/10"></div>
         </div>
+        <!-- Decorative Frame Offset -->
+        <div class="absolute -bottom-6 -left-6 w-48 h-48 bg-sb-gold/10 -z-10 rounded-sm hidden md:block"></div>
+      </div>
+    </div>
+  </section>
 
-        <div class="bg-sb-black text-white p-8 border border-sb-black flex flex-col justify-between transform md:-translate-y-4 shadow-xl">
-          <div>
-            <p class="text-[10px] text-sb-gold uppercase tracking-[0.2em] mb-4">Most Popular</p>
-            <h3 class="font-serif text-2xl mb-2">The Signature</h3>
-            <p class="text-sb-gold font-bold text-xl mb-4">£65.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
-            <p class="text-sm text-gray-400 mb-6">A fuller, premium arrangement featuring our signature focal blooms.</p>
-          </div>
-          <button data-plan="signature" class="subscribe-btn w-full bg-sb-gold text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-white transition-colors font-bold">Select Signature</button>
+  <!-- How It Works Section -->
+  <section class="bg-white py-24 border-y border-gray-100">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Seamless & Flexible</span>
+      <h2 class="font-serif text-4xl text-sb-black mb-16">How your flower subscription works...</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Step 1 -->
+        <div class="flex flex-col items-center text-center px-4">
+          <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">1</div>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Delivered to your door</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Get flowers on a set day at a frequency of your choice (weekly, fortnightly, or 3-weekly).</p>
         </div>
-
-        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
-          <div>
-            <h3 class="font-serif text-2xl text-sb-black mb-2">The Luxe</h3>
-            <p class="text-sb-gold font-bold text-xl mb-4">£100.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
-            <p class="text-sm text-gray-500 mb-6">A breathtaking, show-stopping display of absolute luxury.</p>
-          </div>
-          <button data-plan="luxe" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Select Luxe</button>
+        <!-- Step 2 -->
+        <div class="flex flex-col items-center text-center px-4">
+          <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">2</div>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Manage your calendar</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Completely flexible online system. Pause, skip, or cancel your flower deliveries at any time.</p>
+        </div>
+        <!-- Step 3 -->
+        <div class="flex flex-col items-center text-center px-4">
+          <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">3</div>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Arrange like a pro</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Unleash your inner florist using our beautiful, illustrated bespoke flower arranging guides.</p>
+        </div>
+        <!-- Step 4 -->
+        <div class="flex flex-col items-center text-center px-4">
+          <div class="w-12 h-12 rounded-full border border-sb-gold flex items-center justify-center font-serif text-sb-gold text-lg mb-6 bg-sb-cream font-bold">4</div>
+          <h3 class="font-serif text-lg text-sb-black mb-3">Bud to bloom!</h3>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Our flower subscription deliveries arrive in bud to shield them in transit and guarantee they last for weeks.</p>
         </div>
       </div>
     </div>
-  </main>
+  </section>
 
-  <!-- Subscription Checkout Modal -->
+  <!-- Perks Grid -->
+  <section class="bg-sb-cream py-24">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Subscriber Perks</span>
+        <h2 class="font-serif text-4xl text-sb-black">Why you’ll love our fresh flower subscriptions</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-leaf"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Super long-lasting</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Arrive tightly in bud and expand to full magnificent bloom in your vase for up to 2 glorious weeks.</p>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-calendar-alt"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Always seasonal</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Never repetitive. We work directly with master growers to follow the natural seasons step-by-step.</p>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-sliders-h"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Flex appeal</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Delivered as often as you request. Pause, skip, or cancel through your simple custom portal.</p>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-100 rounded-sm shadow-sm flex flex-col items-start">
+          <div class="text-sb-gold text-2xl mb-4"><i class="fas fa-percentage"></i></div>
+          <h4 class="font-serif text-lg text-sb-black mb-2">Subscribe & Save</h4>
+          <p class="text-xs text-gray-500 leading-relaxed font-light">Enjoy preferred access pricing, saving up to 18% compared to single arrangements.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What's in your Box -->
+  <section class="bg-white py-24 border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5">
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Unboxing Joy</span>
+        <h2 class="font-serif text-4xl text-sb-black mb-6">What's in your flower subscription box?</h2>
+        <ul class="space-y-6">
+          <li class="flex gap-4">
+            <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
+            <div>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Perfect seasonal selections</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Stems are carefully curated by color, height, and flower variety, packed from farm-to-door without delays.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
+            <div>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Illustrated arranging guides</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Our step-by-step maps and guides make it simple to display your flowers with florist-level balance.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="text-sb-gold text-lg pt-1"><i class="fas fa-check-circle"></i></span>
+            <div>
+              <h4 class="font-serif text-base text-sb-black font-semibold">Super special flower food</h4>
+              <p class="text-xs text-gray-500 font-light mt-1">Our custom formulated nutritional food gives your arrangement the extra vitality boost it needs.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="lg:col-span-7">
+        <div class="relative rounded-sm overflow-hidden shadow-xl aspect-[16/10]">
+          <img src="/images/product-wild-meadow.jpg" alt="Subscription box flatlay with seasonal stems and arranger guide" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Choose Size & Sign Up Section -->
+  <section id="choose-size" class="bg-sb-cream py-24 scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Choose Your Size</span>
+      <h2 class="font-serif text-4xl text-sb-black mb-6">Pick from our premium sizes</h2>
+      <p class="text-gray-500 max-w-xl mx-auto mb-16 text-sm font-light">All options are completely customizable. Skip a box, modify your delivery interval, or close your account anytime.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
+        <!-- Developer Sandbox Test Tier -->
+        <div class="bg-white border border-gray-200 p-8 flex flex-col justify-between text-left shadow-sm hover:shadow-md transition-shadow">
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="font-serif text-2xl text-sb-black font-light">Developer Test</h3>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-sb-gold bg-sb-cream px-2.5 py-1 rounded-full">Sandbox</span>
+            </div>
+            <p class="text-gray-400 text-xs uppercase tracking-widest font-bold mb-4">£1.00 <span class="text-[10px] text-gray-300 font-normal">/ delivery</span></p>
+            <p class="text-xs text-gray-500 leading-relaxed font-light mb-8">Used to safely execute a complete production or sandbox direct debit test with your bank.</p>
+            <div class="border-t border-gray-100 pt-6 space-y-3">
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Ideal for Sandbox & Live Tests</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Verifies Shopify integration</div>
+            </div>
+          </div>
+          <button data-plan="test" class="subscribe-btn w-full bg-sb-black text-white hover:bg-sb-gold hover:text-sb-black transition-colors py-3.5 uppercase tracking-widest text-xs font-bold mt-8">
+            Test Setup
+          </button>
+        </div>
+
+        <!-- Classic Box -->
+        <div class="bg-white border border-gray-200 p-8 flex flex-col justify-between text-left shadow-sm hover:shadow-md transition-shadow">
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="font-serif text-2xl text-sb-black font-light">Classic</h3>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-sb-gold bg-sb-cream px-2.5 py-1 rounded-full">Popular Choice</span>
+            </div>
+            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£28.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
+            <p class="text-xs text-gray-500 leading-relaxed font-light mb-8">Perfect for dynamic home styling, dining tables, or a luxurious coffee table centerpiece.</p>
+            <div class="border-t border-gray-100 pt-6 space-y-3">
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> 15-18 unbelievably seasonal stems</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> 5-7 different seasonal varieties</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Custom formulated flower food</div>
+              <div class="flex items-center gap-2 text-xs text-gray-600"><i class="fas fa-check text-sb-gold text-[10px]"></i> Beautiful illustrated styling map</div>
+            </div>
+          </div>
+          <button data-plan="classic" class="subscribe-btn w-full bg-sb-black text-white hover:bg-sb-gold hover:text-sb-black transition-colors py-3.5 uppercase tracking-widest text-xs font-bold mt-8">
+            Select Classic
+          </button>
+        </div>
+
+        <!-- Showstopper Box -->
+        <div class="bg-sb-black text-white p-8 flex flex-col justify-between text-left shadow-xl hover:shadow-2xl transition-shadow relative">
+          <div class="absolute top-4 right-4 bg-sb-gold text-sb-black text-[9px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full">Premium Size</div>
+          <div>
+            <h3 class="font-serif text-2xl mb-4 mt-2">Showstopper</h3>
+            <p class="text-sb-gold text-2xl font-serif font-bold mb-4">£41.00 <span class="text-xs text-gray-400 font-normal tracking-normal">/ box</span></p>
+            <p class="text-xs text-gray-400 leading-relaxed font-light mb-8">A massive, breathtaking arrangement designed to stand out in hallways, main foyers, or spacious rooms.</p>
+            <div class="border-t border-white/10 pt-6 space-y-3">
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> 18-22 premium seasonal stems</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Hand-selected, grower-direct varieties</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> Double portions of special flower food</div>
+              <div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-check text-sb-gold text-[10px]"></i> In-depth florist arranging blueprints</div>
+            </div>
+          </div>
+          <button data-plan="showstopper" class="subscribe-btn w-full bg-sb-gold text-sb-black hover:bg-white hover:text-sb-black transition-colors py-3.5 uppercase tracking-widest text-xs font-bold mt-8">
+            Select Showstopper
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brand Narrative & Value Props -->
+  <section class="bg-white py-24 border-t border-gray-100">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">The SB Promise</span>
+        <h2 class="font-serif text-4xl text-sb-black">Sustainable Luxury, Crafted for You</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-left leading-relaxed">
+        <div class="space-y-6 text-gray-600 font-light text-sm">
+          <p>
+            We pride ourselves on our **grow-to-order** model, which helps us completely bypass conventional floral waste. While standard florist networks waste up to 40% of their cut flowers, we operate on a strictly controlled process resulting in under 5% wastage.
+          </p>
+          <p>
+            By working with local farming partners, we cut the storage phase. Stems are safely packed and routed directly to your home inside our specialized cardboard boxes. 
+          </p>
+        </div>
+        <div class="space-y-6 text-gray-600 font-light text-sm">
+          <p>
+            All delivery paths are mapped for carbon offset compatibility, and our entire packaging range is 100% recyclable or home-compostable, preserving the soil that grows our flowers.
+          </p>
+          <p>
+            You can verify our standards across thousands of five-star reviews from verified flower enthusiasts who have transitioned to the beauty of hassle-free subscriptions.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQS Section -->
+  <section class="bg-[#F9F8F6] py-24 border-t border-gray-200">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-[10px] font-bold tracking-[0.35em] uppercase text-sb-gold block mb-3">Hassle-free Clarity</span>
+        <h2 class="font-serif text-4xl text-sb-black">Our flower subscription FAQs</h2>
+      </div>
+
+      <div class="space-y-6">
+        <details class="group bg-white border border-gray-200 p-6 rounded-sm cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between outline-none">
+            <h3 class="font-serif text-lg text-sb-black">What types of flowers can I expect?</h3>
+            <span class="transition-transform duration-300 group-open:rotate-180 text-sb-gold"><i class="fas fa-chevron-down"></i></span>
+          </summary>
+          <div class="mt-4 text-xs text-gray-500 leading-relaxed font-light space-y-2">
+            <p>One of the best things about our subscriptions is discovering new flowers. We work in tandem with the seasons to keep our arrangements fresh and eco-friendly. This means peak blooms and unique arrangements every single time.</p>
+            <p>Throughout the seasons, you can expect favorites like lilies, peonies, premium tulips, roses, and dahlias, plus curated wild accents hand-picked by our design team.</p>
+          </div>
+        </details>
+
+        <details class="group bg-white border border-gray-200 p-6 rounded-sm cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between outline-none">
+            <h3 class="font-serif text-lg text-sb-black">Do your flower deliveries cover my area?</h3>
+            <span class="transition-transform duration-300 group-open:rotate-180 text-sb-gold"><i class="fas fa-chevron-down"></i></span>
+          </summary>
+          <div class="mt-4 text-xs text-gray-500 leading-relaxed font-light">
+            <p>We deliver nationwide across the UK with the exception of the northernmost highlands and offshore territories. Enter your details during setup to verify shipping routes.</p>
+          </div>
+        </details>
+
+        <details class="group bg-white border border-gray-200 p-6 rounded-sm cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between outline-none">
+            <h3 class="font-serif text-lg text-sb-black">Is it easy to skip or cancel deliveries?</h3>
+            <span class="transition-transform duration-300 group-open:rotate-180 text-sb-gold"><i class="fas fa-chevron-down"></i></span>
+          </summary>
+          <div class="mt-4 text-xs text-gray-500 leading-relaxed font-light">
+            <p>Absolutely. You can skip a specific delivery week, temporarily pause your subscription for holidays, or cancel entirely from your online dashboard with a single click. There are zero commitments or locked contracts.</p>
+          </div>
+        </details>
+
+        <details class="group bg-white border border-gray-200 p-6 rounded-sm cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between outline-none">
+            <h3 class="font-serif text-lg text-sb-black">Can I schedule a gift subscription?</h3>
+            <span class="transition-transform duration-300 group-open:rotate-180 text-sb-gold"><i class="fas fa-chevron-down"></i></span>
+          </summary>
+          <div class="mt-4 text-xs text-gray-500 leading-relaxed font-light">
+            <p>Yes. You can configure beautiful fixed-duration gift packages (3, 6, or 12 months) with a single, upfront payment. We even include a complimentary luxury glass vase with the very first box to complete their gifting experience.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Checkout Modal with Explicit Address Fields -->
   <div id="subModal" class="fixed inset-0 bg-black/70 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div id="subModalContent" class="bg-white w-full max-w-lg relative transform scale-95 transition-transform duration-300 my-auto">
+    <div id="subModalContent" class="bg-white w-full max-w-lg relative transform scale-95 transition-transform duration-300 my-auto shadow-2xl rounded-sm">
       
-      <button id="closeSubModal" type="button" class="absolute top-4 right-4 text-gray-400 hover:text-sb-black transition-colors z-10">
+      <button id="closeSubModal" type="button" class="absolute top-4 right-4 text-gray-400 hover:text-sb-black transition-colors z-10" aria-label="Close modal">
         <i class="fas fa-times text-xl"></i>
       </button>
 
       <div class="p-8">
-        <h2 class="font-serif text-3xl text-sb-black mb-2">Complete Setup</h2>
-        <p id="modalPlanName" class="text-sb-gold font-bold tracking-wide mb-6">The Subscription</p>
+        <h2 class="font-serif text-3xl text-sb-black mb-1">Complete Setup</h2>
+        <p id="modalPlanName" class="text-sb-gold font-bold tracking-wider text-xs uppercase mb-6">Your Subscription</p>
 
         <form id="subscriptionForm" class="space-y-4">
+          <!-- Stamped Plan Tier parameter identifier -->
           <input type="hidden" id="planTier" name="planTier" value="">
 
           <div class="grid grid-cols-2 gap-4">
@@ -108,7 +354,7 @@ import Footer from '../components/Footer.astro';
               <select name="frequency" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
                 <option value="Weekly">Weekly</option>
                 <option value="Fortnightly">Fortnightly</option>
-                <option value="Monthly">Monthly</option>
+                <option value="Three-Weekly">Three-Weekly</option>
               </select>
             </div>
             <div>
