@@ -3,8 +3,8 @@ export const prerender = false;
 // Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
-  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" }, // Elevated to £45.00
-  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" } // Elevated to £75.00
+  classic: { amount: 4500, description: "SB Floristry - The Signature Classic Box" }, // £45.00 per delivery
+  showstopper: { amount: 7500, description: "SB Floristry - The Grand Showstopper Box" } // £75.00 per delivery
 };
 
 export async function POST({ request, locals }) {
@@ -35,11 +35,39 @@ export async function POST({ request, locals }) {
     // Combine address elements with commas to avoid exceeding GoCardless metadata 3-key limit
     const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
 
-    console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (£${plan.amount / 100})`);
+    console.log(`Step 1: Creating Customer in GoCardless for ${email}`);
 
-    // 1. Create Billing Request (With Inline Customer Creation)
-    // FIX: Moving customer creation directly inside the billing request locks the customer identity
-    // instantly and prevents the Sandbox flow from falling back to "John Doe".
+    // 1. Create the customer record first to register identity and bypass "John Doe" sandbox fallback
+    const customerResponse = await fetch(`${apiBase}/customers`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'GoCardless-Version': '2015-07-06',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        customers: {
+          given_name: firstName || "Valued",
+          family_name: lastName || "Customer",
+          email: email || "",
+          address_line1: address1 || "No address",
+          city: city || "",
+          postal_code: postcode || "",
+          country_code: "GB"
+        }
+      })
+    });
+
+    const customerData = await customerResponse.json();
+    if (!customerResponse.ok) {
+      console.error("GoCardless Customer Creation Error payload:", customerData);
+      throw new Error(`Failed to pre-create customer: ${customerData.error?.message || 'API Customer Validation Error'}`);
+    }
+
+    const customerId = customerData.customers.id;
+    console.log(`Customer successfully created: ${customerId}. Step 2: Generating Billing Request.`);
+
+    // 2. Create Billing Request (Linking the pre-created customer ID)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -62,14 +90,8 @@ export async function POST({ request, locals }) {
               order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500)
             }
           },
-          customer: {
-            given_name: firstName || "Valued",
-            family_name: lastName || "Customer",
-            email: email || "",
-            address_line1: address1 || "No address",
-            city: city || "",
-            postal_code: postcode || "",
-            country_code: "GB"
+          links: {
+            customer: customerId
           }
         }
       })
@@ -78,7 +100,7 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}.`);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Billing Request Error'}.`);
     }
 
     const billingRequestId = brData.billing_requests.id;
@@ -88,15 +110,9 @@ export async function POST({ request, locals }) {
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    const flowPayload = {
-      billing_request_flows: {
-        redirect_uri: successUrl.toString(),
-        exit_uri: `${new URL(request.url).origin}/subscriptions`,
-        links: { billing_request: billingRequestId }
-      }
-    };
-
-    // 2. Instantiate Billing Request Flow (The hosted authorization interface)
+    // 3. Instantiate Billing Request Flow (The hosted authorization interface)
+    // We do not need to send prefilled_customer parameters here anymore because the customer
+    // is already securely linked directly inside the Billing Request itself.
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -104,7 +120,13 @@ export async function POST({ request, locals }) {
         'GoCardless-Version': '2015-07-06',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(flowPayload)
+      body: JSON.stringify({
+        billing_request_flows: {
+          redirect_uri: successUrl.toString(),
+          exit_uri: `${new URL(request.url).origin}/subscriptions`,
+          links: { billing_request: billingRequestId }
+        }
+      })
     });
 
     const flowData = await flowResponse.json();
