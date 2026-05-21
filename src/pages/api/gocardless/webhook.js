@@ -63,6 +63,22 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   }
   if (!phone && parsedMeta.phone) phone = parsedMeta.phone;
 
+  // --- NEW: SHOPIFY FALLBACKS ---
+  // Shopify strictly requires a last name. If it's still blank, salvage from meta or set a fallback.
+  if (!lastName || lastName.trim() === "") {
+    if (parsedMeta.name) {
+      const nameParts = parsedMeta.name.split(' ');
+      lastName = nameParts.slice(1).join(' ') || "Customer";
+    } else {
+      lastName = "Customer";
+    }
+  }
+
+  // Ensure first name isn't completely blank either
+  if (!firstName || firstName.trim() === "") {
+    firstName = "Valued";
+  }
+
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
 }
 
@@ -122,9 +138,8 @@ async function handleWebhookEvents(payload, config) {
   for (const event of payload.events) {
 
     // ==========================================
-    // NEW: Handle initial subscription creation
+    // Handle initial subscription creation
     // ==========================================
-
     if (event.resource_type === 'subscriptions' && event.action === 'created') {
       const subscriptionId = event.links?.subscription;
       if (!subscriptionId) continue;
@@ -249,7 +264,7 @@ async function handleWebhookEvents(payload, config) {
     }
 
     // ==========================================
-    // Original: Billing Request Fulfilled (fallback)
+    // Billing Request Fulfilled (fallback)
     // ==========================================
     if (event.resource_type === 'billing_requests' && event.action === 'fulfilled') {
       const billingRequestId = event.links?.billing_request;
@@ -325,7 +340,7 @@ async function handleWebhookEvents(payload, config) {
            await forceShopifyCustomerPhoneUpdate(shopifyData.order.customer.id, cleanedPhone, shopifyDomain, shopifyToken);
         }
 
-        // Establish subscription schedule (if not already handled by later events)
+        // Establish subscription schedule
         const schedule = FREQUENCY_INTERVALS[frequency];
         if (schedule) {
           await fetch(`${apiBase}/subscriptions`, {
@@ -353,8 +368,6 @@ async function handleWebhookEvents(payload, config) {
       }
     }
 
-    // ... Keep the rest of the original event handlers (payments confirmed, failed, subscriptions cancelled) exactly as they were
-    // I'll include them for completeness but unchanged from your file.
     // ==========================================
     // Recurring Payments (Future Renewals)
     // ==========================================
