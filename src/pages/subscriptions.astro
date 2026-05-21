@@ -429,15 +429,28 @@ import Footer from '../components/Footer.astro';
         if (response.ok && result.checkoutUrl) {
           window.location.href = result.checkoutUrl;
         } else {
-          throw new Error(result.error || "No checkout URL returned");
+          let errorMessage = result.error || "No checkout URL returned";
+          
+          // Show GoCardless field-level details if available
+          if (result.details) {
+            const detailArr = Array.isArray(result.details) 
+              ? result.details.map(d => `${d.field}: ${d.message}`).join('\n')
+              : JSON.stringify(result.details);
+            errorMessage += '\n' + detailArr;
+          }
+          
+          // Log the full error for debugging
+          console.error("GoCardless error details:", result);
+          
+          throw new Error(errorMessage);
         }
       } catch (err) {
         console.error("Payment initialization failed:", err);
-        submitBtn.innerHTML = "Error - Please Try Again";
+        submitBtn.innerHTML = "Error - " + (err.message || "Please Try Again");
         submitBtn.disabled = false;
         setTimeout(() => {
           submitBtn.innerHTML = originalText;
-        }, 3000);
+        }, 5000);
       }
     });
   });
