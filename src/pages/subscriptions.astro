@@ -1,293 +1,219 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Floral Subscriptions | SB Floristry" description="Subscribe to regular luxury flower deliveries in Essex. Set up easily via Direct Debit.">
-  
-  <section class="relative min-h-[80vh] flex items-center justify-center bg-sb-black text-sb-cream overflow-hidden">
-    <div class="absolute inset-0 z-0">
-      <img src="/images/collection-signature.jpg" alt="Luxury Subscription Flowers" class="w-full h-full object-cover opacity-60 hero-zoom" />
-      <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-sb-black"></div>
-    </div>
-    <div class="container mx-auto px-6 relative z-10 text-center reveal mt-20">
-      <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-6 block">The SB Subscription</span>
-      <h1 class="font-serif text-5xl md:text-8xl mb-8 font-light tracking-wide">Endless <br/><span class="italic text-sb-gold">Elegance</span></h1>
-      <p class="text-lg md:text-xl font-light text-gray-300 max-w-xl mx-auto leading-relaxed">
-        Curated seasonal blooms delivered seamlessly to your door. Managed securely via direct debit, paused or cancelled at any time.
-      </p>
-    </div>
-  </section>
+<Layout title="Luxury Floral Subscriptions | SB Floristry">
+  <Header />
 
-  <section class="py-32 bg-sb-cream text-sb-black">
-    <div class="container mx-auto px-6 max-w-6xl">
+  <main class="pt-24 pb-20 bg-[#F9F8F6]">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h1 class="font-serif text-4xl md:text-5xl text-sb-black mb-6">Floral Subscriptions</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto mb-16 tracking-wide">Enjoy fresh, luxury seasonal blooms delivered directly to your door. Choose your tier, set your frequency, and let us handle the rest.</p>
 
-      <div class="flex flex-col md:flex-row items-center gap-16 mb-32 reveal border border-dashed border-sb-gold/40 p-8 md:p-12 bg-white/40 backdrop-blur-sm rounded-sm">
-        <div class="w-full md:w-1/2">
-          <div class="aspect-[4/5] bg-sb-black/5 rounded-sm flex flex-col items-center justify-center border border-gray-200/50 p-6 text-center">
-            <i class="fas fa-flask text-5xl text-sb-gold/60 mb-4 animate-pulse"></i>
-            <p class="font-serif text-xl text-sb-black tracking-wide">Sandbox QA Suite</p>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Direct Debit Testing</p>
+      <!-- Pricing Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <!-- Developer Test Tier (For Sandbox Banking Tests) -->
+        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-sb-black mb-2">Developer Test</h3>
+            <p class="text-sb-gold font-bold text-xl mb-4">£1.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
+            <p class="text-sm text-gray-500 mb-6">QA Testing Tier</p>
           </div>
+          <button data-plan="test" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Test Flow</button>
         </div>
-        <div class="w-full md:w-1/2 md:pl-12">
-          <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">QA Vetting Only</span>
-          <h2 class="font-serif text-4xl md:text-5xl mb-4 text-sb-black">Developer Test Tier</h2>
-          <p class="text-xl text-gray-500 mb-6 font-light">£0.01 <span class="text-sm uppercase tracking-wider">/ checkout sandbox trigger</span></p>
-          <p class="text-gray-600 font-light leading-relaxed mb-8">
-            A safe 1p micro-payment subscription designed exclusively to run end-to-end integration tests, verify secure webhook data handshakes, and check downstream automated Shopify order execution.
-          </p>
-          <ul class="text-sm text-gray-500 space-y-4 mb-10 font-light border-l border-sb-gold/30 pl-6">
-            <li>1p direct debit subscription simulation</li>
-            <li>Fires live webhook event models on completion</li>
-            <li>Safely verifies end-to-end architecture state</li>
-          </ul>
-          <button data-plan="test" class="subscribe-btn inline-block bg-sb-black border border-sb-black text-sb-gold px-10 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 shadow-xl">
-            Trigger 1p Test Flow
-          </button>
+
+        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-sb-black mb-2">The Classic</h3>
+            <p class="text-sb-gold font-bold text-xl mb-4">£40.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
+            <p class="text-sm text-gray-500 mb-6">Beautiful, seasonal stems arranged elegantly for your home.</p>
+          </div>
+          <button data-plan="classic" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Select Classic</button>
+        </div>
+
+        <div class="bg-sb-black text-white p-8 border border-sb-black flex flex-col justify-between transform md:-translate-y-4 shadow-xl">
+          <div>
+            <p class="text-[10px] text-sb-gold uppercase tracking-[0.2em] mb-4">Most Popular</p>
+            <h3 class="font-serif text-2xl mb-2">The Signature</h3>
+            <p class="text-sb-gold font-bold text-xl mb-4">£65.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
+            <p class="text-sm text-gray-400 mb-6">A fuller, premium arrangement featuring our signature focal blooms.</p>
+          </div>
+          <button data-plan="signature" class="subscribe-btn w-full bg-sb-gold text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-white transition-colors font-bold">Select Signature</button>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-200 flex flex-col justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-sb-black mb-2">The Luxe</h3>
+            <p class="text-sb-gold font-bold text-xl mb-4">£100.00 <span class="text-xs text-gray-400 font-normal">/ delivery</span></p>
+            <p class="text-sm text-gray-500 mb-6">A breathtaking, show-stopping display of absolute luxury.</p>
+          </div>
+          <button data-plan="luxe" class="subscribe-btn w-full border border-sb-black text-sb-black py-3 uppercase tracking-widest text-xs hover:bg-sb-black hover:text-white transition-colors">Select Luxe</button>
         </div>
       </div>
+    </div>
+  </main>
+
+  <!-- Subscription Checkout Modal -->
+  <div id="subModal" class="fixed inset-0 bg-black/70 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div id="subModalContent" class="bg-white w-full max-w-lg relative transform scale-95 transition-transform duration-300 my-auto">
       
-      <div class="flex flex-col md:flex-row items-center gap-16 mb-32 reveal">
-        <div class="w-full md:w-1/2">
-          <div class="aspect-[4/5] overflow-hidden relative group">
-            <img src="/images/product-wild-meadow.jpg" alt="The Classic Subscription" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-          </div>
-        </div>
-        <div class="w-full md:w-1/2 md:pl-12">
-          <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Tier 01</span>
-          <h2 class="font-serif text-4xl md:text-5xl mb-4 text-sb-black">The Classic</h2>
-          <p class="text-xl text-gray-500 mb-6 font-light">£40 <span class="text-sm uppercase tracking-wider">/ delivery</span></p>
-          <p class="text-gray-600 font-light leading-relaxed mb-8">
-            A petite, perfectly formed arrangement ideal for bedside tables, small desks, or cozy corners. Featuring 15-20 stems of the season's finest focal flowers.
-          </p>
-          <ul class="text-sm text-gray-500 space-y-4 mb-10 font-light border-l border-sb-gold/30 pl-6">
-            <li>Includes free local delivery</li>
-            <li>Bespoke seasonal selection</li>
-            <li>Pause or cancel anytime</li>
-          </ul>
-          <button data-plan="classic" class="subscribe-btn inline-block bg-transparent border border-sb-black text-sb-black px-10 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-black hover:text-sb-gold transition-colors duration-300">
-            Subscribe Now
-          </button>
-        </div>
-      </div>
-
-      <div class="flex flex-col md:flex-row-reverse items-center gap-16 mb-32 reveal">
-        <div class="w-full md:w-1/2">
-          <div class="aspect-[4/5] overflow-hidden relative group">
-            <img src="/images/product-pure-elegance.jpg" alt="The Signature Subscription" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-            <div class="absolute top-6 right-6 bg-sb-gold text-sb-black text-[9px] uppercase font-bold tracking-luxury px-4 py-2">Most Popular</div>
-          </div>
-        </div>
-        <div class="w-full md:w-1/2 md:pr-12">
-          <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Tier 02</span>
-          <h2 class="font-serif text-4xl md:text-5xl mb-4 text-sb-black">The Signature</h2>
-          <p class="text-xl text-gray-500 mb-6 font-light">£65 <span class="text-sm uppercase tracking-wider">/ delivery</span></p>
-          <p class="text-gray-600 font-light leading-relaxed mb-8">
-            Our standard size. A beautiful, medium-sized bouquet that creates a stunning centerpiece for any room. Approximately 25-35 stems of premium focal and filler flowers.
-          </p>
-          <ul class="text-sm text-gray-500 space-y-4 mb-10 font-light border-l border-sb-gold/30 pl-6">
-            <li>Free glass vase with first order</li>
-            <li>Premium stems & varied textures</li>
-            <li>Flexible delivery schedule</li>
-          </ul>
-          <button data-plan="signature" class="subscribe-btn inline-block bg-sb-black border border-sb-black text-sb-gold px-10 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black hover:border-sb-gold transition-colors duration-300 shadow-xl">
-            Subscribe Now
-          </button>
-        </div>
-      </div>
-
-      <div class="flex flex-col md:flex-row items-center gap-16 reveal">
-        <div class="w-full md:w-1/2">
-          <div class="aspect-[4/5] overflow-hidden relative group">
-            <img src="/images/product-essex-rose.jpg" alt="The Luxe Subscription" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-          </div>
-        </div>
-        <div class="w-full md:w-1/2 md:pl-12">
-          <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Tier 03</span>
-          <h2 class="font-serif text-4xl md:text-5xl mb-4 text-sb-black">The Luxe</h2>
-          <p class="text-xl text-gray-500 mb-6 font-light">£100 <span class="text-sm uppercase tracking-wider">/ delivery</span></p>
-          <p class="text-gray-600 font-light leading-relaxed mb-8">
-            A show-stopping, abundant arrangement designed to impress. Features 45-60 of our most premium, rare, and luxurious stems including Orchids and Peonies.
-          </p>
-          <ul class="text-sm text-gray-500 space-y-4 mb-10 font-light border-l border-sb-gold/30 pl-6">
-            <li>Priority delivery scheduling</li>
-            <li>Exclusive, rare floral varieties</li>
-            <li>Statement sizing and presentation</li>
-          </ul>
-          <button data-plan="luxe" class="subscribe-btn inline-block bg-transparent border border-sb-black text-sb-black px-10 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-black hover:text-sb-gold transition-colors duration-300">
-            Subscribe Now
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <div id="subModal" class="fixed inset-0 bg-black/80 z-[100] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
-    <div class="bg-sb-cream w-full max-w-2xl p-8 md:p-12 relative transform scale-95 transition-transform duration-300 shadow-2xl overflow-y-auto max-h-[90vh] hide-scrollbar" id="subModalContent">
-      <button id="closeSubModal" class="absolute top-6 right-6 text-gray-400 hover:text-sb-gold transition-colors focus:outline-none">
-        <i class="fas fa-times text-2xl"></i>
+      <button id="closeSubModal" type="button" class="absolute top-4 right-4 text-gray-400 hover:text-sb-black transition-colors z-10">
+        <i class="fas fa-times text-xl"></i>
       </button>
-      
-      <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-2 block" id="modalPlanName">Subscription</span>
-      <h3 class="font-serif text-3xl text-sb-black mb-6">Delivery Details</h3>
-      
-      <form id="subscriptionForm" class="space-y-6">
-        <input type="hidden" id="planTier" name="planTier" value="">
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div class="p-8">
+        <h2 class="font-serif text-3xl text-sb-black mb-2">Complete Setup</h2>
+        <p id="modalPlanName" class="text-sb-gold font-bold tracking-wide mb-6">The Subscription</p>
+
+        <form id="subscriptionForm" class="space-y-4">
+          <input type="hidden" id="planTier" name="planTier" value="">
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">First Name</label>
+              <input type="text" name="firstName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Jane">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Last Name</label>
+              <input type="text" name="lastName" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="Doe">
+            </div>
+          </div>
+
           <div>
-            <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">First Name</label>
-            <input type="text" name="firstName" required class="w-full bg-white border border-gray-200 px-4 py-3 text-sm focus:border-sb-gold outline-none transition-colors">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Email Address</label>
+            <input type="email" name="email" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="jane@example.com">
           </div>
+
           <div>
-            <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Last Name</label>
-            <input type="text" name="lastName" required class="w-full bg-white border border-gray-200 px-4 py-3 text-sm focus:border-sb-gold outline-none transition-colors">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Address Line 1</label>
+            <input type="text" name="address1" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="123 Floral Street">
           </div>
-        </div>
 
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
-          <input type="email" name="email" required class="w-full bg-white border border-gray-200 px-4 py-3 text-sm focus:border-sb-gold outline-none transition-colors">
-        </div>
-
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Full Delivery Address & Postcode</label>
-          <textarea name="address" required rows="3" class="w-full bg-white border border-gray-200 px-4 py-3 text-sm focus:border-sb-gold outline-none transition-colors resize-none"></textarea>
-        </div>
-
-        <div class="pt-4 border-t border-gray-200">
-          <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-4">Delivery Frequency</label>
-          <div class="grid grid-cols-3 gap-2 md:gap-4">
-            <label class="cursor-pointer">
-              <input type="radio" name="frequency" value="Weekly" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Weekly</div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="frequency" value="Fortnightly" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Fortnightly</div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="frequency" value="Monthly" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Monthly</div>
-            </label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Town / City</label>
+              <input type="text" name="city" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="London">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Postcode</label>
+              <input type="text" name="postcode" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors" placeholder="E1 8QA">
+            </div>
           </div>
-        </div>
 
-        <div class="pt-4 border-t border-gray-200">
-          <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-4">Reason for Subscription</label>
-          <div class="grid grid-cols-3 gap-2 md:gap-4">
-            <label class="cursor-pointer">
-              <input type="radio" name="reason" value="Treating Myself" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Treat Myself</div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="reason" value="Gift for Someone" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Gift</div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="reason" value="Corporate/Office" class="peer sr-only" required>
-              <div class="text-center border border-gray-200 py-3 px-1 text-[10px] md:text-xs uppercase tracking-wider peer-checked:bg-sb-black peer-checked:text-sb-gold transition-colors hover:border-sb-black">Office</div>
-            </label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Delivery Frequency</label>
+              <select name="frequency" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
+                <option value="Weekly">Weekly</option>
+                <option value="Fortnightly">Fortnightly</option>
+                <option value="Monthly">Monthly</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Reason</label>
+              <select name="reason" required class="w-full border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none bg-white transition-colors">
+                <option value="Treating Myself">Treating Myself</option>
+                <option value="Gift for Someone">Gift for Someone</option>
+                <option value="Corporate / Office">Corporate / Office</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <button type="submit" id="submitFormBtn" class="w-full mt-6 bg-sb-black text-sb-gold py-4 text-xs uppercase font-bold tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors shadow-xl">
-          Continue to Secure Payment
-        </button>
-      </form>
+          <div class="pt-4">
+            <button type="submit" id="submitFormBtn" class="w-full bg-sb-gold text-sb-black hover:bg-sb-black hover:text-white transition-colors duration-300 py-4 text-[11px] uppercase tracking-[0.25em] font-bold shadow-lg shadow-sb-gold/20 flex items-center justify-center gap-2">
+              Setup Direct Debit <i class="fas fa-lock text-[10px]"></i>
+            </button>
+            <p class="text-[10px] text-gray-400 text-center mt-3">You will be securely redirected to GoCardless to authorize your mandate.</p>
+          </div>
+        </form>
+
+      </div>
     </div>
   </div>
 
-  <section class="py-12 bg-white border-y border-gray-100">
-    <div class="container mx-auto px-6 text-center">
-      <p class="text-[10px] uppercase tracking-luxury text-gray-400 mb-4 font-bold">Secure Payments Powered By</p>
-      <div class="flex justify-center items-center gap-8 opacity-60 grayscale">
-        <span class="font-sans font-bold text-xl tracking-tighter">GOCARDLESS</span>
-        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-        <span class="font-sans font-bold text-xl tracking-tighter">Direct Debit</span>
-      </div>
-    </div>
-  </section>
-
-  <style>
-    /* Hides scrollbar in the modal for a cleaner look */
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
-
+  <Footer />
 </Layout>
 
-<script>
-  const subModal = document.getElementById('subModal');
-  const subModalContent = document.getElementById('subModalContent');
-  const closeSubModal = document.getElementById('closeSubModal');
-  const planTierInput = document.getElementById('planTier');
-  const modalPlanName = document.getElementById('modalPlanName');
-  const subscriptionForm = document.getElementById('subscriptionForm');
-  const submitFormBtn = document.getElementById('submitFormBtn');
+<script is:inline>
+  document.addEventListener('astro:page-load', () => {
+    const modal = document.getElementById("subModal");
+    const modalContent = document.getElementById("subModalContent");
+    const closeBtn = document.getElementById("closeSubModal");
+    const planInput = document.getElementById("planTier");
+    const planNameDisplay = document.getElementById("modalPlanName");
+    const form = document.getElementById("subscriptionForm");
+    const submitBtn = document.getElementById("submitFormBtn");
 
-  function openModal(plan) {
-    if (!subModal || !planTierInput || !modalPlanName) return;
-    planTierInput.value = plan;
-    modalPlanName.innerText = `The ${plan.charAt(0).toUpperCase() + plan.slice(1)} Subscription`;
-    
-    subModal.classList.remove('hidden');
-    setTimeout(() => {
-      subModal.classList.remove('opacity-0');
-      subModalContent?.classList.add('scale-100');
-    }, 10);
-  }
-
-  function closeModal() {
-    if (!subModal) return;
-    subModal.classList.add('opacity-0');
-    subModalContent?.classList.remove('scale-100');
-    setTimeout(() => subModal.classList.add('hidden'), 300);
-  }
-
-  document.querySelectorAll('.subscribe-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const plan = e.currentTarget.getAttribute('data-plan');
-      if (plan) openModal(plan);
-    });
-  });
-
-  closeSubModal?.addEventListener('click', closeModal);
-
-  subscriptionForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!submitFormBtn) return;
-    
-    const originalText = submitFormBtn.innerHTML;
-    submitFormBtn.innerHTML = 'Securely Initializing...';
-    submitFormBtn.disabled = true;
-    
-    const formData = new FormData(subscriptionForm as HTMLFormElement);
-    const dataObj = Object.fromEntries(formData.entries());
-    
-    try {
-      const response = await fetch('/api/gocardless/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataObj)
-      });
+    const openModal = (plan) => {
+      if (!modal || !planInput || !planNameDisplay) return;
+      planInput.value = plan;
+      planNameDisplay.innerText = `The ${plan.charAt(0).toUpperCase() + plan.slice(1)} Subscription`;
       
-      const data = await response.json();
+      modal.classList.remove("hidden");
+      document.body.style.overflow = 'hidden';
       
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error(data.error || 'No checkout URL returned');
-      }
-    } catch (error) {
-      console.error('Payment initialization failed:', error);
-      
-      submitFormBtn.innerHTML = 'Error - Please Try Again';
-      submitFormBtn.disabled = false;
       setTimeout(() => {
-        submitFormBtn.innerHTML = originalText;
-      }, 3000);
-    }
+        modal.classList.remove("opacity-0");
+        if (modalContent) modalContent.classList.remove("scale-95");
+      }, 10);
+    };
+
+    const closeModal = () => {
+      if (!modal) return;
+      modal.classList.add("opacity-0");
+      if (modalContent) modalContent.classList.add("scale-95");
+      document.body.style.overflow = '';
+      
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    };
+
+    document.querySelectorAll(".subscribe-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const plan = e.currentTarget.getAttribute("data-plan");
+        if (plan) openModal(plan);
+      });
+    });
+
+    closeBtn?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!submitBtn) return;
+
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Securely Initializing...';
+      submitBtn.disabled = true;
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch("/api/gocardless/create-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.checkoutUrl) {
+          window.location.href = result.checkoutUrl;
+        } else {
+          throw new Error(result.error || "No checkout URL returned");
+        }
+      } catch (err) {
+        console.error("Payment initialization failed:", err);
+        submitBtn.innerHTML = "Error - Please Try Again";
+        submitBtn.disabled = false;
+        setTimeout(() => {
+          submitBtn.innerHTML = originalText;
+        }, 3000);
+      }
+    });
   });
 </script>
