@@ -14,6 +14,27 @@ const FREQUENCY_INTERVALS = {
   "Three-Weekly": { interval_unit: "weekly", interval: 3 }
 };
 
+// Defensive Phone Number formatting to prevent Shopify 422 API errors on unprocessable strings
+function cleanPhoneForShopify(phone) {
+  if (!phone) return null;
+  // Remove spaces, dashes, brackets
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  // Format local UK mobile & landline numbers to correct E.164 standard
+  if (cleaned.startsWith('0') && !cleaned.startsWith('00')) {
+    cleaned = '+44' + cleaned.slice(1);
+  }
+  
+  // Append + if it's country-prefix-only
+  if (!cleaned.startsWith('+') && cleaned.length >= 10) {
+    cleaned = '+' + cleaned;
+  }
+  
+  // Strict check: Shopify requires leading plus followed by 10-15 digits
+  const e164Regex = /^\+[1-9]\d{1,14}$/;
+  return e164Regex.test(cleaned) ? cleaned : null;
+}
+
 // GET handler to confirm the routing is active and prevent browser 404s
 export async function GET() {
   return new Response("GoCardless Webhook Endpoint is Active. Send signed POST payloads to trigger.", {
@@ -124,7 +145,7 @@ async function handleWebhookEvents(payload, config) {
 
         const br = brData.billing_requests;
         
-        // FIX: Metadata in create-checkout is nested under mandate_request.metadata, fallback to root metadata
+        // Metadata in create-checkout is nested under mandate_request.metadata, fallback to root metadata
         const meta = br.mandate_request?.metadata || br.metadata || {};
         const planTier = meta.plan_tier || "test";
         const mandateId = br.links?.mandate || br.links?.mandate_request_mandate;
@@ -169,6 +190,10 @@ async function handleWebhookEvents(payload, config) {
         const finalZip = customer.postal_code || fallbackZip;
         const finalCountryCode = customer.country_code || "GB";
 
+        // Extract and defensively format phone numbers (falling back to our metadata)
+        const rawPhone = customer.phone_number || meta.customer_phone || "";
+        const cleanedPhone = cleanPhoneForShopify(rawPhone);
+
         // Inject first order into Shopify
         console.log(`Injecting initial subscription order into Shopify for ${customer.email}...`);
         const shopifyRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
@@ -180,7 +205,8 @@ async function handleWebhookEvents(payload, config) {
               customer: { 
                 first_name: customer.given_name, 
                 last_name: customer.family_name, 
-                email: customer.email 
+                email: customer.email,
+                phone: cleanedPhone || undefined // Only pass if strictly E.164 compliant to avoid 422 failures
               },
               shipping_address: { 
                 first_name: customer.given_name, 
@@ -190,7 +216,8 @@ async function handleWebhookEvents(payload, config) {
                 city: finalCity,
                 province: finalProvince,
                 zip: finalZip,
-                country_code: finalCountryCode
+                country_code: finalCountryCode,
+                phone: rawPhone || undefined // Address cards are less strict; pass the raw/cleaned number here
               },
               billing_address: { 
                 first_name: customer.given_name, 
@@ -200,9 +227,10 @@ async function handleWebhookEvents(payload, config) {
                 city: finalCity,
                 province: finalProvince,
                 zip: finalZip,
-                country_code: finalCountryCode
+                country_code: finalCountryCode,
+                phone: rawPhone || undefined
               },
-              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reasonPart}`,
+              note: `Subscription Details:\nFrequency: ${frequency}\nReason: ${reasonPart}\nPhone: ${rawPhone}`,
               financial_status: "paid",
               tags: `GC-BRQ-${billingRequestId}, Active-Subscriber`
             }
@@ -228,7 +256,8 @@ async function handleWebhookEvents(payload, config) {
                   plan_tier: planTier,
                   frequency: frequency,
                   shipping_address: rawAddress,
-                  reason: reasonPart
+                  reason: reasonPart,
+                  customer_phone: rawPhone || ""
                 }
               }
             })
@@ -289,6 +318,7 @@ async function handleWebhookEvents(payload, config) {
         const frequency = subMeta.frequency || "Weekly";
         const rawAddress = subMeta.shipping_address || "Address on file";
         const reason = subMeta.reason || "Subscription";
+        const subPhone = subMeta.customer_phone || "";
 
         // Fetch Customer details to get email and names
         const customerId = sub.links?.customer || payment.links?.customer;
@@ -314,6 +344,10 @@ async function handleWebhookEvents(payload, config) {
         const finalZip = customer.postal_code || fallbackZip;
         const finalCountryCode = customer.country_code || "GB";
 
+        // Extract and defensively format phone numbers
+        const rawPhone = customer.phone_number || subPhone || "";
+        const cleanedPhone = cleanPhoneForShopify(rawPhone);
+
         // Inject the recurring shipment order into Shopify automatically
         console.log(`Injecting recurring subscription shipment into Shopify for ${customer.email} (Payment: ${paymentId})`);
         await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json`, {
@@ -325,7 +359,8 @@ async function handleWebhookEvents(payload, config) {
               customer: { 
                 first_name: customer.given_name, 
                 last_name: customer.family_name, 
-                email: customer.email 
+                email: customer.email,
+                phone: cleanedPhone || undefined
               },
               shipping_address: { 
                 first_name: customer.given_name, 
@@ -335,7 +370,8 @@ async function handleWebhookEvents(payload, config) {
                 city: finalCity,
                 province: finalProvince,
                 zip: finalZip,
-                country_code: finalCountryCode
+                country_code: finalCountryCode,
+                phone: rawPhone || undefined
               },
               billing_address: { 
                 first_name: customer.given_name, 
@@ -345,9 +381,10 @@ async function handleWebhookEvents(payload, config) {
                 city: finalCity,
                 province: finalProvince,
                 zip: finalZip,
-                country_code: finalCountryCode
+                country_code: finalCountryCode,
+                phone: rawPhone || undefined
               },
-              note: `Subscription Renewal Order:\nFrequency: ${frequency}\nReason: ${reason}\nLinked Subscription ID: ${subscriptionId}`,
+              note: `Subscription Renewal Order:\nFrequency: ${frequency}\nReason: ${reason}\nLinked Subscription ID: ${subscriptionId}\nPhone: ${rawPhone}`,
               financial_status: "paid",
               tags: `GC-PM-${paymentId}, Subscription-Renewal`
             }
