@@ -31,7 +31,7 @@ function cleanPhoneForShopify(phone) {
   return e164Regex.test(cleaned) ? cleaned : null;
 }
 
-// Parse combined order notes metadata cleanly
+// Parse combined order notes metadata cleanly using key-value splitting (safer than raw regex match)
 function parseOrderNotes(notes) {
   const result = {
     name: "",
@@ -42,20 +42,20 @@ function parseOrderNotes(notes) {
   };
   if (!notes) return result;
 
-  const nameMatch = notes.match(/Name:\s*([^|]+)/);
-  if (nameMatch) result.name = nameMatch[1].trim();
-
-  const emailMatch = notes.match(/Email:\s*([^|]+)/);
-  if (emailMatch) result.email = emailMatch[1].trim();
-
-  const phoneMatch = notes.match(/Phone:\s*([^|]+)/);
-  if (phoneMatch) result.phone = phoneMatch[1].trim();
-
-  const reasonMatch = notes.match(/Reason:\s*([^|]+)/);
-  if (reasonMatch) result.reason = reasonMatch[1].trim();
-
-  const addrMatch = notes.match(/Addr:\s*([^|]+)/);
-  if (addrMatch) result.address = addrMatch[1].trim();
+  const parts = notes.split('|').map(p => p.trim());
+  parts.forEach(part => {
+    if (part.startsWith("Name:")) {
+      result.name = part.replace("Name:", "").trim();
+    } else if (part.startsWith("Email:")) {
+      result.email = part.replace("Email:", "").trim();
+    } else if (part.startsWith("Phone:")) {
+      result.phone = part.replace("Phone:", "").trim();
+    } else if (part.startsWith("Reason:")) {
+      result.reason = part.replace("Reason:", "").trim();
+    } else if (part.startsWith("Addr:")) {
+      result.address = part.replace("Addr:", "").trim();
+    }
+  });
 
   return result;
 }
@@ -204,7 +204,7 @@ async function handleWebhookEvents(payload, config) {
         }
 
         const br = brData.billing_requests;
-        const meta = br.mandate_request?.metadata || br.metadata || {};
+        const meta = br.metadata || br.mandate_request?.metadata || {};
         console.log("Successfully extracted billing request metadata:", meta);
 
         const planTier = meta.plan_tier || "test";
@@ -233,34 +233,44 @@ async function handleWebhookEvents(payload, config) {
         const parsedMeta = parseOrderNotes(orderNotes);
 
         // BYPASS SANDBOX OVERRIDE: 
-        // If customer details default back to sandbox "John/Jane Doe", swap in our real parsed values.
+        // If customer details default back to sandbox placeholders, swap in our real parsed values.
         let firstName = customer.given_name;
         let lastName = customer.family_name;
-        if ((firstName === "John" && lastName === "Doe") || (firstName === "Jane" && lastName === "Doe") || !firstName) {
-          if (parsedMeta.name) {
-            const nameParts = parsedMeta.name.split(' ');
-            firstName = nameParts[0];
-            lastName = nameParts.slice(1).join(' ') || "Customer";
-          }
+        const isSandboxPlaceholder = 
+          !firstName || 
+          firstName.toLowerCase() === 'john' || 
+          firstName.toLowerCase() === 'jane' || 
+          lastName.toLowerCase() === 'doe' ||
+          customer.email?.toLowerCase().includes('gocardless') ||
+          customer.email?.toLowerCase().includes('sandbox');
+
+        if (isSandboxPlaceholder && parsedMeta.name) {
+          const nameParts = parsedMeta.name.split(' ');
+          firstName = nameParts[0];
+          lastName = nameParts.slice(1).join(' ') || "Customer";
         }
 
-        let finalEmail = customer.email || parsedMeta.email;
-        if (finalEmail.includes("gocardless") || !finalEmail) {
+        let finalEmail = customer.email;
+        if (!finalEmail || finalEmail.toLowerCase().includes("gocardless") || finalEmail.toLowerCase().includes("sandbox")) {
           finalEmail = parsedMeta.email || finalEmail;
         }
 
-        // Prepare address elements. Fall back to metadata values if GoCardless has placeholders.
+        // Prepare address elements. Fall back to metadata values if GoCardless has sandbox placeholders.
         let address1 = customer.address_line1;
         let city = customer.city;
         let zip = customer.postal_code;
 
-        if (!address1 || address1 === "No address" || address1.toLowerCase().includes("gocardless")) {
-          if (parsedMeta.address) {
-            const addressLines = parsedMeta.address.split(',').map(l => l.trim()).filter(l => l);
-            address1 = addressLines[0] || parsedMeta.address;
-            city = addressLines[1] || "";
-            zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
-          }
+        const isSandboxAddress = 
+          !address1 || 
+          address1 === "No address" || 
+          address1.toLowerCase().includes("gocardless") ||
+          address1.toLowerCase().includes("sandbox");
+
+        if (isSandboxAddress && parsedMeta.address) {
+          const addressLines = parsedMeta.address.split(',').map(l => l.trim()).filter(l => l);
+          address1 = addressLines[0] || parsedMeta.address;
+          city = addressLines[1] || "";
+          zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
         }
 
         const rawPhone = customer.phone_number || parsedMeta.phone || "";
