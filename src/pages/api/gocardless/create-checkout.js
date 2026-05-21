@@ -1,31 +1,29 @@
 export const prerender = false;
 
-// Define pricing structures for subscriptions (including QA developer sandbox)
+// Define pricing structures for subscriptions (including Developer testing)
 const PLAN_PRICES = {
-  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // FIX: Changed from 1 to 100 (£1.00 minimum for GoCardless)
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
   classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
   signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
   luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
 };
 
 export async function POST({ request, locals }) {
-  // Access environment variables with robust fallbacks
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   
-  // 1. Validate environment
   if (!token) {
     console.error("CRITICAL ERROR: GOCARDLESS_ACCESS_TOKEN is missing!");
-    return new Response(JSON.stringify({ error: "Configuration Error: GOCARDLESS_ACCESS_TOKEN is missing." }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Configuration Error: Missing API Token." }), { status: 500 });
   }
 
   try {
     const body = await request.json();
-    const { planTier, firstName, lastName, email, address, frequency, reason } = body;
     
-    // Check if the plan tier is valid
+    // Explicitly parse the separated address fields from the new frontend form
+    const { planTier, firstName, lastName, email, address1, city, postcode, frequency, reason } = body;
+    
     if (!planTier || !PLAN_PRICES[planTier]) {
-      console.error(`Invalid plan tier selected: ${planTier}`);
       return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
     }
 
@@ -34,9 +32,11 @@ export async function POST({ request, locals }) {
       ? 'https://api.gocardless.com' 
       : 'https://api-sandbox.gocardless.com';
 
+    // Merge the explicit address parts into a single string to bypass the GoCardless 3-key metadata limit
+    const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
+
     console.log(`Initializing Billing Request for ${email} - Plan: ${planTier} (${plan.amount}p)`);
 
-    // 2. Create Billing Request (The Intent)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -56,7 +56,7 @@ export async function POST({ request, locals }) {
             metadata: {
               plan_tier: planTier,
               frequency: frequency || "Weekly",
-              order_notes: `Reason: ${reason || "Treat"} | Addr: ${address || "No address"}`.substring(0, 500)
+              order_notes: `Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`.substring(0, 500)
             }
           }
         }
@@ -66,13 +66,11 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}. Details: ${JSON.stringify(brData.error?.errors)}`);
+      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Validation Error'}.`);
     }
 
-    // 3. Create Flow (The Hosted UI)
     const billingRequestId = brData.billing_requests.id;
     
-    // Safely append the customer name and plan description to the URL for the client success view
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
@@ -82,6 +80,9 @@ export async function POST({ request, locals }) {
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
+    if (address1) prefilled_customer.address_line1 = address1;
+    if (city) prefilled_customer.city = city;
+    if (postcode) prefilled_customer.postal_code = postcode;
 
     const flowPayload = {
       billing_request_flows: {
