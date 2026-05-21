@@ -78,6 +78,11 @@ function resolveCustomerDetails(gcCustomer, parsedMeta) {
   return { firstName, lastName, email, address1, city, zip, phone, countryCode: gcCustomer.country_code || "GB" };
 }
 
+/**
+ * Search for an existing Shopify customer by email, then by phone.
+ * If found and the name looks like the sandbox placeholder, update it with the real name.
+ * Returns the customer ID (or null).
+ */
 async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken) {
   // 1) Search by email
   if (resolved.email) {
@@ -87,12 +92,29 @@ async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       if (searchData.customers?.length > 0) {
-        return searchData.customers[0].id;
+        const cust = searchData.customers[0];
+        // If the existing customer has placeholder names, update them
+        const hasPlaceholderName = (cust.first_name?.toLowerCase() === 'john' && cust.last_name?.toLowerCase() === 'doe') ||
+                                   !cust.first_name || cust.last_name === 'Customer';
+        if (hasPlaceholderName) {
+          await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${cust.id}.json`, {
+            method: 'PUT',
+            headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customer: {
+                id: cust.id,
+                first_name: resolved.firstName,
+                last_name: resolved.lastName
+              }
+            })
+          });
+        }
+        return cust.id;
       }
     }
   }
 
-  // 2) Search by phone (if no email match and phone is present)
+  // 2) Search by phone
   if (resolved.phone) {
     const searchRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/search.json?query=phone:${encodeURIComponent(resolved.phone)}`, {
       headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
@@ -100,20 +122,49 @@ async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       if (searchData.customers?.length > 0) {
-        return searchData.customers[0].id;
+        const cust = searchData.customers[0];
+        const hasPlaceholderName = (cust.first_name?.toLowerCase() === 'john' && cust.last_name?.toLowerCase() === 'doe') ||
+                                   !cust.first_name || cust.last_name === 'Customer';
+        if (hasPlaceholderName) {
+          await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${cust.id}.json`, {
+            method: 'PUT',
+            headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customer: {
+                id: cust.id,
+                first_name: resolved.firstName,
+                last_name: resolved.lastName
+              }
+            })
+          });
+        }
+        return cust.id;
       }
     }
   }
 
-  // 3) No existing customer – will be created implicitly by the order
   return null;
+}
+
+async function forceShopifyCustomerPhoneUpdate(customerId, phone, shopifyDomain, shopifyToken) {
+  if (!customerId || !phone) return;
+  try {
+    const res = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${customerId}.json`, {
+      method: 'PUT',
+      headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer: { id: customerId, phone: phone } })
+    });
+    if (res.ok) console.log(`Successfully updated Shopify Customer Phone for ID: ${customerId}`);
+  } catch (err) {
+    console.error("Failed to update customer phone:", err);
+  }
 }
 
 async function createShopifyOrder(customerDetails, planInfo, frequency, reason, tag, shopifyDomain, shopifyToken) {
   const resolved = customerDetails;
   const cleanedPhone = cleanPhoneForShopify(resolved.phone);
 
-  // Find existing customer or let Shopify create a new one
+  // Find existing customer (or update placeholder names)
   const existingCustomerId = await findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken);
 
   const orderPayload = {
@@ -136,7 +187,7 @@ async function createShopifyOrder(customerDetails, planInfo, frequency, reason, 
   };
 
   if (existingCustomerId) {
-    // Attach to existing customer
+    // Attach to existing customer (name already updated if was placeholder)
     orderPayload.order.customer = { id: existingCustomerId };
   } else {
     // Create a new customer
@@ -162,7 +213,6 @@ async function createShopifyOrder(customerDetails, planInfo, frequency, reason, 
 
   // Update phone if missing on existing customer
   if (existingCustomerId && cleanedPhone) {
-    // Fetch customer to see if phone is blank
     const custRes = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${existingCustomerId}.json`, {
       headers: { 'X-Shopify-Access-Token': shopifyToken }
     });
@@ -176,20 +226,6 @@ async function createShopifyOrder(customerDetails, planInfo, frequency, reason, 
 
   console.log(`Successfully created Shopify order for ${resolved.email}`);
   return { success: true, orderId: shopifyData.order?.id };
-}
-
-async function forceShopifyCustomerPhoneUpdate(customerId, phone, shopifyDomain, shopifyToken) {
-  if (!customerId || !phone) return;
-  try {
-    const res = await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${customerId}.json`, {
-      method: 'PUT',
-      headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customer: { id: customerId, phone: phone } })
-    });
-    if (res.ok) console.log(`Successfully updated Shopify Customer Phone for ID: ${customerId}`);
-  } catch (err) {
-    console.error("Failed to update customer phone:", err);
-  }
 }
 
 export async function GET() {
