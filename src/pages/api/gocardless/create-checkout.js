@@ -1,10 +1,9 @@
 export const prerender = false;
 
-// Define pricing structures matching our elevated luxury tiering (£45 and £75)
 const PLAN_PRICES = {
-  test: { amount: 100, description: "SB Floristry - Developer Test Tier" }, // £1.00 testing tier
-  classic: { amount: 2800, description: "SB Floristry - The Classic Subscription" }, // £28.00 per delivery
-  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" } // £41.00 per delivery
+  test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
+  classic: { amount: 2800, description: "SB Floristry - The Classic Subscription" },
+  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" }
 };
 
 export async function POST({ request, locals }) {
@@ -12,35 +11,22 @@ export async function POST({ request, locals }) {
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   
   if (!token) {
-    console.error("CRITICAL ERROR: GOCARDLESS_ACCESS_TOKEN is missing!");
-    return new Response(JSON.stringify({ error: "Configuration Error: Missing API Token." }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Missing API Token." }), { status: 500 });
   }
 
   try {
     const body = await request.json();
-    
-    // Deconstruct the separate form inputs from subscriptions.astro
     const { planTier, firstName, lastName, email, phone, address1, city, postcode, frequency, reason } = body;
     
-    if (!planTier || !PLAN_PRICES[planTier]) {
-      return new Response(JSON.stringify({ error: "Invalid plan selected" }), { status: 400 });
-    }
+    const plan = PLAN_PRICES[planTier] || PLAN_PRICES.test;
+    const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
 
-    const plan = PLAN_PRICES[planTier];
-    const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' 
-      ? 'https://api.gocardless.com' 
-      : 'https://api-sandbox.gocardless.com';
-
-    // Combine address elements with commas to avoid exceeding GoCardless metadata 3-key limit
     const mergedAddress = [address1, city, postcode].filter(Boolean).join(', ');
-    const fullName = `${firstName} ${lastName}`;
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
 
-    // Combine all inputs into a single string under order_notes to respect GoCardless's 3-key limit
-    const orderNotes = `Name: ${fullName} | Email: ${email} | Phone: ${phone || ""} | Reason: ${reason || "Treat"} | Addr: ${mergedAddress}`;
+    // CRITICAL: We pack EVERYTHING in here to guarantee survival through Sandbox overrides
+    const orderNotes = `Name: ${fullName} | Email: ${email || ''} | Phone: ${phone || ''} | Reason: ${reason || 'Treat'} | Addr: ${mergedAddress}`;
 
-    console.log(`Step 1: Generating Billing Request with dual-layered metadata for ${email}`);
-
-    // Create Billing Request (Specifying metadata on BOTH root and nested levels to protect against fulfillment deletion)
     const brResponse = await fetch(`${apiBase}/billing_requests`, {
       method: 'POST',
       headers: {
@@ -50,11 +36,6 @@ export async function POST({ request, locals }) {
       },
       body: JSON.stringify({
         billing_requests: {
-          metadata: {
-            plan_tier: planTier,
-            frequency: frequency || "Weekly",
-            order_notes: orderNotes.substring(0, 500)
-          },
           payment_request: {
             amount: plan.amount,
             currency: 'GBP',
@@ -63,8 +44,8 @@ export async function POST({ request, locals }) {
           mandate_request: { 
             scheme: 'bacs',
             metadata: {
-              plan_tier: planTier,
-              frequency: frequency || "Weekly",
+              plan_tier: String(planTier),
+              frequency: String(frequency || "Weekly"),
               order_notes: orderNotes.substring(0, 500)
             }
           }
@@ -73,25 +54,19 @@ export async function POST({ request, locals }) {
     });
 
     const brData = await brResponse.json();
-    if (!brResponse.ok) {
-      console.error("GoCardless Billing Request Error payload:", brData);
-      throw new Error(`Failed to create billing request: ${brData.error?.message || 'API Error'}`);
-    }
+    if (!brResponse.ok) throw new Error(brData.error?.message || 'API Error');
 
     const billingRequestId = brData.billing_requests.id;
     
-    // Safely configure success callback URL
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    console.log("Step 2: Creating Billing Request Flow with prefill customer details.");
-
-    // Prefill parameters for the hosted checkout page flow UI
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
     if (email) prefilled_customer.email = email;
+    if (phone) prefilled_customer.phone_number = phone;
     if (address1) prefilled_customer.address_line1 = address1;
     if (city) prefilled_customer.city = city;
     if (postcode) prefilled_customer.postal_code = postcode;
@@ -109,7 +84,6 @@ export async function POST({ request, locals }) {
       flowPayload.billing_request_flows.prefilled_customer = prefilled_customer;
     }
 
-    // Instantiate Billing Request Flow
     const flowResponse = await fetch(`${apiBase}/billing_request_flows`, {
       method: 'POST',
       headers: {
@@ -121,10 +95,7 @@ export async function POST({ request, locals }) {
     });
 
     const flowData = await flowResponse.json();
-    if (!flowResponse.ok) {
-      console.error("GoCardless Flow Error:", flowData);
-      throw new Error(`Failed to create checkout flow: ${flowData.error?.message || 'API Flow Error'}`);
-    }
+    if (!flowResponse.ok) throw new Error(flowData.error?.message || 'API Flow Error');
 
     return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), {
       status: 200,
@@ -132,7 +103,7 @@ export async function POST({ request, locals }) {
     });
 
   } catch (err) {
-    console.error("CRITICAL CATCH ERROR:", err);
-    return new Response(JSON.stringify({ error: err.message || "Internal Server Error" }), { status: 500 });
+    console.error("CATCH ERROR:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
