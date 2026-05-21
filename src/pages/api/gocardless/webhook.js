@@ -15,6 +15,14 @@ const FREQUENCY_INTERVALS = {
   Monthly: { interval_unit: "monthly", interval: 1 }
 };
 
+// GET handler to confirm the routing is active and prevent browser 404s
+export async function GET() {
+  return new Response("GoCardless Webhook Endpoint is Active. Send signed POST payloads to trigger.", {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain' }
+  });
+}
+
 export async function POST(context) {
   const { request, locals } = context;
   const env = locals.runtime?.env || import.meta.env || process.env || {};
