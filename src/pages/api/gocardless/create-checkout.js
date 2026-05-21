@@ -21,7 +21,7 @@ export async function POST({ request, locals }) {
     const plan = PLAN_PRICES[planTier] || PLAN_PRICES.test;
     const apiBase = env.PUBLIC_GC_ENVIRONMENT === 'live' ? 'https://api.gocardless.com' : 'https://api-sandbox.gocardless.com';
 
-    // 1. Handle order notes cleanly without depending on frontend address inputs
+    // Handle order notes cleanly without depending on frontend address inputs
     const mergedAddress = [address1, city, postcode].filter(val => val && val.trim() !== '').join(', ') || 'Collected via GoCardless';
     const fullName = `${firstName || ''} ${lastName || ''}`.trim();
     const orderNotes = `Name: ${fullName} | Email: ${email || ''} | Phone: ${phone || ''} | Reason: ${reason || 'Treat'} | Addr: ${mergedAddress}`;
@@ -43,7 +43,7 @@ export async function POST({ request, locals }) {
           mandate_request: { 
             scheme: 'bacs',
             metadata: {
-              plan_tier: String(planTier),
+              plan_tier: String(planTier || "test"),
               frequency: String(frequency || "Weekly"),
               order_notes: orderNotes.substring(0, 500)
             }
@@ -55,22 +55,28 @@ export async function POST({ request, locals }) {
     const brData = await brResponse.json();
     if (!brResponse.ok) {
       console.error("GoCardless Billing Request API Error Detail:", brData.error);
-      throw new Error(brData.error?.message || 'API Error');
+      return new Response(JSON.stringify({ error: brData.error?.message || 'API Billing Request Error' }), { status: 400 });
     }
 
-    const billingRequestId = brData.billing_requests.id;
+    const billingRequestId = brData.billing_requests?.id;
+    if (!billingRequestId) {
+      return new Response(JSON.stringify({ error: "Failed to generate valid Billing Request ID from GoCardless." }), { status: 400 });
+    }
     
     const successUrl = new URL(`${new URL(request.url).origin}/success`);
     successUrl.searchParams.set('name', firstName || '');
     successUrl.searchParams.set('plan', plan.description);
 
-    // 2. Build prefilled_customer dynamically to prevent validation failures.
-    // GoCardless strictly rejects parameters passed as empty strings ("").
+    // Build prefilled_customer dynamically to prevent validation failures.
     const customerData = {};
     if (firstName && firstName.trim() !== '') customerData.given_name = firstName.trim();
     if (lastName && lastName.trim() !== '') customerData.family_name = lastName.trim();
     if (email && email.trim() !== '') customerData.email = email.trim();
-    if (phone && phone.trim() !== '') customerData.phone_number = phone.trim();
+    
+    // Sanitize phone number to prevent custom format syntax errors
+    if (phone && phone.trim() !== '') {
+      customerData.phone_number = phone.replace(/\s+/g, ''); 
+    }
     
     // Always default country code to GB for BACS scheme processing
     customerData.country_code = "GB";
@@ -106,7 +112,7 @@ export async function POST({ request, locals }) {
     const flowData = await flowResponse.json();
     if (!flowResponse.ok) {
       console.error("GoCardless Flow API Error Detail:", flowData.error);
-      throw new Error(flowData.error?.message || 'API Flow Error');
+      return new Response(JSON.stringify({ error: flowData.error?.message || 'API Flow Error' }), { status: 400 });
     }
 
     return new Response(JSON.stringify({ checkoutUrl: flowData.billing_request_flows.authorisation_url }), {
