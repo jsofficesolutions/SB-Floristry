@@ -80,6 +80,8 @@ export async function POST({ request, locals }) {
     console.log("Step 2: Creating Billing Request Flow with autofill data.");
 
     // 2. Build prefilled_customer parameters explicitly for the hosted checkout page flow UI
+    // By passing these here instead of pre-creating the customer, the GoCardless checkout screen
+    // will beautifully autofill the form so the user doesn't have to type it again.
     const prefilled_customer = {};
     if (firstName) prefilled_customer.given_name = firstName;
     if (lastName) prefilled_customer.family_name = lastName;
