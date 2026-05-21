@@ -109,10 +109,6 @@ export async function POST({ request, locals }) {
       postal_code: postcode,
       country_code: 'GB'
     };
-    // Only add phone_number if it's valid E.164
-    if (e164Phone) {
-      prefilled_customer.phone_number = e164Phone;
-    }
 
     // Step 2: Create billing request flow
     const flowPayload = {
