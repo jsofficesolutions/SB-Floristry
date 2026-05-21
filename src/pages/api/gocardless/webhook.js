@@ -93,10 +93,9 @@ async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken
       const searchData = await searchRes.json();
       if (searchData.customers?.length > 0) {
         const cust = searchData.customers[0];
-        // If the existing customer has placeholder names, update them
-        const hasPlaceholderName = (cust.first_name?.toLowerCase() === 'john' && cust.last_name?.toLowerCase() === 'doe') ||
-                                   !cust.first_name || cust.last_name === 'Customer';
-        if (hasPlaceholderName) {
+        // Always update the customer name if it differs from what we have
+        if (cust.first_name !== resolved.firstName || cust.last_name !== resolved.lastName) {
+          console.log(`Updating customer ${cust.id} name from "${cust.first_name} ${cust.last_name}" to "${resolved.firstName} ${resolved.lastName}"`);
           await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${cust.id}.json`, {
             method: 'PUT',
             headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
@@ -123,9 +122,8 @@ async function findOrCreateShopifyCustomer(resolved, shopifyDomain, shopifyToken
       const searchData = await searchRes.json();
       if (searchData.customers?.length > 0) {
         const cust = searchData.customers[0];
-        const hasPlaceholderName = (cust.first_name?.toLowerCase() === 'john' && cust.last_name?.toLowerCase() === 'doe') ||
-                                   !cust.first_name || cust.last_name === 'Customer';
-        if (hasPlaceholderName) {
+        if (cust.first_name !== resolved.firstName || cust.last_name !== resolved.lastName) {
+          console.log(`Updating customer ${cust.id} name from "${cust.first_name} ${cust.last_name}" to "${resolved.firstName} ${resolved.lastName}"`);
           await fetch(`https://${shopifyDomain}/admin/api/2024-01/customers/${cust.id}.json`, {
             method: 'PUT',
             headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' },
