@@ -3,16 +3,15 @@ export const prerender = false;
 // Define pricing structures for automated subscription generation (including Developer sandbox)
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
-  classic: { amount: 4000, description: "SB Floristry - The Classic Subscription" },
-  signature: { amount: 6500, description: "SB Floristry - The Signature Subscription" },
-  luxe: { amount: 10000, description: "SB Floristry - The Luxe Subscription" }
+  classic: { amount: 2800, description: "SB Floristry - The Classic Box" },
+  showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Box" }
 };
 
-// Map customer frequency selections to GoCardless subscription schedule parameters
+// Map customer frequency selections (including Three-Weekly) to GoCardless subscription parameters
 const FREQUENCY_INTERVALS = {
   Weekly: { interval_unit: "weekly", interval: 1 },
   Fortnightly: { interval_unit: "weekly", interval: 2 },
-  Monthly: { interval_unit: "monthly", interval: 1 }
+  "Three-Weekly": { interval_unit: "weekly", interval: 3 }
 };
 
 // GET handler to confirm the routing is active and prevent browser 404s
@@ -182,7 +181,6 @@ async function handleWebhookEvents(payload, config) {
         const addressLines = rawAddress.split(',').map(l => l.trim()).filter(l => l);
         const address1 = addressLines[0] || rawAddress;
         const city = addressLines[1] || "";
-        // Safely extract postcode (handles cases where city might be the last array element)
         const zip = addressLines.length > 2 ? addressLines[addressLines.length - 1] : (addressLines[2] || "");
 
         console.log(`Injecting paid subscription order into Shopify for ${customer.email}...`);
