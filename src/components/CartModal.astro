@@ -22,7 +22,7 @@
     </div>
 
     <div class="bg-white border-t border-gray-200 shadow-[0_-4px_15px_rgba(0,0,0,0.02)] z-10">
-        
+   
         <div class="border-b border-gray-100">
             <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" id="toggleDeliveryDate">
                 <span class="flex items-center pointer-events-none"><i class="fas fa-calendar-alt mr-3 text-sb-gold text-sm"></i> Select Delivery Date</span>
@@ -77,6 +77,7 @@
             document.getElementById('deliveryDateSection')?.classList.toggle('hidden');
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
         });
+
         document.getElementById('toggleGiftMessage')?.addEventListener('click', function() {
             document.getElementById('giftMessageSection')?.classList.toggle('hidden');
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
@@ -121,7 +122,6 @@
             const { container, subtotal, count, progressContainer, progressText, progressBar } = getCartElements();
             
             if (!container) return;
-
             if (cart.length === 0) {
                 container.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-64 text-center px-4">
@@ -144,7 +144,11 @@
                 totalItems += item.quantity;
                 subtotalAmount += parseFloat(item.price) * item.quantity;
 
-                const finalImgSrc = (item.image && item.image !== 'undefined' && item.image !== 'null') 
+                // Enhanced visual protection check to scrub out object parsing artifacts
+                const finalImgSrc = (item.image && 
+                                     item.image !== 'undefined' && 
+                                     item.image !== 'null' && 
+                                     item.image !== '[object Object]') 
                     ? item.image 
                     : 'https://via.placeholder.com/400x500?text=No+Image';
 
@@ -204,14 +208,19 @@
                     const id = btn.getAttribute('data-id') || btn.dataset.id;
                     const title = btn.getAttribute('data-title') || btn.dataset.title;
                     const price = btn.getAttribute('data-price') || btn.dataset.price;
-                    const image = btn.getAttribute('data-image') || btn.dataset.image;
+                    let image = btn.getAttribute('data-image') || btn.dataset.image;
 
                     if (!id) return;
+
+                    // Clean image string validation prior to mutating storage state
+                    if (!image || image === 'undefined' || image === 'null' || image === '[object Object]') {
+                        image = '';
+                    }
 
                     const itemMatch = cart.find(item => item.id === id);
                     if (itemMatch) {
                         itemMatch.quantity += 1;
-                        if (image && image !== 'undefined' && image !== 'null') {
+                        if (image) {
                             itemMatch.image = image;
                         }
                     } else {
