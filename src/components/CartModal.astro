@@ -208,7 +208,23 @@
                     const id = btn.getAttribute('data-id') || btn.dataset.id;
                     const title = btn.getAttribute('data-title') || btn.dataset.title;
                     const price = btn.getAttribute('data-price') || btn.dataset.price;
-                    let image = btn.getAttribute('data-image') || btn.dataset.image;
+                    let image = btn.getAttribute('data-image') || btn.dataset.image || '';
+
+if (typeof image !== 'string') {
+    image = String(image);
+}
+
+image = image.trim();
+
+// Fallback if image is invalid
+if (
+    !image ||
+    image === 'undefined' ||
+    image === 'null' ||
+    image === '[object Object]'
+) {
+    image = 'https://via.placeholder.com/400x500?text=No+Image';
+}
 
                     if (!id) return;
 
