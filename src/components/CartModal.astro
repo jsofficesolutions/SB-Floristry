@@ -145,7 +145,7 @@
 
                 itemsHtml += `
                     <div class="flex items-center gap-4 bg-white p-4 border border-gray-100 shadow-sm relative rounded-sm">
-                        <img src="${item.image}" alt="${item.title}" class="w-20 h-24 object-cover shrink-0 bg-[#F9F8F6]" />
+                        <img src="${item.image || 'https://via.placeholder.com/400x500?text=No+Image'}" alt="${item.title}" class="w-20 h-24 object-cover shrink-0 bg-[#F9F8F6]" />
                         <div class="flex-grow flex flex-col justify-between h-24 py-1">
                             <div>
                                 <h3 class="font-serif text-base text-sb-black font-light leading-tight pr-6">${item.title}</h3>
@@ -194,10 +194,12 @@
 
                 if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
                     const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
-                    const id = btn.dataset.id;
-                    const title = btn.dataset.title;
-                    const price = btn.dataset.price;
-                    const image = btn.dataset.image;
+                    
+                    // CRITICAL Image Fix: Read variables strictly from the resolved dataset container element
+                    const id = btn.getAttribute('data-id') || btn.dataset.id;
+                    const title = btn.getAttribute('data-title') || btn.dataset.title;
+                    const price = btn.getAttribute('data-price') || btn.dataset.price;
+                    const image = btn.getAttribute('data-image') || btn.dataset.image;
 
                     if (!id) return;
 
