@@ -37,10 +37,8 @@ export async function getStaticPaths() {
       }
     }
   `;
-  
   const response = await shopifyFetch({ query });
   const products = response?.data?.products?.edges || [];
-
   return products.map((edge) => ({
     params: { handle: edge.node.handle },
     props: { product: edge.node },
@@ -67,7 +65,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
   <section class="py-12 md:py-24 bg-sb-cream text-sb-black min-h-screen">
     <div class="container mx-auto px-6 max-w-7xl">
       
-      <!-- Breadcrumbs -->
       <nav class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 mb-8 md:mb-12 flex items-center space-x-2 reveal">
         <a href="/" class="hover:text-sb-gold transition-colors">Home</a>
         <span>/</span>
@@ -78,25 +75,21 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
 
       <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
         
-        <!-- Left: Sticky Image Gallery -->
         <div class="w-full lg:w-1/2 reveal">
           <div class="lg:sticky lg:top-32 flex flex-col-reverse md:flex-row gap-4">
             
-            <!-- Thumbnails -->
             {images.length > 1 && (
               <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible no-scrollbar w-full md:w-20 shrink-0">
                 {images.map((img, idx) => (
-                  <button class={`gallery-thumbnail w-20 h-24 md:w-full md:h-28 shrink-0 border-2 transition-colors duration-300 ${idx === 0 ? 'border-sb-gold' : 'border-transparent hover:border-gray-300'}`} data-full={img}>
+                  <button class={`gallery-thumbnail w-20 h-24 md:w-full md:h-28 shrink-0 border-2 transition-all duration-300 ${idx === 0 ? 'border-sb-gold' : 'border-transparent hover:border-gray-300'}`} data-full={img}>
                     <img src={img} alt={`Thumbnail ${idx + 1}`} class="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
 
-            <!-- Main Image -->
             <div class="w-full relative aspect-[4/5] bg-white border border-gray-100">
               <img id="mainProductImage" src={mainImage} alt={product.title} class="w-full h-full object-cover loaded transition-opacity duration-500" />
-              <!-- Packaging Callout -->
               <div class="absolute bottom-4 right-4 bg-sb-black text-sb-gold text-[9px] uppercase tracking-luxury font-bold py-2 px-4 shadow-xl">
                 Arrives in Signature Black & Gold Wrap
               </div>
@@ -105,17 +98,14 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
           </div>
         </div>
 
-        <!-- Right: Product Information -->
         <div class="w-full lg:w-1/2 reveal" style="transition-delay: 150ms;">
-          <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 block">SB Floristry Signature</span>
+           <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 block">SB Floristry Signature</span>
           <h1 class="font-serif text-4xl md:text-5xl text-sb-black mb-4 font-light">{product.title}</h1>
           <p class="text-xl font-light text-gray-500 mb-8">{priceText}</p>
           
-          <!-- Add to Cart -->
           <div class="mb-12 border-y border-gray-200 py-8">
             <p class="text-xs text-gray-500 font-bold uppercase tracking-luxury mb-4"><i class="fas fa-truck mr-2 text-sb-gold"></i> Delivery available across Essex & London</p>
 
-            <!-- Postcode Validator -->
             <div class="mb-6 bg-gray-50 p-4 border border-gray-100">
               <label class="block text-[10px] font-bold uppercase tracking-luxury text-sb-black mb-2">Check Delivery Eligibility</label>
               <div class="flex gap-2">
@@ -126,7 +116,7 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
             </div>
             
             <button 
-              class="w-full bg-sb-black text-sb-gold py-4 font-bold tracking-luxury text-[11px] uppercase hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 add-to-cart-btn shadow-xl"
+              class="w-full bg-sb-black text-sb-gold border border-transparent py-4 font-bold tracking-luxury text-[11px] uppercase hover:bg-sb-gold hover:text-sb-black hover:border-sb-black transition-all duration-300 add-to-cart-btn shadow-xl cursor-pointer"
               data-id={variantId} 
               data-title={product.title} 
               data-price={priceAmount} 
@@ -136,13 +126,10 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
             </button>
           </div>
 
-          <!-- Product Description from Shopify -->
           <div class="prose prose-sm prose-gray font-light leading-relaxed mb-10 max-w-none text-gray-600 product-desc" set:html={product.descriptionHtml}></div>
 
-          <!-- Farmgirl Style Details Accordions -->
           <div class="border-t border-gray-200">
             
-            <!-- Care Instructions -->
             <div class="border-b border-gray-200">
               <button class="accordion-btn w-full flex justify-between items-center py-5 text-xs font-bold tracking-luxury uppercase text-sb-black group focus:outline-none">
                 <span><i class="fas fa-tint text-sb-gold mr-3"></i> Care Instructions</span>
@@ -155,7 +142,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
               </div>
             </div>
 
-            <!-- Delivery & Returns -->
             <div class="border-b border-gray-200">
               <button class="accordion-btn w-full flex justify-between items-center py-5 text-xs font-bold tracking-luxury uppercase text-sb-black group focus:outline-none">
                 <span><i class="fas fa-box-open text-sb-gold mr-3"></i> Delivery Details</span>
@@ -218,13 +204,9 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
           const val = input.value.trim().toUpperCase();
           if (!val) return;
           
-          // Specific allowed districts
           const validDistricts = ['RM1', 'RM11', 'RM12', 'RM2', 'RM3', 'RM4', 'RM5', 'RM7', 'CM13', 'CM14', 'CM15'];
-          
-          // Extract just the outward code (e.g., RM1, CM13) regardless of spaces
           const districtMatch = val.replace(/\s+/g, '').match(/^([A-Z]{1,2}\d{1,2})/);
           const district = districtMatch ? districtMatch[1] : '';
-          
           const isValid = validDistricts.includes(district);
           
           result.classList.remove('hidden', 'text-green-600', 'text-red-500');
@@ -239,7 +221,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
         });
       }
       
-      // Clean up Shopify's default HTML spacing issues if present
       document.querySelectorAll('.product-desc p').forEach(p => {
         if(p.innerHTML.trim() === '') p.style.display = 'none';
       });
@@ -248,7 +229,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
 </Layout>
 
 <style>
-  /* Hide scrollbar for thumbnail gallery on mobile */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
