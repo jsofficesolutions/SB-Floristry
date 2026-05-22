@@ -144,7 +144,6 @@
                 totalItems += item.quantity;
                 subtotalAmount += parseFloat(item.price) * item.quantity;
 
-                // Enhanced visual protection check to scrub out object parsing artifacts
                 const finalImgSrc = (item.image && 
                                      item.image !== 'undefined' && 
                                      item.image !== 'null' && 
@@ -152,9 +151,12 @@
                     ? item.image 
                     : 'https://via.placeholder.com/400x500?text=No+Image';
 
+                // THE FIX: Wrapped the image in a strict relative div, forcing the img to absolute inset
                 itemsHtml += `
                     <div class="flex items-center gap-4 bg-white p-4 border border-gray-100 shadow-sm relative rounded-sm">
-                        <img src="${finalImgSrc}" alt="${item.title}" class="w-20 h-24 object-cover shrink-0 bg-[#F9F8F6]" />
+                        <div class="w-20 h-24 shrink-0 bg-[#F9F8F6] rounded-sm overflow-hidden relative">
+                            <img src="${finalImgSrc}" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover block opacity-100" style="visibility: visible;" />
+                        </div>
                         <div class="flex-grow flex flex-col justify-between h-24 py-1">
                             <div>
                                 <h3 class="font-serif text-base text-sb-black font-light leading-tight pr-6">${item.title}</h3>
@@ -208,23 +210,7 @@
                     const id = btn.getAttribute('data-id') || btn.dataset.id;
                     const title = btn.getAttribute('data-title') || btn.dataset.title;
                     const price = btn.getAttribute('data-price') || btn.dataset.price;
-                    let image = btn.getAttribute('data-image') || btn.dataset.image || '';
-
-if (typeof image !== 'string') {
-    image = String(image);
-}
-
-image = image.trim();
-
-// Fallback if image is invalid
-if (
-    !image ||
-    image === 'undefined' ||
-    image === 'null' ||
-    image === '[object Object]'
-) {
-    image = 'https://via.placeholder.com/400x500?text=No+Image';
-}
+                    let image = btn.getAttribute('data-image') || btn.dataset.image;
 
                     if (!id) return;
 
