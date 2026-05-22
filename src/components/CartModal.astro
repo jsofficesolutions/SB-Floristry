@@ -80,65 +80,65 @@
             document.getElementById('deliveryDateSection')?.classList.toggle('hidden');
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
         });
-
         document.getElementById('toggleGiftMessage')?.addEventListener('click', function() {
             document.getElementById('giftMessageSection')?.classList.toggle('hidden');
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
         });
 
-        // 2. Select Elements
-        const cartBtn = document.getElementById('cartBtn');
-        const closeCartBtn = document.getElementById('closeCartBtn');
-        const cartOverlay = document.getElementById('cartOverlay');
-        const cartSidebar = document.getElementById('cartSidebar');
-        const cartItemsContainer = document.getElementById('cartItemsContainer');
-        const cartSubtotal = document.getElementById('cartSubtotal');
-        const cartCount = document.getElementById('cartCount');
-        const checkoutBtn = document.getElementById('checkoutBtn');
+        // Dynamic helper functions to fetch fresh DOM elements on-demand
+        const getCartElements = () => ({
+            overlay: document.getElementById('cartOverlay'),
+            sidebar: document.getElementById('cartSidebar'),
+            container: document.getElementById('cartItemsContainer'),
+            subtotal: document.getElementById('cartSubtotal'),
+            count: document.getElementById('cartCount'),
+            progressContainer: document.getElementById('deliveryProgressContainer'),
+            progressText: document.getElementById('deliveryProgressText'),
+            progressBar: document.getElementById('deliveryProgressBar')
+        });
 
-        const deliveryProgressContainer = document.getElementById('deliveryProgressContainer');
-        const deliveryProgressText = document.getElementById('deliveryProgressText');
-        const deliveryProgressBar = document.getElementById('deliveryProgressBar');
-
-        // Drawer Animations & Scroll Control
+        // Drawer Animations & Scroll Control (Always look up active page DOM nodes)
         const openCart = () => {
-            if (!cartOverlay || !cartSidebar) return;
-            cartOverlay.classList.remove('hidden');
-            setTimeout(() => cartOverlay.classList.remove('opacity-0'), 10);
-            cartSidebar.classList.remove('translate-x-full');
+            const { overlay, sidebar } = getCartElements();
+            if (!overlay || !sidebar) return;
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            sidebar.classList.remove('translate-x-full');
             document.body.style.overflow = 'hidden';
         };
 
         const closeCart = () => {
-            if (!cartOverlay || !cartSidebar) return;
-            cartOverlay.classList.add('opacity-0');
-            cartSidebar.classList.add('translate-x-full');
-            setTimeout(() => cartOverlay.classList.add('hidden'), 300);
+            const { overlay, sidebar } = getCartElements();
+            if (!overlay || !sidebar) return;
+            overlay.classList.add('opacity-0');
+            sidebar.classList.add('translate-x-full');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
             document.body.style.overflow = '';
         };
 
-        // Standard Button Actions
-        cartBtn?.addEventListener('click', openCart);
-        closeCartBtn?.addEventListener('click', closeCart);
-        cartOverlay?.addEventListener('click', closeCart);
+        // Standard Button Actions (Re-bound fresh on page load updates)
+        document.getElementById('cartBtn')?.addEventListener('click', openCart);
+        document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
+        document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
 
         // 3. Basket Rendering
         const renderCart = () => {
-            // Fetch dynamically on-demand inside function to avoid stale closures across navigated pages
             const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-            if (!cartItemsContainer) return;
+            const { container, subtotal, count, progressContainer, progressText, progressBar } = getCartElements();
+            
+            if (!container) return;
 
             if (cart.length === 0) {
-                cartItemsContainer.innerHTML = `
+                container.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-64 text-center px-4">
                         <i class="fas fa-shopping-bag text-gray-300 text-3xl mb-4"></i>
                         <p class="font-serif text-xl text-sb-black mb-1">Your basket is empty</p>
                         <p class="text-[11px] text-gray-400 tracking-wide max-w-[200px]">Add some beautiful blooms to get started.</p>
                     </div>
                 `;
-                if (cartSubtotal) cartSubtotal.innerText = '£0.00';
-                if (cartCount) cartCount.classList.add('hidden');
-                if (deliveryProgressContainer) deliveryProgressContainer.classList.add('hidden');
+                if (subtotal) subtotal.innerText = '£0.00';
+                if (count) count.classList.add('hidden');
+                if (progressContainer) progressContainer.classList.add('hidden');
                 return;
             }
 
@@ -171,32 +171,30 @@
                 `;
             });
 
-            cartItemsContainer.innerHTML = itemsHtml;
+            container.innerHTML = itemsHtml;
 
-            // Update subtotal display & badge counter
-            if (cartSubtotal) cartSubtotal.innerText = `£${subtotalAmount.toFixed(2)}`;
-            if (cartCount) {
-                cartCount.innerText = totalItems;
-                cartCount.classList.remove('hidden');
+            if (subtotal) subtotal.innerText = `£${subtotalAmount.toFixed(2)}`;
+            if (count) {
+                count.innerText = totalItems;
+                count.classList.remove('hidden');
             }
 
-            // Local free delivery eligibility counter threshold calculation (£60)
-            if (deliveryProgressContainer && deliveryProgressText && deliveryProgressBar) {
-                deliveryProgressContainer.classList.remove('hidden');
+            if (progressContainer && progressText && progressBar) {
+                progressContainer.classList.remove('hidden');
                 const threshold = 60.00;
                 if (subtotalAmount >= threshold) {
-                    deliveryProgressText.innerHTML = '🎉 You qualify for <span class="text-green-600 font-bold">Free Local Delivery</span>!';
-                    deliveryProgressBar.style.width = '100%';
+                    progressText.innerHTML = '🎉 You qualify for <span class="text-green-600 font-bold">Free Local Delivery</span>!';
+                    progressBar.style.width = '100%';
                 } else {
                     const remaining = (threshold - subtotalAmount).toFixed(2);
-                    deliveryProgressText.innerHTML = `Spend £<span id="deliveryAmountNeeded" class="font-bold">${remaining}</span> more for Free Local Delivery`;
+                    progressText.innerHTML = `Spend £<span id="deliveryAmountNeeded" class="font-bold">${remaining}</span> more for Free Local Delivery`;
                     const progressPercentage = (subtotalAmount / threshold) * 100;
-                    deliveryProgressBar.style.width = `${progressPercentage}%`;
+                    progressBar.style.width = `${progressPercentage}%`;
                 }
             }
         };
 
-        // 4. Double Event Listener Safeguard (Avoid compounding page navigation handlers)
+        // 4. Global Event Listener Interceptor (Housed globally on window)
         if (!window.cartListenersInitialized) {
             document.body.addEventListener('click', (e) => {
                 const target = e.target;
@@ -220,6 +218,8 @@
                     }
 
                     localStorage.setItem('sb_cart', JSON.stringify(cart));
+                    
+                    // CRITICAL FIX: Run rendering against newly found target DOM nodes
                     renderCart();
                     openCart();
                     return;
@@ -270,7 +270,7 @@
         }
 
         // 5. Shopify checkout redirection logic
-        checkoutBtn?.addEventListener('click', () => {
+        document.getElementById('checkoutBtn')?.addEventListener('click', () => {
             const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             if (cart.length === 0) return;
 
@@ -296,7 +296,6 @@
 
             let checkoutUrl = `https://${shopifyDomain}/cart/${lines}`;
             const params = [];
-            
             if (giftMessageVal) {
                 params.push(`note=${encodeURIComponent("Gift Message: " + giftMessageVal)}`);
             }
@@ -311,7 +310,8 @@
             window.location.href = checkoutUrl;
         });
 
-        // Initialize state on page load
+        // Initialize state natively on every template navigation mount
         renderCart();
     });
+</script>
 </script>
