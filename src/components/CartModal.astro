@@ -62,9 +62,7 @@
 </div>
 
 <script is:inline>
-    // Astro View Transitions Safe Global Cart Script
     document.addEventListener('astro:page-load', () => {
-        // 1. Minimum date offset calculator (48 hours out)
         const dateInput = document.getElementById('cartDeliveryDate');
         if (dateInput) {
             const today = new Date();
@@ -75,7 +73,6 @@
             dateInput.min = `${yyyy}-${mm}-${dd}`;
         }
 
-        // Toggle UI elements cleanly
         document.getElementById('toggleDeliveryDate')?.addEventListener('click', function() {
             document.getElementById('deliveryDateSection')?.classList.toggle('hidden');
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
@@ -85,7 +82,6 @@
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
         });
 
-        // Dynamic helper utility to locate live DOM nodes
         const getCartElements = () => ({
             overlay: document.getElementById('cartOverlay'),
             sidebar: document.getElementById('cartSidebar'),
@@ -97,7 +93,6 @@
             progressBar: document.getElementById('deliveryProgressBar')
         });
 
-        // Drawer Animations & Scroll Control (Uses live DOM elements)
         const openCart = () => {
             const { overlay, sidebar } = getCartElements();
             if (!overlay || !sidebar) return;
@@ -116,12 +111,10 @@
             document.body.style.overflow = '';
         };
 
-        // Standard Navigation-Specific Button Handlers (Re-binds clean on structural swaps)
         document.getElementById('cartBtn')?.addEventListener('click', openCart);
         document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
         document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
 
-        // 3. Basket Rendering
         const renderCart = () => {
             const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             const { container, subtotal, count, progressContainer, progressText, progressBar } = getCartElements();
@@ -194,13 +187,11 @@
             }
         };
 
-        // 4. Global Document Interceptor (CRITICAL FIX: bound to document instead of body)
         if (!window.cartListenersInitialized) {
             document.addEventListener('click', (e) => {
                 const target = e.target;
                 const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
 
-                // Intercept item additions
                 if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
                     const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
                     const id = btn.dataset.id;
@@ -224,7 +215,6 @@
                     return;
                 }
 
-                // Quantity increments
                 if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
                     const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
                     const id = btn.dataset.id;
@@ -237,7 +227,6 @@
                     return;
                 }
 
-                // Quantity decrements
                 if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
                     const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
                     const id = btn.dataset.id;
@@ -254,7 +243,6 @@
                     return;
                 }
 
-                // Trash button deletions
                 if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
                     const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
                     const id = btn.dataset.id;
@@ -268,7 +256,6 @@
             window.cartListenersInitialized = true;
         }
 
-        // 5. Shopify checkout redirection logic
         document.getElementById('checkoutBtn')?.addEventListener('click', () => {
             const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             if (cart.length === 0) return;
@@ -309,7 +296,6 @@
             window.location.href = checkoutUrl;
         });
 
-        // Initialize state natively on every template navigation mount
         renderCart();
     });
 </script>
