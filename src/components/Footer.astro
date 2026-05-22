@@ -2,68 +2,68 @@
 // src/components/Footer.astro
 const year = new Date().getFullYear();
 ---
-<footer class="bg-sb-black text-sb-cream pt-16 pb-8 border-t border-white/5 relative z-10">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="flex flex-col items-center text-center mb-12">
-            <!-- Footer Logo Circle - Fixed visibility by using a dark premium background and delicate gold border -->
-            <a href="/" class="w-24 h-24 rounded-full bg-[#111111] border border-sb-gold/30 flex items-center justify-center mb-6 hover:scale-105 transition-all duration-300 shadow-xl shadow-black/40 group">
-                <img src="/images/logo.png" alt="SB Floristry Logo" class="h-14 w-auto object-contain group-hover:rotate-3 transition-transform duration-500" />
-            </a>
-            <p class="font-serif text-xl text-sb-gold font-light tracking-wide">SB Floristry</p>
-            <p class="text-xs text-gray-400 mt-2 max-w-sm font-light leading-relaxed">Bespoke floral design for weddings, events, funerals, and daily luxury arrangements across Essex.</p>
+<footer class="bg-sb-black text-white pt-20 pb-10 border-t border-white/10">
+  <div class="container mx-auto px-6 max-w-7xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+      
+      <!-- Brand Details -->
+      <div>
+        <img src="/images/logo.png" alt="SB Floristry" class="h-10 object-contain mb-6 filter invert brightness-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+        <h2 class="hidden font-serif text-2xl mb-6 text-sb-cream">SB Floristry</h2>
+        <p class="text-gray-400 text-sm font-light leading-relaxed mb-6">
+          Luxury floral design based in Essex. We specialize in bespoke arrangements, elegant weddings, and beautiful everyday gifting.
+        </p>
+        <div class="flex space-x-4">
+          <a href="#" class="text-white hover:text-sb-gold transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+          <a href="#" class="text-white hover:text-sb-gold transition-colors"><i class="fab fa-facebook-f text-xl"></i></a>
+          <a href="#" class="text-white hover:text-sb-gold transition-colors"><i class="fab fa-pinterest-p text-xl"></i></a>
         </div>
+      </div>
 
-        <!-- Footer Grid Links -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 py-8 border-t border-b border-white/5 text-center md:text-left">
-            <div>
-                <h4 class="font-serif text-sm uppercase tracking-[0.2em] text-sb-gold mb-4">Our Collections</h4>
-                <ul class="space-y-2 text-xs text-gray-400 font-light">
-                    <li><a href="/collections/signature" class="hover:text-sb-gold transition-colors">The Signature Collection</a></li>
-                    <li><a href="/collections/seasonal" class="hover:text-sb-gold transition-colors">Seasonal Creations</a></li>
-                    <li><a href="/subscriptions" class="hover:text-sb-gold transition-colors">Floral Subscriptions</a></li>
-                    <li><a href="/occasion-finder" class="hover:text-sb-gold transition-colors">Occasion Finder</a></li>
-                </ul>
-            </div>
+      <!-- Shop & Gift Links -->
+      <div>
+        <h3 class="text-[10px] tracking-luxury uppercase font-bold text-sb-gold mb-6">Shop & Gift</h3>
+        <ul class="space-y-4 text-sm font-light text-gray-300">
+          <li><a href="/collections/seasonal" class="hover:text-white transition-colors">The Seasonal Edit</a></li>
+          <li><a href="/collections/signature" class="hover:text-white transition-colors">Signature Collection</a></li>
+          <li><a href="/occasion-finder" class="hover:text-sb-gold transition-colors flex items-center"><i class="fas fa-magic mr-2 text-sb-gold text-xs"></i> AI Advisor</a></li>
+          <li><a href="/subscriptions" class="hover:text-sb-gold transition-colors flex items-center"><i class="fas fa-calendar-alt mr-2 text-sb-gold text-xs"></i> Subscriptions</a></li>
+        </ul>
+      </div>
 
-            <div>
-                <h4 class="font-serif text-sm uppercase tracking-[0.2em] text-sb-gold mb-4">Bespoke Services</h4>
-                <ul class="space-y-2 text-xs text-gray-400 font-light">
-                    <li><a href="/weddings" class="hover:text-sb-gold transition-colors">Weddings & Bridal</a></li>
-                    <li><a href="/funerals" class="hover:text-sb-gold transition-colors">Funeral Tributes</a></li>
-                    <li><a href="/contact" class="hover:text-sb-gold transition-colors">Corporate & Events</a></li>
-                </ul>
-            </div>
+      <!-- Services & Info Links -->
+      <div>
+        <h3 class="text-[10px] tracking-luxury uppercase font-bold text-sb-gold mb-6">Services & Info</h3>
+        <ul class="space-y-4 text-sm font-light text-gray-300">
+          <li><a href="/weddings" class="hover:text-white transition-colors">Weddings & Events</a></li>
+          <li><a href="/funerals" class="hover:text-white transition-colors">Sympathy Flowers</a></li>
+          <li><a href="/our-story" class="hover:text-white transition-colors">Our Story</a></li>
+          <li><a href="/contact" class="hover:text-white transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
 
-            <div>
-                <h4 class="font-serif text-sm uppercase tracking-[0.2em] text-sb-gold mb-4">Customer Care</h4>
-                <ul class="space-y-2 text-xs text-gray-400 font-light">
-                    <li><a href="/contact" class="hover:text-sb-gold transition-colors">Get In Touch</a></li>
-                    <li><a href="/contact#delivery" class="hover:text-sb-gold transition-colors">Delivery Information</a></li>
-                    <li><a href="/contact#faqs" class="hover:text-sb-gold transition-colors">Frequently Asked Questions</a></li>
-                </ul>
-            </div>
+      <!-- Newsletter -->
+      <div>
+        <h3 class="text-[10px] tracking-luxury uppercase font-bold text-sb-gold mb-6">Join The Club</h3>
+        <p class="text-gray-400 text-sm font-light mb-4">Subscribe for 10% off your first luxury order, plus seasonal updates and exclusive event invites.</p>
+        <form class="flex border-b border-gray-600 pb-2 focus-within:border-sb-gold transition-colors">
+          <input type="email" placeholder="Email Address" class="bg-transparent w-full focus:outline-none text-sm text-white placeholder-gray-500" required />
+          <button type="submit" class="text-sb-gold hover:text-white transition-colors text-xs uppercase tracking-luxury font-bold">Join</button>
+        </form>
+      </div>
 
-            <div>
-                <h4 class="font-serif text-sm uppercase tracking-[0.2em] text-sb-gold mb-4">Connect With Us</h4>
-                <p class="text-xs text-gray-400 mb-4 font-light leading-relaxed">Stay updated with our latest floral designs, news, and seasonal highlights from our Essex workshop.</p>
-                <div class="flex justify-center md:justify-start gap-4 text-gray-400">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:text-sb-gold transition-colors" aria-label="Follow us on Instagram">
-                        <i class="fab fa-instagram text-lg"></i>
-                    </a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-sb-gold transition-colors" aria-label="Follow us on Facebook">
-                        <i class="fab fa-facebook-f text-lg"></i>
-                    </a>
-                    <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" class="hover:text-sb-gold transition-colors" aria-label="Follow us on Pinterest">
-                        <i class="fab fa-pinterest-p text-lg"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer Bottom Bar -->
-        <div class="flex flex-col sm:flex-row items-center justify-between pt-8 text-[10px] text-gray-500 font-light tracking-wider uppercase">
-            <p>&copy; {new Date().getFullYear()} SB Floristry. All Rights Reserved.</p>
-            <p class="mt-2 sm:mt-0">Website by <a href="https://jsofficesolutions.com" target="_blank" rel="noopener noreferrer" class="hover:text-sb-gold transition-colors">JS Office Solutions</a></p>
-        </div>
     </div>
+
+    <!-- Copyright & Legal -->
+    <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-xs text-gray-500 font-light mb-4 md:mb-0">
+        &copy; {year} SB Floristry. All rights reserved.
+      </p>
+      <div class="flex space-x-6 text-xs text-gray-500 font-light">
+        <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-white transition-colors">Refund Policy</a>
+      </div>
+    </div>
+  </div>
 </footer>
