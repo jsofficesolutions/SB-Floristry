@@ -194,9 +194,10 @@
         if (!window.cartListenersInitialized) {
             document.addEventListener('click', (e) => {
                 const target = e.target;
-                const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-
+                
+                // 1. ADD ITEM ACTION
                 if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
+                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
                     
                     const id = btn.getAttribute('data-id') || btn.dataset.id;
@@ -222,9 +223,12 @@
                     return;
                 }
 
+                // 2. INCREASE QUANTITY ACTION
                 if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
+                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
                     const id = btn.dataset.id;
+                    
                     const item = cart.find(i => i.id === id);
                     if (item) {
                         item.quantity += 1;
@@ -234,9 +238,12 @@
                     return;
                 }
 
+                // 3. DECREASE QUANTITY ACTION
                 if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
+                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
                     const id = btn.dataset.id;
+                    
                     const matchIndex = cart.findIndex(i => i.id === id);
                     if (matchIndex > -1) {
                         if (cart[matchIndex].quantity > 1) {
@@ -250,9 +257,12 @@
                     return;
                 }
 
+                // 4. TRASH REMOVAL ACTION
                 if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
+                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
                     const id = btn.dataset.id;
+                    
                     const updatedCart = cart.filter(i => i.id !== id);
                     localStorage.setItem('sb_cart', JSON.stringify(updatedCart));
                     renderCart();
