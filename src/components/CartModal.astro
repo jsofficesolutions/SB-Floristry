@@ -85,7 +85,7 @@
             this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
         });
 
-        // Dynamic helper functions to fetch fresh DOM elements on-demand
+        // Dynamic helper utility to locate live DOM nodes
         const getCartElements = () => ({
             overlay: document.getElementById('cartOverlay'),
             sidebar: document.getElementById('cartSidebar'),
@@ -97,7 +97,7 @@
             progressBar: document.getElementById('deliveryProgressBar')
         });
 
-        // Drawer Animations & Scroll Control (Always look up active page DOM nodes)
+        // Drawer Animations & Scroll Control (Uses live DOM elements)
         const openCart = () => {
             const { overlay, sidebar } = getCartElements();
             if (!overlay || !sidebar) return;
@@ -116,7 +116,7 @@
             document.body.style.overflow = '';
         };
 
-        // Standard Button Actions (Re-bound fresh on page load updates)
+        // Standard Navigation-Specific Button Handlers (Re-binds clean on structural swaps)
         document.getElementById('cartBtn')?.addEventListener('click', openCart);
         document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
         document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
@@ -194,9 +194,9 @@
             }
         };
 
-        // 4. Global Event Listener Interceptor (Housed globally on window)
+        // 4. Global Document Interceptor (CRITICAL FIX: bound to document instead of body)
         if (!window.cartListenersInitialized) {
-            document.body.addEventListener('click', (e) => {
+            document.addEventListener('click', (e) => {
                 const target = e.target;
                 const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
 
@@ -219,7 +219,6 @@
 
                     localStorage.setItem('sb_cart', JSON.stringify(cart));
                     
-                    // CRITICAL FIX: Run rendering against newly found target DOM nodes
                     renderCart();
                     openCart();
                     return;
@@ -313,5 +312,4 @@
         // Initialize state natively on every template navigation mount
         renderCart();
     });
-</script>
 </script>
