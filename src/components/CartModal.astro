@@ -143,7 +143,6 @@
                 totalItems += item.quantity;
                 subtotalAmount += parseFloat(item.price) * item.quantity;
 
-                // Ensure the image string is valid and not literally the word 'undefined'
                 const finalImgSrc = (item.image && item.image !== 'undefined' && item.image !== 'null') 
                     ? item.image 
                     : 'https://via.placeholder.com/400x500?text=No+Image';
@@ -210,8 +209,6 @@
                     const itemMatch = cart.find(item => item.id === id);
                     if (itemMatch) {
                         itemMatch.quantity += 1;
-                        
-                        // SELF HEALING FIX: Update missing images for cached items!
                         if (image && image !== 'undefined' && image !== 'null') {
                             itemMatch.image = image;
                         }
@@ -220,7 +217,6 @@
                     }
 
                     localStorage.setItem('sb_cart', JSON.stringify(cart));
-                    
                     renderCart();
                     openCart();
                     return;
