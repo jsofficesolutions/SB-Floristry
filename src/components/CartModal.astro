@@ -143,8 +143,10 @@
                 totalItems += item.quantity;
                 subtotalAmount += parseFloat(item.price) * item.quantity;
 
-                // Fallback image processing if string initialization was previously corrupted
-                const finalImgSrc = item.image && item.image !== 'undefined' ? item.image : 'https://via.placeholder.com/400x500?text=No+Image';
+                // Ensure the image string is valid and not literally the word 'undefined'
+                const finalImgSrc = (item.image && item.image !== 'undefined' && item.image !== 'null') 
+                    ? item.image 
+                    : 'https://via.placeholder.com/400x500?text=No+Image';
 
                 itemsHtml += `
                     <div class="flex items-center gap-4 bg-white p-4 border border-gray-100 shadow-sm relative rounded-sm">
@@ -208,6 +210,11 @@
                     const itemMatch = cart.find(item => item.id === id);
                     if (itemMatch) {
                         itemMatch.quantity += 1;
+                        
+                        // SELF HEALING FIX: Update missing images for cached items!
+                        if (image && image !== 'undefined' && image !== 'null') {
+                            itemMatch.image = image;
+                        }
                     } else {
                         cart.push({ id, title, price, image, quantity: 1 });
                     }
