@@ -1,4 +1,5 @@
 ---
+// src/pages/products/[handle].astro
 import Layout from '../../layouts/Layout.astro';
 import { shopifyFetch } from '../../utils/shopify.js';
 
@@ -163,7 +164,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
 
   <script is:inline>
     document.addEventListener('astro:page-load', () => {
-      // Image Gallery Logic
       const thumbnails = document.querySelectorAll('.gallery-thumbnail');
       const mainImg = document.getElementById('mainProductImage');
       
@@ -177,7 +177,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
         });
       });
 
-      // Accordion Logic
       const accordions = document.querySelectorAll('.accordion-btn');
       accordions.forEach(acc => {
         acc.addEventListener('click', function() {
@@ -194,7 +193,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
         });
       });
 
-      // Postcode Validator Logic
       const checkBtn = document.getElementById('postcode-check-btn');
       const input = document.getElementById('postcode-input');
       const result = document.getElementById('postcode-result');
