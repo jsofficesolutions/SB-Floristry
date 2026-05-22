@@ -6,8 +6,8 @@ const { product, isDark = false } = Astro.props;
 const variantId = product.variants?.edges[0]?.node?.id || product.id;
 const priceAmount = product.variants?.edges[0]?.node?.price?.amount || '0.00';
 const priceText = `£${parseFloat(priceAmount).toFixed(2)}`;
-const images = product.images?.edges.map(e => e.node.url) || [];
-const img1 = images[0] || 'https://via.placeholder.com/400x500?text=No+Image';
+const images = product.images?.edges.map(e => String(e.node.url)) || [];
+const img1 = String(images[0] || 'https://via.placeholder.com/400x500?text=No+Image');
 const img2 = images[1] || null;
 
 // Theming variables matching index.html
