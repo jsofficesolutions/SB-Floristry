@@ -115,6 +115,7 @@
         document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
         document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
 
+        // PURE VISUAL RENDERING - NEVER WRITES TO LOCALSTORAGE
         const renderCart = () => {
             const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
             const { container, subtotal, count, progressContainer, progressText, progressBar } = getCartElements();
@@ -195,7 +196,7 @@
             document.addEventListener('click', (e) => {
                 const target = e.target;
                 
-                // 1. ADD ITEM ACTION
+                // 1. ADD TO BASKET BUTTONS (Product Pages / Cards)
                 if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
                     const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
@@ -223,7 +224,7 @@
                     return;
                 }
 
-                // 2. INCREASE QUANTITY ACTION
+                // 2. INNER BASKET INCREMENT BUTTONS (+)
                 if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
                     const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
@@ -238,7 +239,7 @@
                     return;
                 }
 
-                // 3. DECREASE QUANTITY ACTION
+                // 3. INNER BASKET DECREMENT BUTTONS (-)
                 if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
                     const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
@@ -257,7 +258,7 @@
                     return;
                 }
 
-                // 4. TRASH REMOVAL ACTION
+                // 4. INNER BASKET TRASH BUTTONS
                 if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
                     const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
                     const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
