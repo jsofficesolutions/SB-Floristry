@@ -13,14 +13,13 @@ const tagsQuery = `
     }
   }
 `;
-
 const response = await shopifyFetch({ query: tagsQuery });
 const products = response?.data?.products?.edges || [];
 
 // 2. Extract and clean the tags
 const allTags = new Set();
+// Highlight-add: 'corporate' added to ignored tags
 const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink', 'corporate'];
-
 products.forEach((edge) => {
   edge.node.tags.forEach((tag) => {
     const cleanTag = tag.trim();
@@ -160,11 +159,11 @@ const dynamicTags = Array.from(allTags).sort();
             </button>
             <div class="mobile-accordion-content bg-white/5">
                 <a href="/weddings" class="block py-4 pl-4 text-xs text-gray-300 mobile-link">Weddings</a>
+                <a href="/corporate" class="block py-4 pl-4 text-xs text-gray-300 mobile-link">Corporate & Hospitality</a>
                 <a href="/funerals" class="block py-4 pl-4 text-xs text-gray-300 mobile-link">Funerals</a>
             </div>
         </div>
 
-        <!-- Added Mobile Links -->
         <a href="/occasion-finder" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link flex items-center gap-3">
             <i class="fas fa-magic w-4 text-center"></i> Gift Picker
         </a>
