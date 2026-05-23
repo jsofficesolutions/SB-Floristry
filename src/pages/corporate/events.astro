@@ -1,0 +1,136 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+
+// Utilizing signature or showcase collection placeholder images for visual consistency
+import eventHeroImg from '../../../public/images/collection-weddings.jpg';
+import featureImg from '../../../public/images/story-arranging.jpg';
+
+const specializedServices = [
+  {
+    title: "Branded Activations",
+    description: "Custom-built, immersive botanical installations designed to showcase your corporate identity, launch products, and drive maximum media engagement."
+  },
+  {
+    title: "Gala & Award Tablescapes",
+    description: "Opulent, meticulously detailed centerpieces and atmospheric accents curated to elevate high-profile awards evenings and formal dinners."
+  },
+  {
+    title: "Executive Dinners",
+    description: "Intimate, minimalist structural styling that commands sophistication and frames high-level professional dialogue seamlessly."
+  },
+  {
+    title: "Corporate Gifting Design",
+    description: "Bespoke, high-end floral gift styling tailored to reflect your brand's meticulous standards for VIP clients and stakeholders."
+  }
+];
+---
+
+<Layout 
+  title="Luxury Corporate Events Floristry" 
+  description="SB Floristry: High-end bespoke event florals, luxury tablescapes, and editorial brand activation installations across London and Essex."
+>
+  <section class="relative h-[60vh] overflow-hidden">
+      <div class="absolute inset-0">
+          <Image 
+            src={eventHeroImg} 
+            alt="SB Floristry Luxury Corporate Event Floristry" 
+            class="w-full h-full object-cover hero-zoom opacity-40" 
+            loading="eager"
+            quality="high"
+            style="object-position: center 50%;"
+          />
+          <div class="absolute inset-0 bg-black/70"></div>
+          <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-sb-black to-transparent"></div>
+      </div>
+      <div class="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-center text-center text-sb-cream pt-16">
+          <span class="text-xs md:text-sm tracking-[0.3em] uppercase mb-6 font-medium text-sb-gold animate-fade-in">Immersive Spatial Styling</span>
+          <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl mb-6 leading-none animate-fade-in-up font-normal">
+              Corporate <span class="italic font-light text-gold-metallic">Events</span>
+          </h1>
+          <p class="max-w-xl text-gray-300 font-light text-sm md:text-base mb-0 animate-fade-in delay-200">
+              Transforming corporate gatherings, gala dinners, and milestone luxury brand activations into breathtaking living masterpieces.
+          </p>
+      </div>
+  </section>
+
+  <div class="bg-sb-black border-b border-white/5 py-4">
+      <div class="container mx-auto px-6">
+          <a href="/corporate" class="text-[10px] tracking-luxury uppercase text-gray-400 hover:text-sb-gold transition-colors inline-flex items-center">
+              <i class="fas fa-chevron-left mr-2 text-[8px]"></i> Back to Corporate Hub
+          </a>
+      </div>
+  </div>
+
+  <section class="py-24 bg-sb-black text-sb-cream relative">
+      <div class="container mx-auto px-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div class="reveal">
+                  <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-4 block">Living Artistry</span>
+                  <h2 class="font-serif text-4xl md:text-5xl text-sb-cream mb-8 font-light leading-tight">Translating Identity <br/>Into Botanical Form</h2>
+                  <p class="text-gray-400 leading-relaxed font-light mb-6">
+                      Every event demands a unique spatial vocabulary. At SB Floristry, we combine architectural principles with striking seasonal florals to create cohesive atmospheric designs that reflect your company's core refinement.
+                  </p>
+                  <p class="text-gray-400 leading-relaxed font-light mb-8">
+                      From structural step-and-repeat green walls to editorial avant-garde installations, we design intentionally, ensuring your brand message remains unforgettable and effortlessly sophisticated.
+                  </p>
+                  <div class="inline-flex gap-8 border-t border-white/5 pt-8 w-full">
+                      <div>
+                          <h5 class="font-serif text-3xl text-sb-gold font-light mb-1">Tailored</h5>
+                          <p class="text-[10px] tracking-luxury uppercase text-gray-400">Design Briefs</p>
+                      </div>
+                      <div class="border-l border-white/10 pl-8">
+                          <h5 class="font-serif text-3xl text-sb-gold font-light mb-1">Flawless</h5>
+                          <p class="text-[10px] tracking-luxury uppercase text-gray-400">On-Site Delivery</p>
+                      </div>
+                  </div>
+              </div>
+              <div class="relative reveal h-[500px] lg:h-[600px] group overflow-hidden border border-white/5">
+                  <Image 
+                    src={featureImg} 
+                    alt="Meticulous Event Setup by SB Floristry" 
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[3000ms] ease-out opacity-80"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-sb-black via-transparent to-transparent opacity-60"></div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <section class="py-24 bg-sb-cream text-sb-black">
+      <div class="container mx-auto px-6">
+          <div class="text-center mb-20 reveal">
+              <h3 class="font-serif text-5xl text-sb-black mb-4 font-light">Event Capability</h3>
+              <p class="text-xs text-gray-500 tracking-luxury uppercase">Bespoke Design Scopes for Luxury Sectors</p>
+              <div class="w-16 h-px bg-sb-gold mx-auto mt-6"></div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {specializedServices.map((service) => (
+                  <div class="bg-white border border-gray-100 p-10 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-500 reveal">
+                      <div>
+                          <div class="w-2 h-2 bg-sb-gold mb-6"></div>
+                          <h4 class="font-serif text-2xl text-sb-black mb-4 font-light">{service.title}</h4>
+                          <p class="text-gray-500 font-light text-sm leading-relaxed">
+                              {service.description}
+                          </p>
+                      </div>
+                  </div>
+              ))}
+          </div>
+      </div>
+  </section>
+
+  <section class="py-24 bg-sb-black text-sb-cream border-t border-white/5">
+      <div class="container mx-auto px-6 text-center max-w-2xl reveal">
+          <span class="text-gold-metallic text-2xl mb-4 block"><i class="fas fa-handshake"></i></span>
+          <h3 class="font-serif text-4xl text-sb-cream mb-6 font-light">Let's Collaborate</h3>
+          <p class="text-gray-400 font-light text-base leading-relaxed mb-10">
+              Ready to frame your next brand activation or formal corporate gala in breathtaking, luxury floral architecture? Contact our dedicated account lead to finalize your project proposal.
+          </p>
+          <a href="/corporate#corporate-contact-section" class="btn-luxury border border-sb-cream/30 text-sb-cream px-12 py-4 uppercase tracking-luxury text-xs font-bold hover:border-sb-gold inline-block">
+              Submit Event Brief
+          </a>
+      </div>
+  </section>
+</Layout>
