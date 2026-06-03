@@ -1,88 +1,168 @@
 ---
-export const prerender = false; // Runs server-side on Cloudflare to fetch details securely
-
 import Layout from '../layouts/Layout.astro';
 
-// 1. Capture the query parameters passed directly from our checkout API
-const customerName = Astro.url.searchParams.get('name') || "";
-const rawPlan = Astro.url.searchParams.get('plan') || "Your Luxury Subscription";
-const planName = rawPlan.replace("SB Floristry - ", "");
+// Grabbing checkout parameters for instant personalization
+const url = new URL(Astro.request.url);
+const customerName = url.searchParams.get('name') || 'Jordan';
+const planName = url.searchParams.get('plan') || 'Developer Test Tier';
 ---
 
-<Layout title="Thank You | SB Floristry" description="Your luxury floral subscription has been confirmed.">
-  <section class="min-h-screen flex items-center justify-center bg-sb-cream text-sb-black py-32 relative overflow-hidden">
+<Layout title="Thank You | SB Floristry">
+  <main class="min-h-screen bg-[#FBFBFA] flex flex-col items-center justify-center px-4 py-16 font-sans">
     
-    <!-- Subtle luxury background graphics -->
-    <div class="absolute inset-0 z-0 pointer-events-none opacity-5">
-      <img src="/images/collection-signature.jpg" alt="Botanical Background" class="w-full h-full object-cover filter blur-sm" />
-    </div>
-
-    <div class="container mx-auto px-6 max-w-2xl text-center relative z-10 reveal">
+    <!-- Outer Content Wrapper -->
+    <div class="max-w-2xl w-full text-center">
       
-      <!-- Decorative Logo Accent -->
-      <div class="mb-12 flex justify-center">
-        <div class="relative">
-          <div class="w-24 h-24 border border-sb-gold/40 rounded-full flex items-center justify-center text-sb-gold animate-[spin_20s_linear_infinite]"></div>
-          <i class="fas fa-feather-alt text-2xl text-sb-gold absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
-        </div>
-      </div>
+      <!-- Premium Hero Header -->
+      <h1 class="text-sb-black font-serif text-5xl md:text-6xl tracking-wide mb-3">
+        Thank you,
+      </h1>
+      <h2 class="text-sb-gold font-serif italic text-4xl md:text-5xl tracking-normal mb-8">
+        {customerName}
+      </h2>
       
-      <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">Welcome to the Club</span>
-      
-      {customerName ? (
-        <h1 class="font-serif text-5xl md:text-7xl mb-6 font-light leading-tight">
-          Thank you, <br/>
-          <span class="italic text-sb-gold font-normal">{customerName}</span>
-        </h1>
-      ) : (
-        <h1 class="font-serif text-5xl md:text-7xl mb-6 font-light leading-tight">
-          Subscription <br/>
-          <span class="italic text-sb-gold font-normal">Confirmed</span>
-        </h1>
-      )}
-
-      <p class="text-gray-600 font-light leading-relaxed mb-10 text-lg max-w-md mx-auto">
-        Your Direct Debit mandate for <strong class="text-sb-black font-semibold">{planName}</strong> has been successfully set up. Every delivery is hand-tied by us personally and styled with pure botanical dedication.
+      <p class="text-neutral-700 text-base md:text-lg max-w-lg mx-auto leading-relaxed font-light mb-12 px-2">
+        Your Direct Debit mandate for <span class="font-semibold text-sb-black">{planName}</span> has 
+        been successfully set up. Every delivery is hand-tied by us personally and styled with pure botanical dedication.
       </p>
 
-      <!-- Details Summary Card -->
-      <div class="bg-white border border-gray-100 p-8 shadow-sm mb-12 text-left relative">
+      <!-- Steps & Email Notification Card Container -->
+      <div class="bg-white border border-neutral-100 p-6 md:p-10 shadow-sm text-left relative rounded-sm">
+        <!-- Luxury Top Border Accent Line -->
         <div class="absolute top-0 left-6 right-6 h-[2px] bg-sb-gold"></div>
-        <h3 class="text-[10px] uppercase tracking-luxury font-bold text-sb-gold mb-6">What Happens Next?</h3>
         
-        <ul class="space-y-6 text-sm text-gray-600 font-light">
-          <li class="flex gap-4">
-            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-bold shrink-0">1</span>
-            <div>
-              <p class="font-bold text-sb-black text-[11px] uppercase tracking-wider mb-1">Mandate Validation</p>
-              <p class="text-xs">Your bank will finalize and register the Direct Debit mandate (usually takes 2–3 business days). No action is needed from your side.</p>
+        <h3 class="text-xs uppercase tracking-luxury font-bold text-sb-gold mb-8">
+          What Happens Next?
+        </h3>
+        
+        <ul class="space-y-8">
+          <!-- Step 1: Mandate Validation & Initial Account Setup Emails -->
+          <li class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-semibold shrink-0 mt-0.5">
+              1
+            </span>
+            <div class="w-full">
+              <h4 class="font-bold text-sb-black text-xs uppercase tracking-wider mb-1.5">
+                Mandate Validation
+              </h4>
+              <p class="text-sm text-neutral-600 leading-relaxed mb-4">
+                Your bank will finalize and register the Direct Debit mandate (usually takes 2–3 business days). No action is needed from your side.
+              </p>
+              
+              <!-- System Email Confirmation Alerts Box -->
+              <div class="bg-sb-cream/40 border border-sb-gold/20 p-4 space-y-3.5 rounded-sm">
+                <div class="flex items-start gap-3">
+                  <span class="text-sb-gold text-xs mt-0.5">📧</span>
+                  <div class="text-sm">
+                    <p class="font-medium text-neutral-800">
+                      "You've set up a Direct Debit"
+                    </p>
+                    <p class="text-xs text-neutral-500 mt-0.5 font-light">
+                      Sent automatically within 1 hour of setup.
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start gap-3 border-t border-sb-gold/10 pt-3.5">
+                  <span class="text-sb-gold text-xs mt-0.5">📧</span>
+                  <div class="text-sm">
+                    <p class="font-medium text-neutral-800">
+                      "You've set up a Direct Debit subscription"
+                    </p>
+                    <p class="text-xs text-neutral-500 mt-0.5 font-light">
+                      Sent automatically within 1 hour of setup.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </li>
-          <li class="flex gap-4">
-            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-bold shrink-0">2</span>
-            <div>
-              <p class="font-bold text-sb-black text-[11px] uppercase tracking-wider mb-1">First Scheduled Delivery</p>
-              <p class="text-xs">We will curate your first design using the week's most premium seasonal imports and hand-deliver them beautifully packaged to your door.</p>
+
+          <!-- Step 2: First Delivery & Payment Processed Email -->
+          <li class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-semibold shrink-0 mt-0.5">
+              2
+            </span>
+            <div class="w-full">
+              <h4 class="font-bold text-sb-black text-xs uppercase tracking-wider mb-1.5">
+                First Scheduled Delivery
+              </h4>
+              <p class="text-sm text-neutral-600 leading-relaxed mb-4">
+                We will curate your first design using the week's most premium seasonal imports and hand-deliver them beautifully packaged to your door.
+              </p>
+              
+              <!-- Payment Success Box -->
+              <div class="bg-sb-cream/40 border border-sb-gold/20 p-4 rounded-sm">
+                <div class="flex items-start gap-3">
+                  <span class="text-sb-gold text-xs mt-0.5">📧</span>
+                  <div class="text-sm">
+                    <p class="font-medium text-neutral-800">
+                      "Payment to SB Floristry successful"
+                    </p>
+                    <p class="text-xs text-neutral-500 mt-0.5 font-light">
+                      Sent within 15 minutes of any successful payment cycle.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </li>
-          <li class="flex gap-4">
-            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-bold shrink-0">3</span>
+
+          <!-- Step 3: Holiday/Subscription Flexibility -->
+          <li class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full bg-sb-cream text-sb-gold text-xs flex items-center justify-center font-semibold shrink-0 mt-0.5">
+              3
+            </span>
             <div>
-              <p class="font-bold text-sb-black text-[11px] uppercase tracking-wider mb-1">Complete Flexibility</p>
-              <p class="text-xs">Need to pause deliveries while you are on holiday? Simply email Bilja 48 hours before your next scheduled cycle.</p>
+              <h4 class="font-bold text-sb-black text-xs uppercase tracking-wider mb-1.5">
+                Complete Flexibility
+              </h4>
+              <p class="text-sm text-neutral-600 leading-relaxed">
+                Need to pause deliveries while you are on holiday? Simply email Bilja 48 hours before your next scheduled cycle.
+              </p>
             </div>
           </li>
         </ul>
       </div>
 
-      <div class="border-t border-gray-200 pt-8 mb-12">
-        <p class="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-2">Need to adjust your address or schedule?</p>
-        <p class="text-sm text-gray-500 font-light">Contact us anytime at <a href="mailto:info@sbfloristry.co.uk" class="text-sb-black underline hover:text-sb-gold transition-colors font-medium">info@sbfloristry.co.uk</a></p>
+      <!-- Return Button to Main Gallery Layout -->
+      <div class="mt-12">
+        <a 
+          href="/" 
+          class="inline-block bg-sb-black hover:bg-neutral-800 text-white text-xs uppercase tracking-luxury px-8 py-4 rounded-none transition-colors duration-200"
+        >
+          Return To Gallery
+        </a>
       </div>
 
-      <a href="/" class="inline-block bg-sb-black text-sb-gold px-12 py-4 text-xs font-bold uppercase tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors duration-500 shadow-xl">
-        Return to Gallery
-      </a>
     </div>
-  </section>
+  </main>
 </Layout>
+
+<style>
+  /* Local typography baseline configuration overrides if tracking-luxury is missing */
+  .tracking-luxury {
+    letter-spacing: 0.18em;
+  }
+  .bg-sb-cream {
+    background-color: #F7F4EF;
+  }
+  .bg-sb-cream\/40 {
+    background-color: rgba(247, 244, 239, 0.4);
+  }
+  .border-sb-gold\/20 {
+    border-color: rgba(197, 160, 89, 0.2);
+  }
+  .border-sb-gold\/10 {
+    border-color: rgba(197, 160, 89, 0.1);
+  }
+  .text-sb-gold {
+    color: #C5A059;
+  }
+  .bg-sb-gold {
+    background-color: #C5A059;
+  }
+  .text-sb-black {
+    color: #1A1A1A;
+  }
+</style>
