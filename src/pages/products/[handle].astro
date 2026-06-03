@@ -38,8 +38,10 @@ export async function getStaticPaths() {
       }
     }
   `;
+
   const response = await shopifyFetch({ query });
   const products = response?.data?.products?.edges || [];
+
   return products.map((edge) => ({
     params: { handle: edge.node.handle },
     props: { product: edge.node },
@@ -106,15 +108,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
           
           <div class="mb-12 border-y border-gray-200 py-8">
             <p class="text-xs text-gray-500 font-bold uppercase tracking-luxury mb-4"><i class="fas fa-truck mr-2 text-sb-gold"></i> Delivery available across Essex & London</p>
-
-          <div class="mb-6 bg-gray-50 p-4 border border-gray-100">
-                <label class="block text-[10px] font-bold uppercase tracking-luxury text-sb-black mb-2">Check Delivery Eligibility</label>
-                <div class="flex gap-2">
-                  <input type="text" id="postcode-input" placeholder="Enter Postcode (e.g. RM1 1AA)" class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-sb-gold uppercase" />
-                  <button id="postcode-check-btn" class="bg-sb-black text-white px-4 py-2 text-[10px] uppercase font-bold tracking-luxury hover:bg-sb-gold hover:text-sb-black transition-colors">Check</button>
-              </div>
-            <p id="postcode-result" class="text-xs mt-2 hidden font-medium"></p>
-          </div>
             
             <button 
               class="w-full bg-sb-black text-sb-gold border border-transparent py-4 font-bold tracking-luxury text-[11px] uppercase hover:bg-sb-gold hover:text-sb-black hover:border-sb-black transition-all duration-300 add-to-cart-btn shadow-xl cursor-pointer"
@@ -182,7 +175,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
         acc.addEventListener('click', function() {
           const content = this.nextElementSibling;
           const icon = this.querySelector('.fa-chevron-down');
-          
           if (content.style.maxHeight) {
             content.style.maxHeight = null;
             icon.classList.remove('rotate-180');
@@ -192,32 +184,6 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
           }
         });
       });
-
-      const checkBtn = document.getElementById('postcode-check-btn');
-      const input = document.getElementById('postcode-input');
-      const result = document.getElementById('postcode-result');
-
-      if (checkBtn && input && result) {
-        checkBtn.addEventListener('click', () => {
-          const val = input.value.trim().toUpperCase();
-          if (!val) return;
-          
-          const validDistricts = ['RM1', 'RM11', 'RM12', 'RM2', 'RM3', 'RM4', 'RM5', 'RM7', 'CM13', 'CM14', 'CM15'];
-          const districtMatch = val.replace(/\s+/g, '').match(/^([A-Z]{1,2}\d{1,2})/);
-          const district = districtMatch ? districtMatch[1] : '';
-          const isValid = validDistricts.includes(district);
-          
-          result.classList.remove('hidden', 'text-green-600', 'text-red-500');
-          
-          if (isValid) {
-            result.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Great news! We offer local delivery to this area.';
-            result.classList.add('text-green-600');
-          } else {
-            result.innerHTML = '<i class="fas fa-info-circle mr-1"></i> We currently only offer local delivery to specific Essex postcodes. Nationwide delivery coming soon!';
-            result.classList.add('text-red-500');
-          }
-        });
-      }
       
       document.querySelectorAll('.product-desc p').forEach(p => {
         if(p.innerHTML.trim() === '') p.style.display = 'none';
