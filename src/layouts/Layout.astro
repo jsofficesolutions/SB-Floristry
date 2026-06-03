@@ -110,12 +110,13 @@ const schema = {
         <slot />
     </main>
 
-    <div class="fixed bottom-6 right-6 z-[90] flex flex-col gap-4 items-end">
-        <div class="relative group flex items-center">
-            <div id="deliveryTooltip" class="absolute right-full mr-4 bg-sb-black text-sb-gold text-[10px] uppercase tracking-widest font-bold py-3 px-5 whitespace-nowrap shadow-2xl opacity-100 transition-opacity duration-1000 pointer-events-none rounded-sm">
-                Check Delivery Eligibility
-                <div class="absolute top-1/2 -right-1.5 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[6px] border-l-sb-black"></div>
-            </div>
+<div class="fixed bottom-6 right-6 z-[90] flex flex-col gap-4 items-end">
+    <!-- ADDED "group" HERE SO THE CHILD CAN TRACK THE HOVER STATE -->
+    <div class="relative group flex items-center">
+        <div id="deliveryTooltip" class="absolute right-full mr-4 bg-sb-black text-sb-gold text-[10px] uppercase tracking-widest font-bold py-3 px-5 whitespace-nowrap shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-sm">
+            Check Delivery Eligibility
+            <div class="..."></div>
+        </div>
             
             <button id="openDeliveryModal" aria-label="Check Delivery Eligibility" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 group focus:outline-none">
                 <i class="fas fa-truck text-lg"></i>
