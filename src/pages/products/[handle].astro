@@ -21,7 +21,7 @@ const formatPrice = (amount) => {
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: product.currency || 'GBP',
-  }).format(amount);
+  }).format(parseFloat(amount));
 };
 ---
 
@@ -32,7 +32,7 @@ const formatPrice = (amount) => {
         <!-- Image gallery -->
         <div class="flex flex-col-reverse">
           <!-- Image selector -->
-          {product.images.length > 1 && (
+          {product.images && product.images.length > 1 && (
             <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block">
               <div class="grid grid-cols-4 gap-6" aria-label="Images">
                 {product.images.map((image, index) => (
@@ -51,11 +51,11 @@ const formatPrice = (amount) => {
           )}
 
           <div class="aspect-h-1 aspect-w-1 w-full">
-            <div id="main-image-container" class="h-[500px] w-full overflow-hidden rounded-lg">
+            <div id="main-image-container" class="h-[500px] w-full overflow-hidden rounded-lg bg-gray-100">
               <img
                 id="main-product-image"
-                src={product.images[0]?.url || '/images/hero.jpg'}
-                alt={product.images[0]?.altText || product.title}
+                src={product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg'}
+                alt={product.images && product.images[0] ? product.images[0].altText : product.title}
                 class="h-full w-full object-cover object-center sm:rounded-lg"
               />
             </div>
@@ -117,7 +117,7 @@ const formatPrice = (amount) => {
                 data-variant-id={product.variantId}
                 data-title={product.title}
                 data-price={product.price}
-                data-image={product.images[0]?.url || '/images/hero.jpg'}
+                data-image={product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg'}
                 class="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-primary px-8 py-3 text-base font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full transition-colors duration-200"
               >
                 Add to Basket
@@ -131,79 +131,77 @@ const formatPrice = (amount) => {
 </Layout>
 
 <script define:vars={{ product }}>
-  // Handle thumbnail clicks
-  const mainImage = document.getElementById('main-product-image');
-  const thumbnails = document.querySelectorAll('.thumbnail-btn');
+  // Wrapping in an IIFE to prevent variable declaration conflicts across views
+  (function() {
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail-btn');
 
-  thumbnails.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = parseInt(btn.dataset.index);
-      const newImage = product.images[index];
-      if (mainImage && newImage) {
-        mainImage.src = newImage.url;
-        mainImage.alt = newImage.altText;
-      }
-    });
-  });
-
-  // Track active variant selection
-  let selectedVariant = product.variants && product.variants.length > 0
-    ? product.variants[0]
-    : { id: product.variantId, title: 'Default Title', price: product.price };
-
-  const variantButtons = document.querySelectorAll('.variant-option-btn');
-  const priceDisplay = document.getElementById('product-price');
-  const addToCartBtn = document.getElementById('add-to-cart-btn');
-
-  variantButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const variantId = btn.getAttribute('data-variant-id');
-      const price = parseFloat(btn.getAttribute('data-price') || '0');
-      const title = btn.getAttribute('data-title');
-
-      selectedVariant = {
-        id: variantId,
-        title: title,
-        price: price
-      };
-
-      // Update button visual states
-      variantButtons.forEach(otherBtn => {
-        if (otherBtn === btn) {
-          otherBtn.classList.remove('border-gray-200', 'hover:border-gray-300', 'bg-white');
-          otherBtn.classList.add('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
-        } else {
-          otherBtn.classList.remove('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
-          otherBtn.classList.add('border-gray-200', 'hover:border-gray-300', 'bg-white');
+    thumbnails.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index);
+        const newImage = product.images[index];
+        if (mainImage && newImage) {
+          mainImage.src = newImage.url;
+          mainImage.alt = newImage.altText;
         }
       });
+    });
 
-      // Update dynamic price display
-      if (priceDisplay) {
-        const formatter = new Intl.NumberFormat('en-GB', {
-          style: 'currency',
-          currency: product.currency || 'GBP',
+    let selectedVariant = product.variants && product.variants.length > 0
+      ? product.variants[0]
+      : { id: product.variantId, title: 'Default Title', price: product.price };
+
+    const variantButtons = document.querySelectorAll('.variant-option-btn');
+    const priceDisplay = document.getElementById('product-price');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+    variantButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const variantId = btn.getAttribute('data-variant-id');
+        const price = parseFloat(btn.getAttribute('data-price') || '0');
+        const title = btn.getAttribute('data-title');
+
+        selectedVariant = {
+          id: variantId,
+          title: title,
+          price: price
+        };
+
+        variantButtons.forEach(otherBtn => {
+          if (otherBtn === btn) {
+            otherBtn.classList.remove('border-gray-200', 'hover:border-gray-300', 'bg-white');
+            otherBtn.classList.add('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
+          } else {
+            otherBtn.classList.remove('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
+            otherBtn.classList.add('border-gray-200', 'hover:border-gray-300', 'bg-white');
+          }
         });
-        priceDisplay.textContent = formatter.format(price);
-      }
-    });
-  });
 
-  // Handle add to cart
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener('click', () => {
-      const item = {
-        id: product.id,
-        variantId: selectedVariant.id,
-        variantTitle: selectedVariant.title,
-        title: product.title,
-        price: selectedVariant.price,
-        image: product.images[0]?.url || '/images/hero.jpg',
-        quantity: 1
-      };
-
-      const event = new CustomEvent('add-to-cart', { detail: item });
-      window.dispatchEvent(event);
+        if (priceDisplay) {
+          const formatter = new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: product.currency || 'GBP',
+          });
+          priceDisplay.textContent = formatter.format(price);
+        }
+      });
     });
-  }
+
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener('click', () => {
+        const item = {
+          id: product.id,
+          variantId: selectedVariant.id,
+          variantTitle: selectedVariant.title,
+          title: product.title,
+          price: selectedVariant.price,
+          image: product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg',
+          quantity: 1
+        };
+
+        const event = new CustomEvent('add-to-cart', { detail: item });
+        window.dispatchEvent(event);
+      });
+    }
+  })();
 </script>
