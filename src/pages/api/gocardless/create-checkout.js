@@ -1,12 +1,9 @@
-import GoCardless from 'gocardless-nodejs';
-
 const accessToken = import.meta.env.GOCARDLESS_ACCESS_TOKEN;
 const environment = import.meta.env.GOCARDLESS_ENVIRONMENT || 'sandbox';
 
-const client = new GoCardless.Client({
-  accessToken: accessToken,
-  environment: environment,
-});
+const baseUrl = environment === 'sandbox' 
+  ? 'https://api-sandbox.gocardless.com' 
+  : 'https://api.gocardless.com';
 
 export async function POST({ request }) {
   try {
@@ -28,22 +25,58 @@ export async function POST({ request }) {
     
     const description = `SB Floristry - ${itemDescriptions} (${deliveryType === 'local' ? `Delivery to ${postcode}` : 'Store Collection'})`;
 
-    // Create a Billing Request
-    const billingRequest = await client.billingRequests.create({
-      mandateRequest: {
-        scheme: 'bacs',
-      },
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
+      'GoCardless-Version': '2015-07-06',
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+    // 1. Create a Billing Request
+    const brResponse = await fetch(`${baseUrl}/billing_requests`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        billing_requests: {
+          mandate_request: {
+            scheme: 'bacs',
+          }
+        }
+      })
     });
 
-    // Create Billing Request Flow
-    const billingRequestFlow = await client.billingRequestFlows.create({
-      billingRequest: {
-        id: billingRequest.id,
-      },
-      redirectUri: `${request.url.replace('/api/gocardless/create-checkout', '/success')}?amount=${totalAmount}&desc=${encodeURIComponent(description)}`,
+    if (!brResponse.ok) {
+      const errorText = await brResponse.text();
+      throw new Error(`Failed to create billing request: ${errorText}`);
+    }
+
+    const brData = await brResponse.json();
+    const billingRequestId = brData.billing_requests.id;
+
+    // 2. Create Billing Request Flow
+    const redirectUri = `${request.url.replace('/api/gocardless/create-checkout', '/success')}?amount=${totalAmount}&desc=${encodeURIComponent(description)}`;
+
+    const flowResponse = await fetch(`${baseUrl}/billing_request_flows`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        billing_request_flows: {
+          redirect_uri: redirectUri,
+          links: {
+            billing_request: billingRequestId
+          }
+        }
+      })
     });
 
-    return new Response(JSON.stringify({ url: billingRequestFlow.authorisationUrl }), {
+    if (!flowResponse.ok) {
+      const errorText = await flowResponse.text();
+      throw new Error(`Failed to create billing request flow: ${errorText}`);
+    }
+
+    const flowData = await flowResponse.json();
+
+    return new Response(JSON.stringify({ url: flowData.billing_request_flows.authorisation_url }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
