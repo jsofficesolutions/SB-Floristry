@@ -66,8 +66,8 @@ export async function getProducts(tag = null) {
   if (!response?.data?.products?.edges) return [];
   
   return response.data.products.edges.map(({ node }) => {
-    const minPrice = node.priceRange.minVariantPrice.amount;
-    const maxPrice = node.priceRange.maxVariantPrice.amount;
+    const minPrice = node.priceRange?.minVariantPrice?.amount || "0";
+    const maxPrice = node.priceRange?.maxVariantPrice?.amount || "0";
     const hasMultiplePrices = parseFloat(minPrice) !== parseFloat(maxPrice);
 
     return {
@@ -75,13 +75,13 @@ export async function getProducts(tag = null) {
       title: node.title,
       handle: node.handle,
       description: node.description,
-      image: node.images.edges[0]?.node?.url || '/images/hero.jpg',
-      imageAlt: node.images.edges[0]?.node?.altText || node.title,
+      image: node.images?.edges[0]?.node?.url || '/images/hero.jpg',
+      imageAlt: node.images?.edges[0]?.node?.altText || node.title,
       price: minPrice,
       hasMultiplePrices,
       minPrice,
       maxPrice,
-      currency: node.priceRange.minVariantPrice.currencyCode,
+      currency: node.priceRange?.minVariantPrice?.currencyCode || 'GBP',
     };
   });
 }
@@ -135,13 +135,13 @@ export async function getProductByHandle(handle) {
   
   const product = response.data.product;
 
-  const variants = product.variants.edges.map(({ node }) => ({
+  const variants = product.variants?.edges?.map(({ node }) => ({
     id: node.id,
     title: node.title,
     available: node.availableForSale,
-    price: node.price.amount,
-    currency: node.price.currencyCode,
-  }));
+    price: node.price?.amount || "0",
+    currency: node.price?.currencyCode || "GBP",
+  })) || [];
 
   const defaultVariant = variants[0];
 
@@ -150,12 +150,12 @@ export async function getProductByHandle(handle) {
     title: product.title,
     handle: product.handle,
     description: product.description,
-    images: product.images.edges.map(({ node }) => ({
+    images: product.images?.edges?.map(({ node }) => ({
       url: node.url,
       altText: node.altText || product.title,
-    })),
-    price: defaultVariant ? defaultVariant.price : product.priceRange.minVariantPrice.amount,
-    currency: defaultVariant ? defaultVariant.currency : product.priceRange.minVariantPrice.currencyCode,
+    })) || [],
+    price: defaultVariant ? defaultVariant.price : product.priceRange?.minVariantPrice?.amount || "0",
+    currency: defaultVariant ? defaultVariant.currency : product.priceRange?.minVariantPrice?.currencyCode || "GBP",
     variantId: defaultVariant ? defaultVariant.id : null,
     variants,
   };
