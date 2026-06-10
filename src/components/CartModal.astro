@@ -6,7 +6,7 @@ const formatPrice = (amount) => {
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',
-  }).format(amount);
+  }).format(parseFloat(amount));
 };
 ---
 
@@ -120,9 +120,9 @@ const formatPrice = (amount) => {
   const cartSubtotalEl = document.getElementById('cart-subtotal');
   const cartDeliveryCostEl = document.getElementById('cart-delivery-cost');
   const cartTotalEl = document.getElementById('cart-total');
-  const deliveryTypeSelect = document.getElementById('delivery-type') as HTMLSelectElement;
+  const deliveryTypeSelect = document.getElementById('delivery-type');
   const postcodeSection = document.getElementById('postcode-section');
-  const deliveryPostcodeEl = document.getElementById('delivery-postcode') as HTMLInputElement;
+  const deliveryPostcodeEl = document.getElementById('delivery-postcode');
   const validatePostcodeBtn = document.getElementById('validate-postcode-btn');
   const postcodeFeedbackEl = document.getElementById('postcode-feedback');
   const checkoutBtn = document.getElementById('checkout-btn');
@@ -147,16 +147,16 @@ const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
       currency: 'GBP',
-    }).format(amount);
+    }).format(parseFloat(amount));
   };
 
   // Toggle cart drawer
   function toggleCart(show) {
     isCartOpen = show;
     if (show) {
-      cartModal.classList.remove('hidden');
+      if(cartModal) cartModal.classList.remove('hidden');
     } else {
-      cartModal.classList.add('hidden');
+      if(cartModal) cartModal.classList.add('hidden');
     }
   }
 
@@ -312,21 +312,21 @@ const formatPrice = (amount) => {
     // Reattach listeners
     document.querySelectorAll('.decrease-qty-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = (e.target as HTMLElement).dataset.id;
+        const id = e.target.dataset.id;
         updateQuantity(id, -1);
       });
     });
 
     document.querySelectorAll('.increase-qty-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = (e.target as HTMLElement).dataset.id;
+        const id = e.target.dataset.id;
         updateQuantity(id, 1);
       });
     });
 
     document.querySelectorAll('.remove-item-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = (e.target as HTMLElement).dataset.id;
+        const id = e.target.dataset.id;
         removeItem(id);
       });
     });
@@ -343,18 +343,18 @@ const formatPrice = (amount) => {
   window.addEventListener('open-cart', () => toggleCart(true));
 
   // Listen for add-to-cart global event
-  window.addEventListener('add-to-cart', (e: CustomEvent) => {
+  window.addEventListener('add-to-cart', (e) => {
     addToCart(e.detail);
   });
 
   // Handle Delivery Type Select
   if (deliveryTypeSelect) {
     deliveryTypeSelect.addEventListener('change', (e) => {
-      deliveryType = (e.target as HTMLSelectElement).value;
+      deliveryType = e.target.value;
       if (deliveryType === 'local') {
-        postcodeSection?.classList.remove('hidden');
+        if(postcodeSection) postcodeSection.classList.remove('hidden');
       } else {
-        postcodeSection?.classList.add('hidden');
+        if(postcodeSection) postcodeSection.classList.add('hidden');
       }
       updateCartTotals();
     });
@@ -377,7 +377,7 @@ const formatPrice = (amount) => {
 
       if (deliveryType === 'local' && !isPostcodeValid) {
         showPostcodeFeedback('Please verify your postcode for delivery first.', 'error');
-        deliveryPostcodeEl?.focus();
+        if(deliveryPostcodeEl) deliveryPostcodeEl.focus();
         return;
       }
 
@@ -394,7 +394,7 @@ const formatPrice = (amount) => {
             items: cart,
             deliveryType,
             deliveryCost,
-            postcode: deliveryType === 'local' ? deliveryPostcodeEl?.value : '',
+            postcode: deliveryType === 'local' ? (deliveryPostcodeEl ? deliveryPostcodeEl.value : '') : '',
           }),
         });
 
