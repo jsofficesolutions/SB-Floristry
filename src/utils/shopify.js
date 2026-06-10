@@ -1,7 +1,7 @@
 const domain = import.meta.env.SHOPIFY_STORE_DOMAIN;
 const storefrontAccessToken = import.meta.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
-async function shopifyFetch({ query, variables }) {
+export async function shopifyFetch({ query, variables }) {
   try {
     const result = await fetch(
       `https://${domain}/api/2024-01/graphql.json`,
