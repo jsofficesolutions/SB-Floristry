@@ -1,330 +1,420 @@
 ---
+import deliveryConfig from '../config/delivery.json';
+
+// Helper to format price in frontend
+const formatPrice = (amount) => {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+  }).format(parseFloat(amount));
+};
 ---
-<div id="cartOverlay" class="fixed inset-0 bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm"></div>
 
-<div id="cartSidebar" class="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-sb-cream z-[101] transform translate-x-full transition-transform duration-500 shadow-2xl flex flex-col">
-    
-    <div class="flex items-center justify-between p-6 border-b border-white/10 bg-sb-black text-sb-cream">
-        <h2 class="font-serif text-3xl font-light">Your Basket</h2>
-        <button id="closeCartBtn" type="button" class="text-gray-400 hover:text-sb-gold transition-colors p-2">
-            <i class="fas fa-times text-xl pointer-events-none"></i>
-        </button>
-    </div>
+<!-- Cart Drawer -->
+<div id="cart-modal" class="relative z-50 hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+  <!-- Background backdrop, show/hide based on slide-over state. -->
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" id="cart-backdrop"></div>
 
-    <div id="deliveryProgressContainer" class="bg-white text-sb-black text-center py-4 px-6 text-[10px] tracking-luxury uppercase font-bold border-b border-gray-200 hidden">
-        <p id="deliveryProgressText">Spend £<span id="deliveryAmountNeeded">60.00</span> more for Free Local Delivery</p>
-        <div class="w-full bg-gray-100 h-1.5 mt-3 rounded-full overflow-hidden">
-            <div id="deliveryProgressBar" class="bg-sb-gold h-full w-0 transition-all duration-700 ease-out"></div>
-        </div>
-    </div>
+  <div class="fixed inset-0 overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+        <div class="pointer-events-auto w-screen max-w-md">
+          <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+            <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+              <div class="flex items-start justify-between">
+                <h2 class="text-lg font-medium text-gray-900" id="slide-over-title">Shopping Basket</h2>
+                <div class="ml-3 flex h-7 items-center">
+                  <button type="button" class="relative -m-2 p-2 text-gray-400 hover:text-gray-500" id="close-cart-btn">
+                    <span class="absolute -inset-0.5"></span>
+                    <span class="sr-only">Close panel</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
 
-    <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-6 space-y-6 bg-[#F9F8F6]">
-    </div>
-
-    <div class="bg-white border-t border-gray-200 shadow-[0_-4px_15px_rgba(0,0,0,0.02)] z-10">
-   
-        <div class="border-b border-gray-100">
-            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" id="toggleDeliveryDate">
-                <span class="flex items-center pointer-events-none"><i class="fas fa-calendar-alt mr-3 text-sb-gold text-sm"></i> Select Delivery Date</span>
-                <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold pointer-events-none"></i>
-            </button>
-            <div id="deliveryDateSection" class="hidden px-5 pb-5 animate-fade-in">
-                <input type="date" id="cartDeliveryDate" class="w-full bg-[#F9F8F6] border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors text-sb-black font-sans">
-                <p class="text-[10px] text-gray-500 mt-2 italic">* We require 48 hours notice for bespoke arrangements.</p>
+              <div class="mt-8">
+                <div class="flow-root">
+                  <ul role="list" class="-my-6 divide-y divide-gray-200" id="cart-items-list">
+                    <!-- Dynamic Cart Items -->
+                  </ul>
+                </div>
+              </div>
             </div>
-        </div>
 
-        <div>
-            <button type="button" class="flex items-center justify-between w-full text-left p-5 text-[11px] font-bold tracking-luxury uppercase text-sb-black group" id="toggleGiftMessage">
-                <span class="flex items-center pointer-events-none"><i class="fas fa-envelope-open-text mr-3 text-sb-gold text-sm"></i> Add a Gift Message</span>
-                <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold pointer-events-none"></i>
-            </button>
-            <div id="giftMessageSection" class="hidden px-5 pb-5 animate-fade-in">
-                <textarea id="cartGiftMessage" rows="3" class="w-full bg-[#F9F8F6] border border-gray-200 p-3 text-sm focus:border-sb-gold outline-none transition-colors placeholder-gray-400 font-sans" placeholder="Write your personalized message here..."></textarea>
+            <!-- Cart Footer -->
+            <div class="border-t border-gray-200 px-4 py-6 sm:px-6 bg-gray-50">
+              <!-- Delivery Options -->
+              <div class="mb-4">
+                <label for="delivery-type" class="block text-sm font-medium text-gray-700">Delivery Method</label>
+                <select id="delivery-type" class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-primary focus:outline-none focus:ring-primary sm:text-sm">
+                  <option value="collection">Store Collection (Free)</option>
+                  <option value="local">Local Delivery ({formatPrice(deliveryConfig.localDeliveryCharge)})</option>
+                </select>
+              </div>
+
+              <!-- Postcode validation for local delivery -->
+              <div id="postcode-section" class="hidden mb-4">
+                <label for="delivery-postcode" class="block text-sm font-medium text-gray-700">Delivery Postcode</label>
+                <div class="mt-1 flex gap-2">
+                  <input type="text" id="delivery-postcode" placeholder="e.g. RM1 1QA" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" />
+                  <button type="button" id="validate-postcode-btn" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                    Verify
+                  </button>
+                </div>
+                <p id="postcode-feedback" class="mt-1 text-sm"></p>
+              </div>
+
+              <div class="flex justify-between text-base font-medium text-gray-900">
+                <p>Subtotal</p>
+                <p id="cart-subtotal">£0.00</p>
+              </div>
+              <div class="flex justify-between text-sm text-gray-500 mt-1">
+                <p>Delivery</p>
+                <p id="cart-delivery-cost">£0.00</p>
+              </div>
+              <div class="flex justify-between text-base font-bold text-gray-900 mt-2 border-t border-gray-200 pt-2">
+                <p>Total</p>
+                <p id="cart-total">£0.00</p>
+              </div>
+
+              <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+              <div class="mt-6">
+                <button id="checkout-btn" class="flex w-full items-center justify-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary-dark transition-colors duration-200">
+                  Checkout
+                </button>
+              </div>
+              <div class="mt-6 flex justify-center text-center text-sm text-gray-500">
+                <p>
+                  or{' '}
+                  <button type="button" class="font-medium text-primary hover:text-primary-dark" id="keep-shopping-btn">
+                    Continue Shopping
+                    <span aria-hidden="true"> &rarr;</span>
+                  </button>
+                </p>
+              </div>
             </div>
+          </div>
         </div>
-        
+      </div>
     </div>
-
-    <div class="p-6 bg-sb-black text-sb-cream z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-[11px] uppercase tracking-luxury text-gray-400">Subtotal</span>
-            <span id="cartSubtotal" class="font-serif text-3xl text-sb-gold">£0.00</span>
-        </div>
-        <p class="text-[10px] text-gray-400 text-center mb-6 tracking-wide">Shipping & taxes calculated at checkout</p>
-        
-        <button id="checkoutBtn" type="button" class="w-full bg-sb-gold text-sb-black hover:bg-white transition-colors duration-300 py-4 text-[11px] uppercase tracking-[0.25em] font-bold shadow-lg shadow-sb-gold/20 relative overflow-hidden group">
-            <span class="relative z-10 flex items-center justify-center gap-2 pointer-events-none">
-                Proceed to Secure Checkout <i class="fas fa-lock text-[10px]"></i>
-            </span>
-        </button>
-    </div>
+  </div>
 </div>
 
-<script is:inline>
-    document.addEventListener('astro:page-load', () => {
-        const dateInput = document.getElementById('cartDeliveryDate');
-        if (dateInput) {
-            const today = new Date();
-            today.setDate(today.getDate() + 2);
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            dateInput.min = `${yyyy}-${mm}-${dd}`;
-        }
+<script>
+  import deliveryConfig from '../config/delivery.json';
 
-        document.getElementById('toggleDeliveryDate')?.addEventListener('click', function() {
-            document.getElementById('deliveryDateSection')?.classList.toggle('hidden');
-            this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
-        });
+  let cart = [];
+  let isCartOpen = false;
+  let deliveryType = 'collection'; // 'collection' or 'local'
+  let deliveryCost = 0;
+  let isPostcodeValid = false;
 
-        document.getElementById('toggleGiftMessage')?.addEventListener('click', function() {
-            document.getElementById('giftMessageSection')?.classList.toggle('hidden');
-            this.querySelector('.fa-chevron-down')?.classList.toggle('rotate-180');
-        });
+  // Selectors
+  const cartModal = document.getElementById('cart-modal');
+  const cartBackdrop = document.getElementById('cart-backdrop');
+  const closeCartBtn = document.getElementById('close-cart-btn');
+  const keepShoppingBtn = document.getElementById('keep-shopping-btn');
+  const cartItemsList = document.getElementById('cart-items-list');
+  const cartSubtotalEl = document.getElementById('cart-subtotal');
+  const cartDeliveryCostEl = document.getElementById('cart-delivery-cost');
+  const cartTotalEl = document.getElementById('cart-total');
+  const deliveryTypeSelect = document.getElementById('delivery-type');
+  const postcodeSection = document.getElementById('postcode-section');
+  const deliveryPostcodeEl = document.getElementById('delivery-postcode');
+  const validatePostcodeBtn = document.getElementById('validate-postcode-btn');
+  const postcodeFeedbackEl = document.getElementById('postcode-feedback');
+  const checkoutBtn = document.getElementById('checkout-btn');
 
-        const getCartElements = () => ({
-            overlay: document.getElementById('cartOverlay'),
-            sidebar: document.getElementById('cartSidebar'),
-            container: document.getElementById('cartItemsContainer'),
-            subtotal: document.getElementById('cartSubtotal'),
-            count: document.getElementById('cartCount'),
-            progressContainer: document.getElementById('deliveryProgressContainer'),
-            progressText: document.getElementById('deliveryProgressText'),
-            progressBar: document.getElementById('deliveryProgressBar')
-        });
+  // Load cart from localStorage
+  function loadCart() {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      cart = JSON.parse(savedCart);
+    }
+    updateCartUI();
+  }
 
-        const openCart = () => {
-            const { overlay, sidebar } = getCartElements();
-            if (!overlay || !sidebar) return;
-            overlay.classList.remove('hidden');
-            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-            sidebar.classList.remove('translate-x-full');
-            document.body.style.overflow = 'hidden';
-        };
+  // Save cart to localStorage
+  function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartUI();
+  }
 
-        const closeCart = () => {
-            const { overlay, sidebar } = getCartElements();
-            if (!overlay || !sidebar) return;
-            overlay.classList.add('opacity-0');
-            sidebar.classList.add('translate-x-full');
-            setTimeout(() => overlay.classList.add('hidden'), 300);
-            document.body.style.overflow = '';
-        };
+  // Format price helper
+  const formatPrice = (amount) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+    }).format(parseFloat(amount));
+  };
 
-        document.getElementById('cartBtn')?.addEventListener('click', openCart);
-        document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
-        document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
+  // Toggle cart drawer
+  function toggleCart(show) {
+    isCartOpen = show;
+    if (show) {
+      if(cartModal) cartModal.classList.remove('hidden');
+    } else {
+      if(cartModal) cartModal.classList.add('hidden');
+    }
+  }
 
-        // PURE VISUAL RENDERING - NEVER WRITES TO LOCALSTORAGE
-        const renderCart = () => {
-            const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-            const { container, subtotal, count, progressContainer, progressText, progressBar } = getCartElements();
-            
-            if (!container) return;
-            if (cart.length === 0) {
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-64 text-center px-4">
-                        <i class="fas fa-shopping-bag text-gray-300 text-3xl mb-4"></i>
-                        <p class="font-serif text-xl text-sb-black mb-1">Your basket is empty</p>
-                        <p class="text-[11px] text-gray-400 tracking-wide max-w-[200px]">Add some beautiful blooms to get started.</p>
-                    </div>
-                `;
-                if (subtotal) subtotal.innerText = '£0.00';
-                if (count) count.classList.add('hidden');
-                if (progressContainer) progressContainer.classList.add('hidden');
-                return;
-            }
+  // Add item to cart
+  function addToCart(item) {
+    const itemKey = item.variantId || item.id;
+    const existingItemIndex = cart.findIndex((i) => (i.variantId || i.id) === itemKey);
+    
+    if (existingItemIndex > -1) {
+      cart[existingItemIndex].quantity += 1;
+    } else {
+      cart.push(item);
+    }
+    saveCart();
+    toggleCart(true);
+  }
 
-            let totalItems = 0;
-            let subtotalAmount = 0;
-            let itemsHtml = '';
+  // Update item quantity
+  function updateQuantity(id, change) {
+    const itemIndex = cart.findIndex((i) => (i.variantId || i.id) === id);
+    if (itemIndex > -1) {
+      cart[itemIndex].quantity += change;
+      if (cart[itemIndex].quantity <= 0) {
+        cart.splice(itemIndex, 1);
+      }
+      saveCart();
+    }
+  }
 
-            cart.forEach(item => {
-                totalItems += item.quantity;
-                subtotalAmount += parseFloat(item.price) * item.quantity;
+  // Remove item from cart
+  function removeItem(id) {
+    cart = cart.filter((i) => (i.variantId || i.id) !== id);
+    saveCart();
+  }
 
-                const finalImgSrc = (item.image && 
-                                     item.image !== 'undefined' && 
-                                     item.image !== 'null' && 
-                                     item.image !== '[object Object]') 
-                    ? item.image 
-                    : 'https://via.placeholder.com/400x500?text=No+Image';
+  // Validate postcode
+  function validatePostcode() {
+    if (!deliveryPostcodeEl) return;
+    const postcode = deliveryPostcodeEl.value.trim().toUpperCase().replace(/\s+/g, '');
+    
+    if (!postcode) {
+      showPostcodeFeedback('Please enter a postcode.', 'error');
+      isPostcodeValid = false;
+      return;
+    }
 
-                // THE FIX: Wrapped the image in a strict relative div, forcing the img to absolute inset
-                itemsHtml += `
-                    <div class="flex items-center gap-4 bg-white p-4 border border-gray-100 shadow-sm relative rounded-sm">
-                        <div class="w-20 h-24 shrink-0 bg-[#F9F8F6] rounded-sm overflow-hidden relative">
-                            <img src="${finalImgSrc}" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover block opacity-100" style="visibility: visible;" />
-                        </div>
-                        <div class="flex-grow flex flex-col justify-between h-24 py-1">
-                            <div>
-                                <h3 class="font-serif text-base text-sb-black font-light leading-tight pr-6">${item.title}</h3>
-                                <p class="text-xs text-sb-gold font-bold mt-1">£${parseFloat(item.price).toFixed(2)}</p>
-                            </div>
-                            <div class="flex items-center border border-gray-200 w-fit rounded-sm bg-[#F9F8F6]">
-                                <button type="button" class="decrease-qty border-r border-gray-200 px-2.5 py-1 text-xs text-gray-500 hover:text-sb-black hover:bg-gray-100 transition-colors font-bold" data-id="${item.id}">-</button>
-                                <span class="px-3 text-xs font-bold text-sb-black min-w-[24px] text-center select-none">${item.quantity}</span>
-                                <button type="button" class="increase-qty border-l border-gray-200 px-2.5 py-1 text-xs text-gray-500 hover:text-sb-black hover:bg-gray-100 transition-colors font-bold" data-id="${item.id}">+</button>
-                            </div>
-                        </div>
-                        <button type="button" class="remove-item absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors p-1" data-id="${item.id}" aria-label="Remove item">
-                            <i class="fas fa-trash-alt text-sm pointer-events-none"></i>
-                        </button>
-                    </div>
-                `;
-            });
+    // Check against allowed local postcodes
+    const allowedPrefixes = deliveryConfig.allowedPostcodes.map(p => p.toUpperCase());
+    const isValid = allowedPrefixes.some(prefix => postcode.startsWith(prefix));
 
-            container.innerHTML = itemsHtml;
+    if (isValid) {
+      showPostcodeFeedback('Delivery is available for this postcode!', 'success');
+      isPostcodeValid = true;
+      deliveryCost = deliveryConfig.localDeliveryCharge;
+    } else {
+      showPostcodeFeedback('Sorry, we only deliver to Romford and surrounding areas (RM postcodes).', 'error');
+      isPostcodeValid = false;
+      deliveryCost = 0;
+    }
+    updateCartTotals();
+  }
 
-            if (subtotal) subtotal.innerText = `£${subtotalAmount.toFixed(2)}`;
-            if (count) {
-                count.innerText = totalItems;
-                count.classList.remove('hidden');
-            }
+  function showPostcodeFeedback(message, type) {
+    if (!postcodeFeedbackEl) return;
+    postcodeFeedbackEl.textContent = message;
+    if (type === 'success') {
+      postcodeFeedbackEl.className = 'mt-1 text-sm text-green-600';
+    } else {
+      postcodeFeedbackEl.className = 'mt-1 text-sm text-red-600';
+    }
+  }
 
-            if (progressContainer && progressText && progressBar) {
-                progressContainer.classList.remove('hidden');
-                const threshold = 60.00;
-                if (subtotalAmount >= threshold) {
-                    progressText.innerHTML = '🎉 You qualify for <span class="text-green-600 font-bold">Free Local Delivery</span>!';
-                    progressBar.style.width = '100%';
-                } else {
-                    const remaining = (threshold - subtotalAmount).toFixed(2);
-                    progressText.innerHTML = `Spend £<span id="deliveryAmountNeeded" class="font-bold">${remaining}</span> more for Free Local Delivery`;
-                    const progressPercentage = (subtotalAmount / threshold) * 100;
-                    progressBar.style.width = `${progressPercentage}%`;
-                }
-            }
-        };
+  // Calculate and update totals
+  function updateCartTotals() {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    if (deliveryType === 'collection') {
+      deliveryCost = 0;
+    } else if (deliveryType === 'local') {
+      deliveryCost = isPostcodeValid ? deliveryConfig.localDeliveryCharge : 0;
+    }
 
-        if (!window.cartListenersInitialized) {
-            document.addEventListener('click', (e) => {
-                const target = e.target;
-                
-                // 1. ADD TO BASKET BUTTONS (Product Pages / Cards)
-                if (target.classList.contains('add-to-cart-btn') || target.closest('.add-to-cart-btn')) {
-                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-                    const btn = target.classList.contains('add-to-cart-btn') ? target : target.closest('.add-to-cart-btn');
-                    
-                    const id = btn.getAttribute('data-id') || btn.dataset.id;
-                    const title = btn.getAttribute('data-title') || btn.dataset.title;
-                    const price = btn.getAttribute('data-price') || btn.dataset.price;
-                    let image = btn.getAttribute('data-image') || btn.dataset.image;
+    const total = subtotal + deliveryCost;
 
-                    if (!id) return;
+    if (cartSubtotalEl) cartSubtotalEl.textContent = formatPrice(subtotal);
+    if (cartDeliveryCostEl) cartDeliveryCostEl.textContent = formatPrice(deliveryCost);
+    if (cartTotalEl) cartTotalEl.textContent = formatPrice(total);
 
-                    // Clean image string validation prior to mutating storage state
-                    if (!image || image === 'undefined' || image === 'null' || image === '[object Object]') {
-                        image = '';
-                    }
-
-                    const itemMatch = cart.find(item => item.id === id);
-                    if (itemMatch) {
-                        itemMatch.quantity += 1;
-                        if (image) {
-                            itemMatch.image = image;
-                        }
-                    } else {
-                        cart.push({ id, title, price, image, quantity: 1 });
-                    }
-
-                    localStorage.setItem('sb_cart', JSON.stringify(cart));
-                    renderCart();
-                    openCart();
-                    return;
-                }
-
-                // 2. INNER BASKET INCREMENT BUTTONS (+)
-                if (target.classList.contains('increase-qty') || target.closest('.increase-qty')) {
-                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-                    const btn = target.classList.contains('increase-qty') ? target : target.closest('.increase-qty');
-                    const id = btn.dataset.id;
-                    
-                    const item = cart.find(i => i.id === id);
-                    if (item) {
-                        item.quantity += 1;
-                        localStorage.setItem('sb_cart', JSON.stringify(cart));
-                        renderCart();
-                    }
-                    return;
-                }
-
-                // 3. INNER BASKET DECREMENT BUTTONS (-)
-                if (target.classList.contains('decrease-qty') || target.closest('.decrease-qty')) {
-                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-                    const btn = target.classList.contains('decrease-qty') ? target : target.closest('.decrease-qty');
-                    const id = btn.dataset.id;
-                    
-                    const matchIndex = cart.findIndex(i => i.id === id);
-                    if (matchIndex > -1) {
-                        if (cart[matchIndex].quantity > 1) {
-                            cart[matchIndex].quantity -= 1;
-                        } else {
-                            cart.splice(matchIndex, 1);
-                        }
-                        localStorage.setItem('sb_cart', JSON.stringify(cart));
-                        renderCart();
-                    }
-                    return;
-                }
-
-                // 4. INNER BASKET TRASH BUTTONS
-                if (target.classList.contains('remove-item') || target.closest('.remove-item')) {
-                    const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-                    const btn = target.classList.contains('remove-item') ? target : target.closest('.remove-item');
-                    const id = btn.dataset.id;
-                    
-                    const updatedCart = cart.filter(i => i.id !== id);
-                    localStorage.setItem('sb_cart', JSON.stringify(updatedCart));
-                    renderCart();
-                    return;
-                }
-            });
-
-            window.cartListenersInitialized = true;
-        }
-
-        document.getElementById('checkoutBtn')?.addEventListener('click', () => {
-            const cart = JSON.parse(localStorage.getItem('sb_cart') || '[]');
-            if (cart.length === 0) return;
-
-            const shopifyDomain = 'sb-floristry.myshopify.com';
-            
-            const lines = cart.map(item => {
-                let numericId = item.id;
-                if (numericId.includes('gid://shopify/ProductVariant/')) {
-                    numericId = numericId.split('/').pop();
-                } else {
-                    try {
-                        const base64Decoded = atob(numericId);
-                        if (base64Decoded.includes('gid://shopify/ProductVariant/')) {
-                            numericId = base64Decoded.split('/').pop();
-                        }
-                    } catch (err) {}
-                }
-                return `${numericId}:${item.quantity}`;
-            }).join(',');
-
-            const deliveryDateVal = document.getElementById('cartDeliveryDate')?.value || '';
-            const giftMessageVal = document.getElementById('cartGiftMessage')?.value || '';
-
-            let checkoutUrl = `https://${shopifyDomain}/cart/${lines}`;
-            const params = [];
-            if (giftMessageVal) {
-                params.push(`note=${encodeURIComponent("Gift Message: " + giftMessageVal)}`);
-            }
-            if (deliveryDateVal) {
-                params.push(`attributes[Delivery-Date]=${encodeURIComponent(deliveryDateVal)}`);
-            }
-
-            if (params.length > 0) {
-                checkoutUrl += `?${params.join('&')}`;
-            }
-
-            window.location.href = checkoutUrl;
-        });
-
-        renderCart();
+    // Update Header Basket count
+    const headerCartCounts = document.querySelectorAll('.cart-count');
+    const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    headerCartCounts.forEach(el => {
+      el.textContent = totalItemsCount.toString();
+      if (totalItemsCount > 0) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
     });
+  }
+
+  // Render cart items
+  function updateCartUI() {
+    if (!cartItemsList) return;
+    
+    if (cart.length === 0) {
+      cartItemsList.innerHTML = `
+        <div class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <p class="mt-4 text-gray-500 font-medium">Your basket is empty</p>
+        </div>
+      `;
+      updateCartTotals();
+      return;
+    }
+
+    cartItemsList.innerHTML = cart.map((item) => {
+      const itemKey = item.variantId || item.id;
+      return `
+        <li class="flex py-6">
+          <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+            <img src="${item.image}" alt="${item.title}" class="h-full w-full object-cover object-center" />
+          </div>
+          <div class="ml-4 flex flex-1 flex-col">
+            <div>
+              <div class="flex justify-between text-base font-medium text-gray-900">
+                <h3>
+                  <a href="#">${item.title}</a>
+                </h3>
+                <p class="ml-4">${formatPrice(item.price * item.quantity)}</p>
+              </div>
+              ${item.variantTitle && item.variantTitle !== 'Default Title' ? `
+                <p class="mt-1 text-xs text-gray-500 italic">Size: ${item.variantTitle}</p>
+              ` : ''}
+            </div>
+            <div class="flex flex-1 items-end justify-between text-sm">
+              <div class="flex items-center border border-gray-300 rounded-md">
+                <button type="button" class="px-2 py-1 text-gray-500 hover:text-gray-700 decrease-qty-btn" data-id="${itemKey}">-</button>
+                <span class="px-2 text-gray-900">${item.quantity}</span>
+                <button type="button" class="px-2 py-1 text-gray-500 hover:text-gray-700 increase-qty-btn" data-id="${itemKey}">+</button>
+              </div>
+              <div class="flex">
+                <button type="button" class="font-medium text-primary hover:text-primary-dark remove-item-btn" data-id="${itemKey}">Remove</button>
+              </div>
+            </div>
+          </div>
+        </li>
+      `;
+    }).join('');
+
+    // Reattach listeners
+    document.querySelectorAll('.decrease-qty-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        updateQuantity(id, -1);
+      });
+    });
+
+    document.querySelectorAll('.increase-qty-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        updateQuantity(id, 1);
+      });
+    });
+
+    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        removeItem(id);
+      });
+    });
+
+    updateCartTotals();
+  }
+
+  // Event Listeners
+  if (closeCartBtn) closeCartBtn.addEventListener('click', () => toggleCart(false));
+  if (keepShoppingBtn) keepShoppingBtn.addEventListener('click', () => toggleCart(false));
+  if (cartBackdrop) cartBackdrop.addEventListener('click', () => toggleCart(false));
+
+  // Listen for open-cart global event
+  window.addEventListener('open-cart', () => toggleCart(true));
+
+  // Listen for add-to-cart global event
+  window.addEventListener('add-to-cart', (e) => {
+    addToCart(e.detail);
+  });
+
+  // Handle Delivery Type Select
+  if (deliveryTypeSelect) {
+    deliveryTypeSelect.addEventListener('change', (e) => {
+      deliveryType = e.target.value;
+      if (deliveryType === 'local') {
+        if(postcodeSection) postcodeSection.classList.remove('hidden');
+      } else {
+        if(postcodeSection) postcodeSection.classList.add('hidden');
+      }
+      updateCartTotals();
+    });
+  }
+
+  // Handle Postcode validation
+  if (validatePostcodeBtn) {
+    validatePostcodeBtn.addEventListener('click', validatePostcode);
+  }
+  if (deliveryPostcodeEl) {
+    deliveryPostcodeEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') validatePostcode();
+    });
+  }
+
+  // Handle checkout
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', async () => {
+      if (cart.length === 0) return;
+
+      if (deliveryType === 'local' && !isPostcodeValid) {
+        showPostcodeFeedback('Please verify your postcode for delivery first.', 'error');
+        if(deliveryPostcodeEl) deliveryPostcodeEl.focus();
+        return;
+      }
+
+      try {
+        checkoutBtn.textContent = 'Processing...';
+        checkoutBtn.setAttribute('disabled', 'true');
+
+        const response = await fetch('/api/gocardless/create-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: cart,
+            deliveryType,
+            deliveryCost,
+            postcode: deliveryType === 'local' ? (deliveryPostcodeEl ? deliveryPostcodeEl.value : '') : '',
+          }),
+        });
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert('Something went wrong. Please try again.');
+          checkoutBtn.textContent = 'Checkout';
+          checkoutBtn.removeAttribute('disabled');
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Something went wrong. Please try again.');
+        checkoutBtn.textContent = 'Checkout';
+        checkoutBtn.removeAttribute('disabled');
+      }
+    });
+  }
+
+  // Initial load
+  loadCart();
 </script>

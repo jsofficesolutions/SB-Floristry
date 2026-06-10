@@ -1,203 +1,207 @@
 ---
-// src/pages/products/[handle].astro
 import Layout from '../../layouts/Layout.astro';
-import { shopifyFetch } from '../../utils/shopify.js';
+import { getProductByHandle, getProducts } from '../../utils/shopify';
 
 export async function getStaticPaths() {
-  const query = `
-    {
-      products(first: 250) {
-        edges {
-          node {
-            id
-            title
-            handle
-            descriptionHtml
-            tags
-            images(first: 6) {
-              edges {
-                node {
-                  url
-                  altText
-                }
-              }
-            }
-            variants(first: 1) {
-              edges {
-                node {
-                  id
-                  price {
-                    amount
-                    currencyCode
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const response = await shopifyFetch({ query });
-  const products = response?.data?.products?.edges || [];
-
-  return products.map((edge) => ({
-    params: { handle: edge.node.handle },
-    props: { product: edge.node },
+  const products = await getProducts();
+  return products.map((product) => ({
+    params: { handle: product.handle },
   }));
 }
 
-const { product } = Astro.props;
+const { handle } = Astro.params;
+const product = await getProductByHandle(handle);
 
-// Extract necessary variables
-const variantId = product.variants?.edges[0]?.node?.id || product.id;
-const priceAmount = product.variants?.edges[0]?.node?.price?.amount || '0.00';
-const priceText = `£${parseFloat(priceAmount).toFixed(2)}`;
-const images = product.images?.edges.map(e => e.node.url) || [];
-const mainImage = images[0] || 'https://via.placeholder.com/600x800?text=No+Image';
+if (!product) {
+  return Astro.redirect('/404');
+}
 
-// Find collection tag for breadcrumbs
-const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink'];
-const collectionTag = product.tags.find((tag: string) => !ignoredTags.includes(tag.toLowerCase())) || 'seasonal';
-const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.slice(1);
+// Format price helper
+const formatPrice = (amount) => {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: product.currency || 'GBP',
+  }).format(parseFloat(amount));
+};
 ---
 
-<Layout title={`${product.title} | Luxury Essex Florist`} description={`Order the beautiful ${product.title} from SB Floristry. Hand-tied in Essex, delivered to London.`}>
-  
-  <section class="py-12 md:py-24 bg-sb-cream text-sb-black min-h-screen">
-    <div class="container mx-auto px-6 max-w-7xl">
-      
-      <nav class="text-[10px] tracking-luxury uppercase font-bold text-gray-400 mb-8 md:mb-12 flex items-center space-x-2 reveal">
-        <a href="/" class="hover:text-sb-gold transition-colors">Home</a>
-        <span>/</span>
-        <a href={`/collections/${collectionTag.toLowerCase()}`} class="hover:text-sb-gold transition-colors">{displayCollection}</a>
-        <span>/</span>
-        <span class="text-sb-black">{product.title}</span>
-      </nav>
-
-      <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
-        
-        <div class="w-full lg:w-1/2 reveal">
-          <div class="lg:sticky lg:top-32 flex flex-col-reverse md:flex-row gap-4">
-            
-            {images.length > 1 && (
-              <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible no-scrollbar w-full md:w-20 shrink-0">
-                {images.map((img, idx) => (
-                  <button class={`gallery-thumbnail w-20 h-24 md:w-full md:h-28 shrink-0 border-2 transition-all duration-300 ${idx === 0 ? 'border-sb-gold' : 'border-transparent hover:border-gray-300'}`} data-full={img}>
-                    <img src={img} alt={`Thumbnail ${idx + 1}`} class="w-full h-full object-cover" />
+<Layout title={`${product.title} | SB Floristry`}>
+  <div class="bg-white">
+    <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
+        <!-- Image gallery -->
+        <div class="flex flex-col-reverse">
+          <!-- Image selector -->
+          {product.images && product.images.length > 1 && (
+            <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block">
+              <div class="grid grid-cols-4 gap-6" aria-label="Images">
+                {product.images.map((image, index) => (
+                  <button
+                    class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4 thumbnail-btn"
+                    data-index={index}
+                  >
+                    <span class="sr-only">View image {index + 1}</span>
+                    <span class="absolute inset-0 overflow-hidden rounded-md">
+                      <img src={image.url} alt={image.altText} class="h-full w-full object-cover object-center" />
+                    </span>
                   </button>
                 ))}
               </div>
-            )}
-
-            <div class="w-full relative aspect-[4/5] bg-white border border-gray-100">
-              <img id="mainProductImage" src={mainImage} alt={product.title} class="w-full h-full object-cover loaded transition-opacity duration-500" />
-              <div class="absolute bottom-4 right-4 bg-sb-black text-sb-gold text-[9px] uppercase tracking-luxury font-bold py-2 px-4 shadow-xl">
-                Arrives in Signature Black & Gold Wrap
-              </div>
             </div>
-            
+          )}
+
+          <div class="aspect-h-1 aspect-w-1 w-full">
+            <div id="main-image-container" class="h-[500px] w-full overflow-hidden rounded-lg bg-gray-100">
+              <img
+                id="main-product-image"
+                src={product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg'}
+                alt={product.images && product.images[0] ? product.images[0].altText : product.title}
+                class="h-full w-full object-cover object-center sm:rounded-lg"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="w-full lg:w-1/2 reveal" style="transition-delay: 150ms;">
-           <span class="text-sb-gold text-[10px] tracking-luxury uppercase font-bold mb-3 block">SB Floristry Signature</span>
-          <h1 class="font-serif text-4xl md:text-5xl text-sb-black mb-4 font-light">{product.title}</h1>
-          <p class="text-xl font-light text-gray-500 mb-8">{priceText}</p>
-          
-          <div class="mb-12 border-y border-gray-200 py-8">
-            <p class="text-xs text-gray-500 font-bold uppercase tracking-luxury mb-4"><i class="fas fa-truck mr-2 text-sb-gold"></i> Delivery available across Essex & London</p>
-            
-            <button 
-              class="w-full bg-sb-black text-sb-gold border border-transparent py-4 font-bold tracking-luxury text-[11px] uppercase hover:bg-sb-gold hover:text-sb-black hover:border-sb-black transition-all duration-300 add-to-cart-btn shadow-xl cursor-pointer"
-              data-id={variantId} 
-              data-title={product.title} 
-              data-price={priceAmount} 
-              data-image={mainImage}
-            >
-              Add to Basket — {priceText}
-            </button>
+        <!-- Product info -->
+        <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
+          <h1 class="text-3xl font-bold tracking-tight text-accent font-serif">{product.title}</h1>
+
+          <div class="mt-3">
+            <h2 class="sr-only">Product information</h2>
+            <p id="product-price" class="text-3xl tracking-tight text-gray-900">{formatPrice(product.price)}</p>
           </div>
 
-          <div class="prose prose-sm prose-gray font-light leading-relaxed mb-10 max-w-none text-gray-600 product-desc" set:html={product.descriptionHtml}></div>
-
-          <div class="border-t border-gray-200">
-            
-            <div class="border-b border-gray-200">
-              <button class="accordion-btn w-full flex justify-between items-center py-5 text-xs font-bold tracking-luxury uppercase text-sb-black group focus:outline-none">
-                <span><i class="fas fa-tint text-sb-gold mr-3"></i> Care Instructions</span>
-                <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold"></i>
-              </button>
-              <div class="accordion-content max-h-0 overflow-hidden transition-all duration-300 ease-out">
-                <p class="pb-5 text-sm text-gray-500 font-light leading-relaxed">
-                  To ensure maximum longevity, trim stems by 1-2 inches at a 45-degree angle upon arrival. Place in a clean vase with fresh, cool water and the provided flower food. Change the water entirely every 2 days and keep away from direct sunlight or drafts.
-                </p>
-              </div>
+          <div class="mt-6">
+            <h3 class="sr-only">Description</h3>
+            <div class="space-y-6 text-base text-gray-700 whitespace-pre-line">
+              {product.description}
             </div>
-
-            <div class="border-b border-gray-200">
-              <button class="accordion-btn w-full flex justify-between items-center py-5 text-xs font-bold tracking-luxury uppercase text-sb-black group focus:outline-none">
-                <span><i class="fas fa-box-open text-sb-gold mr-3"></i> Delivery Details</span>
-                <i class="fas fa-chevron-down text-[10px] transition-transform duration-300 group-hover:text-sb-gold"></i>
-              </button>
-              <div class="accordion-content max-h-0 overflow-hidden transition-all duration-300 ease-out">
-                <p class="pb-5 text-sm text-gray-500 font-light leading-relaxed">
-                  We offer <strong>Free Local Delivery</strong> on all orders over £60 within our 3-mile Essex radius. Standard UK Mainland delivery is £4.99. All bouquets are delivered in our signature aqua-pack for freshness during transit.
-                </p>
-              </div>
-            </div>
-
           </div>
 
+          <!-- Product Options / Size Selection -->
+          {product.variants && product.variants.length > 1 && product.variants[0].title !== 'Default Title' && (
+            <div class="mt-8 border-t border-gray-200 pt-8">
+              <h3 class="text-sm font-semibold text-gray-900 font-serif">Select Bouquet Size</h3>
+              <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {product.variants.map((v, index) => (
+                  <button
+                    type="button"
+                    class={`variant-option-btn relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-200 ${
+                      index === 0
+                        ? 'border-primary ring-2 ring-primary bg-primary/5'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                    data-variant-id={v.id}
+                    data-price={v.price}
+                    data-title={v.title}
+                  >
+                    <span class="flex flex-1">
+                      <span class="flex flex-col text-left">
+                        <span class="block text-sm font-medium text-gray-900">{v.title}</span>
+                        <span class="mt-1 flex items-center text-sm text-gray-500 font-semibold">
+                          {formatPrice(v.price)}
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="mt-8 border-t border-gray-200 pt-8">
+            <div class="flex flex-col space-y-4">
+              <button
+                id="add-to-cart-btn"
+                data-product-id={product.id}
+                data-variant-id={product.variantId}
+                data-title={product.title}
+                data-price={product.price}
+                data-image={product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg'}
+                class="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-primary px-8 py-3 text-base font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full transition-colors duration-200"
+              >
+                Add to Basket
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-
-  <script is:inline>
-    document.addEventListener('astro:page-load', () => {
-      const thumbnails = document.querySelectorAll('.gallery-thumbnail');
-      const mainImg = document.getElementById('mainProductImage');
-      
-      thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-          if (mainImg) mainImg.src = this.dataset.full;
-          thumbnails.forEach(t => t.classList.remove('border-sb-gold', 'border-transparent'));
-          thumbnails.forEach(t => t.classList.add('border-transparent'));
-          this.classList.remove('border-transparent');
-          this.classList.add('border-sb-gold');
-        });
-      });
-
-      const accordions = document.querySelectorAll('.accordion-btn');
-      accordions.forEach(acc => {
-        acc.addEventListener('click', function() {
-          const content = this.nextElementSibling;
-          const icon = this.querySelector('.fa-chevron-down');
-          if (content.style.maxHeight) {
-            content.style.maxHeight = null;
-            icon.classList.remove('rotate-180');
-          } else {
-            content.style.maxHeight = content.scrollHeight + "px";
-            icon.classList.add('rotate-180');
-          }
-        });
-      });
-      
-      document.querySelectorAll('.product-desc p').forEach(p => {
-        if(p.innerHTML.trim() === '') p.style.display = 'none';
-      });
-    });
-  </script>
+  </div>
 </Layout>
 
-<style>
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-</style>
+<script define:vars={{ product }}>
+  // Wrapping in an IIFE to prevent variable declaration conflicts across views
+  (function() {
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail-btn');
+
+    thumbnails.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index);
+        const newImage = product.images[index];
+        if (mainImage && newImage) {
+          mainImage.src = newImage.url;
+          mainImage.alt = newImage.altText;
+        }
+      });
+    });
+
+    let selectedVariant = product.variants && product.variants.length > 0
+      ? product.variants[0]
+      : { id: product.variantId, title: 'Default Title', price: product.price };
+
+    const variantButtons = document.querySelectorAll('.variant-option-btn');
+    const priceDisplay = document.getElementById('product-price');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+    variantButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const variantId = btn.getAttribute('data-variant-id');
+        const price = parseFloat(btn.getAttribute('data-price') || '0');
+        const title = btn.getAttribute('data-title');
+
+        selectedVariant = {
+          id: variantId,
+          title: title,
+          price: price
+        };
+
+        variantButtons.forEach(otherBtn => {
+          if (otherBtn === btn) {
+            otherBtn.classList.remove('border-gray-200', 'hover:border-gray-300', 'bg-white');
+            otherBtn.classList.add('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
+          } else {
+            otherBtn.classList.remove('border-primary', 'ring-2', 'ring-primary', 'bg-primary/5');
+            otherBtn.classList.add('border-gray-200', 'hover:border-gray-300', 'bg-white');
+          }
+        });
+
+        if (priceDisplay) {
+          const formatter = new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: product.currency || 'GBP',
+          });
+          priceDisplay.textContent = formatter.format(price);
+        }
+      });
+    });
+
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener('click', () => {
+        const item = {
+          id: product.id,
+          variantId: selectedVariant.id,
+          variantTitle: selectedVariant.title,
+          title: product.title,
+          price: selectedVariant.price,
+          image: product.images && product.images[0] ? product.images[0].url : '/images/hero.jpg',
+          quantity: 1
+        };
+
+        const event = new CustomEvent('add-to-cart', { detail: item });
+        window.dispatchEvent(event);
+      });
+    }
+  })();
+</script>
