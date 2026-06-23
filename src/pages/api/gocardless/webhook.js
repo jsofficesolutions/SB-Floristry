@@ -422,79 +422,107 @@ async function handleWebhookEvents(payload, config) {
       }
     }
 
-    // ==========================================
-    // RECURRING PAYMENTS – only for renewals, NOT the first charge
+// ==========================================
+    // RECURRING & CONFIRMED PAYMENTS – Safety Net / Renewal Order Creation
     // ==========================================
     if (event.resource_type === 'payments' && event.action === 'confirmed') {
       const paymentId = event.links?.payment;
       if (!paymentId) continue;
 
       try {
-        // Get payment details
+        // 1. Fetch payment details from GoCardless
         const paymentRes = await fetch(`${apiBase}/payments/${paymentId}`, {
           headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
         });
         const paymentData = await paymentRes.json();
-        if (!paymentRes.ok) continue;
+        if (!paymentRes.ok) {
+          console.error(`Failed to fetch payment details for ${paymentId}`);
+          continue;
+        }
+        
         const payment = paymentData.payments;
         const subscriptionId = payment.links?.subscription;
-        if (!subscriptionId) continue; // must be linked to a subscription
+        if (!subscriptionId) {
+          console.log(`Payment ${paymentId} is not linked to a subscription. Skipping.`);
+          continue; // Safely skip one-off payments if that's your design choice
+        }
 
-        // If this is the first payment, an initial order should already exist.
-        // We skip this payment entirely (it was already covered by the subscription.created event).
+        // 2. IDEMPOTENCY: Check if we have already built an order for THIS exact payment ID
+        const paymentOrderCheck = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-PM-${paymentId}`, {
+          headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
+        });
+        
+        if (paymentOrderCheck.ok) {
+          const checkData = await paymentOrderCheck.json();
+          if (checkData.orders && checkData.orders.length > 0) {
+            console.log(`Shopify order already exists for payment ${paymentId}. Skipping to prevent duplicate.`);
+            continue; 
+          }
+        }
+
+        // 3. Fetch subscription to get plan details, frequencies, and original checkout notes
+        const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const subData = await subRes.json();
+        if (!subRes.ok) {
+          console.error(`Failed to fetch subscription metadata for ${subscriptionId}`);
+          continue;
+        }
+        
+        const subMeta = subData.subscriptions.metadata || {};
+        const planTier = subMeta.plan_tier || 'test';
+        const frequency = subMeta.frequency || 'Weekly';
+        const orderNotes = subMeta.order_notes || '';
+
+        // 4. Fetch the customer profile details from GoCardless
+        const customerId = subData.subscriptions.links?.customer || payment.links?.customer;
+        const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
+          headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+        });
+        const customerData = await customerRes.json();
+        if (!customerRes.ok) {
+          console.error(`Failed to fetch customer profile for ID: ${customerId}`);
+          continue;
+        }
+
+        // 5. Check if the initial order exists purely to give it a clear label in Shopify
         const initialOrderCheck = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-SUB-${subscriptionId}`, {
           headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
         });
+        
+        let initialExists = false;
         if (initialOrderCheck.ok) {
           const checkData = await initialOrderCheck.json();
           if (checkData.orders && checkData.orders.length > 0) {
-            // There's already an initial order – this is a renewal (or the very first payment that we deliberately ignore)
-            // Now create the renewal order if we haven't already
-            const renewalCheck = await fetch(`https://${shopifyDomain}/admin/api/2024-01/orders.json?status=any&tag=GC-PM-${paymentId}`, {
-              headers: { 'X-Shopify-Access-Token': shopifyToken, 'Content-Type': 'application/json' }
-            });
-            if (renewalCheck.ok) {
-              const renewalData = await renewalCheck.json();
-              if (renewalData.orders?.length > 0) continue; // already processed this payment
-            }
-
-            // Fetch customer & metadata
-            const subRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
-              headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
-            });
-            const subData = await subRes.json();
-            if (!subRes.ok) continue;
-            const subMeta = subData.subscriptions.metadata || {};
-            const planTier = subMeta.plan_tier || 'classic';
-            const frequency = subMeta.frequency || 'Weekly';
-            const orderNotes = subMeta.order_notes || '';
-
-            const customerId = subData.subscriptions.links?.customer || payment.links?.customer;
-            const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
-              headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
-            });
-            const customerData = await customerRes.json();
-            if (!customerRes.ok) continue;
-
-            const parsedMeta = parseOrderNotes(orderNotes);
-            const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
-            const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.classic;
-
-            console.log(`Creating RENEWAL order for ${resolved.email} (payment ${paymentId})`);
-            await createShopifyOrder(
-              resolved,
-              { amount: payment.amount, description: `${planInfo.description} (Renewal)` },
-              frequency,
-              parsedMeta.reason,
-              `GC-PM-${paymentId}, Subscription-Renewal`,
-              shopifyDomain,
-              shopifyToken
-            );
+            initialExists = true;
           }
         }
-        // If no initial order exists at all (edge case – should not happen), do nothing.
+
+        const parsedMeta = parseOrderNotes(orderNotes);
+        const resolved = resolveCustomerDetails(customerData.customers, parsedMeta);
+        const planInfo = PLAN_PRICES[planTier] || PLAN_PRICES.test;
+
+        // Label it accurately based on whether the initial order was ever recovered
+        const descriptionText = initialExists 
+          ? `${planInfo.description} (Renewal)` 
+          : `${planInfo.description} (Missing Initial Order - Webhook Recovery Flow)`;
+
+        console.log(`Processing valid payment confirmed webhook. Creating order for ${resolved.email}`);
+        
+        // 6. Push the order directly to Shopify!
+        await createShopifyOrder(
+          resolved,
+          { amount: payment.amount, description: descriptionText },
+          frequency,
+          parsedMeta.reason,
+          `GC-PM-${paymentId}, Subscription-Renewal`,
+          shopifyDomain,
+          shopifyToken
+        );
+
       } catch (err) {
-        console.error("Error in payments.confirmed:", err);
+        console.error("Critical error inside payments.confirmed webhook handler:", err);
       }
     }
 
