@@ -476,7 +476,27 @@ async function handleWebhookEvents(payload, config) {
         const orderNotes = subMeta.order_notes || '';
 
         // 4. Fetch the customer profile details from GoCardless
-        const customerId = subData.subscriptions.links?.customer || payment.links?.customer;
+        let customerId = subData.subscriptions.links?.customer || payment.links?.customer;
+        
+        // FALLBACK: If customer ID is missing from subscription/payment links, pull it via the Mandate
+        if (!customerId) {
+          const mandateId = payment.links?.mandate || subData.subscriptions.links?.mandate;
+          if (mandateId) {
+            const mandateRes = await fetch(`${apiBase}/mandates/${mandateId}`, {
+              headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
+            });
+            if (mandateRes.ok) {
+              const mandateData = await mandateRes.json();
+              customerId = mandateData.mandates?.links?.customer;
+            }
+          }
+        }
+
+        if (!customerId) {
+          console.error(`Failed to resolve a customer ID for payment: ${paymentId}`);
+          continue;
+        }
+
         const customerRes = await fetch(`${apiBase}/customers/${customerId}`, {
           headers: { 'Authorization': `Bearer ${gcToken}`, 'GoCardless-Version': '2015-07-06' }
         });
