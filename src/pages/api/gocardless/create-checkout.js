@@ -1,4 +1,5 @@
 export const prerender = false;
+import { features } from '../../../config/features';
 
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
@@ -29,6 +30,12 @@ function toE164(phone) {
 }
 
 export async function POST({ request, locals }) {
+  if (!features.subscriptions) {
+    return new Response(JSON.stringify({ error: "Subscriptions channel is currently inactive." }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const token = env.GOCARDLESS_ACCESS_TOKEN;
   

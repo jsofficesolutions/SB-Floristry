@@ -3,11 +3,18 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CartModal from '../components/CartModal.astro';
 import { ViewTransitions } from 'astro:transitions';
-import deliveryConfig from '../config/delivery.json';
+import { features } from '../config/features';
 
 const { title, description } = Astro.props;
 
-// JSON-LD for Local Business SEO (Essex/London Florist)
+// Clean title format: prevent double " | SB Floristry"
+const cleanTitle = title?.includes('SB Floristry') ? title : `${title} | SB Floristry`;
+
+// Unified Studio Contact Line
+const STUDIO_PHONE = "+441708956609";
+const STUDIO_PHONE_INTL = "+441708956609";
+
+// JSON-LD for Local Business SEO (Luxury Studio)
 const schema = {
   "@context": "https://schema.org",
   "@type": "Florist",
@@ -15,12 +22,12 @@ const schema = {
   "image": "https://www.sbfloristry.co.uk/images/hero.jpg",
   "@id": "https://www.sbfloristry.co.uk",
   "url": "https://www.sbfloristry.co.uk",
-  "telephone": "+447712707849",
+  "telephone": STUDIO_PHONE,
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "",
-    "addressLocality": "Essex",
-    "addressRegion": "London",
+    "addressLocality": "Romford",
+    "addressRegion": "Essex",
     "postalCode": "RM1",
     "addressCountry": "GB"
   },
@@ -37,7 +44,7 @@ const schema = {
     "opens": "09:00",
     "closes": "18:00"
   },
-  "priceRange": "££"
+  "priceRange": "£££"
 };
 ---
 
@@ -46,7 +53,7 @@ const schema = {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} | SB Floristry</title>
+    <title>{cleanTitle}</title>
     <meta name="description" content={description}>
     
     <ViewTransitions />
@@ -54,7 +61,7 @@ const schema = {
     <!-- Open Graph / Facebook / WhatsApp Preview -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.sbfloristry.co.uk/">
-    <meta property="og:title" content={title}>
+    <meta property="og:title" content={cleanTitle}>
     <meta property="og:description" content={description}>
     <meta property="og:image" content="https://www.sbfloristry.co.uk/images/hero.jpg">
     <meta property="og:site_name" content="SB Floristry">
@@ -114,44 +121,37 @@ const schema = {
         <slot />
     </main>
 
-<div class="fixed bottom-6 right-6 z-[90] flex flex-col gap-4 items-end">
-    <!-- ADDED "group" HERE SO THE CHILD CAN TRACK THE HOVER STATE -->
-    <div class="relative group flex items-center">
-        <div id="deliveryTooltip" class="absolute right-full mr-4 bg-sb-black text-sb-gold text-[10px] uppercase tracking-widest font-bold py-3 px-5 whitespace-nowrap shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-sm">
-            Check Delivery Eligibility
-            <div class="..."></div>
-        </div>
-            
-            <button id="openDeliveryModal" aria-label="Check Delivery Eligibility" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 group focus:outline-none">
-                <i class="fas fa-truck text-lg"></i>
-            </button>
-        </div>
+    {features.deliveryChecker && (
+      <div class="fixed bottom-6 right-6 z-[90] flex flex-col gap-4 items-end">
+          <div class="relative group flex items-center">
+              <div id="deliveryTooltip" class="absolute right-full mr-4 bg-sb-black text-sb-gold text-[10px] uppercase tracking-widest font-bold py-3 px-5 whitespace-nowrap shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-sm">
+                  Check Delivery Eligibility
+              </div>
+              <button id="openDeliveryModal" aria-label="Check Delivery Eligibility" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 group focus:outline-none">
+                  <i class="fas fa-truck text-lg"></i>
+              </button>
+          </div>
+      </div>
 
-        <a href="https://wa.me/447712707849" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp Us" class="w-12 h-12 bg-sb-black text-sb-gold rounded-full shadow-2xl flex items-center justify-center border border-sb-gold/20 hover:bg-sb-gold hover:text-sb-black transition-colors duration-300 focus:outline-none">
-            <i class="fab fa-whatsapp text-2xl"></i>
-        </a>
-    </div>
-
-    <div id="deliveryModal" class="fixed inset-0 bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-sb-cream w-full max-w-md p-8 relative shadow-2xl transform scale-95 transition-transform duration-300" id="deliveryModalContent">
-            <button id="closeDeliveryModal" class="absolute top-4 right-4 text-gray-400 hover:text-sb-gold transition-colors focus:outline-none" aria-label="Close modal">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-            <h4 class="font-serif text-3xl text-sb-black mb-2">Delivery Check</h4>
-            <p class="text-xs text-gray-500 tracking-wider uppercase mb-6">Free delivery over £{deliveryConfig.freeDeliveryThreshold} locally</p>
-            
-            <div class="flex flex-col gap-3">
-                <input type="text" id="modalPostcodeInput" placeholder="Enter Postcode (e.g. RM1)" aria-label="Postcode" class="w-full bg-white px-4 py-3 text-xs tracking-widest outline-none border border-gray-200 focus:border-sb-gold transition-colors uppercase text-center">
-                <button id="modalCheckPostcodeBtn" class="w-full bg-sb-black text-sb-gold px-6 py-3 text-[10px] font-bold tracking-luxury uppercase hover:bg-sb-gold hover:text-sb-black transition-colors focus:outline-none">Verify Postcode</button>
-            </div>
-            <div id="modalPostcodeResult" class="mt-4 text-center text-xs font-bold tracking-luxury hidden animate-fade-in min-h-[20px]"></div>
-        </div>
-    </div>
+      <div id="deliveryModal" class="fixed inset-0 bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-sb-cream w-full max-w-md p-8 relative shadow-2xl transform scale-95 transition-transform duration-300" id="deliveryModalContent">
+              <button id="closeDeliveryModal" class="absolute top-4 right-4 text-gray-400 hover:text-sb-gold transition-colors focus:outline-none" aria-label="Close modal">
+                  <i class="fas fa-times text-xl"></i>
+              </button>
+              <h4 class="font-serif text-3xl text-sb-black mb-2">Delivery Check</h4>
+              <div class="flex flex-col gap-3">
+                  <input type="text" id="modalPostcodeInput" placeholder="Enter Postcode (e.g. RM1)" aria-label="Postcode" class="w-full bg-white px-4 py-3 text-xs tracking-widest outline-none border border-gray-200 focus:border-sb-gold transition-colors uppercase text-center">
+                  <button id="modalCheckPostcodeBtn" class="w-full bg-sb-black text-sb-gold px-6 py-3 text-[10px] font-bold tracking-luxury uppercase hover:bg-sb-gold hover:text-sb-black transition-colors focus:outline-none">Verify Postcode</button>
+              </div>
+              <div id="modalPostcodeResult" class="mt-4 text-center text-xs font-bold tracking-luxury hidden animate-fade-in min-h-[20px]"></div>
+          </div>
+      </div>
+    )}
 
     <Footer />
-    <CartModal />
+    {features.shop && <CartModal />}
 
-    <script is:inline define:vars={{ deliveryConfig }}>
+    <script is:inline>
         document.addEventListener('astro:page-load', () => {
             const observer = new IntersectionObserver((entries) => { 
                 entries.forEach(entry => { 
@@ -164,48 +164,6 @@ const schema = {
             document.querySelectorAll('img').forEach(img => {
                 if (img.complete) img.classList.add('loaded');
                 else img.addEventListener('load', () => img.classList.add('loaded'));
-            });
-
-            const dModal = document.getElementById('deliveryModal');
-            const dModalContent = document.getElementById('deliveryModalContent');
-            const openDModalBtn = document.getElementById('openDeliveryModal');
-            const closeDModalBtn = document.getElementById('closeDeliveryModal');
-            
-            function toggleDeliveryModal(show) {
-                if (!dModal) return;
-                if (show) {
-                    dModal.classList.remove('hidden');
-                    setTimeout(() => {
-                        dModal.classList.remove('opacity-0');
-                        dModalContent?.classList.add('scale-100');
-                    }, 10);
-                } else {
-                    dModal.classList.add('opacity-0');
-                    dModalContent?.classList.remove('scale-100');
-                    setTimeout(() => dModal.classList.add('hidden'), 300);
-                }
-            }
-
-            openDModalBtn?.addEventListener('click', () => toggleDeliveryModal(true));
-            closeDModalBtn?.addEventListener('click', () => toggleDeliveryModal(false));
-
-            const modalBtn = document.getElementById('modalCheckPostcodeBtn');
-            const modalInput = document.getElementById('modalPostcodeInput');
-            const modalResult = document.getElementById('modalPostcodeResult');
-
-            modalBtn?.addEventListener('click', () => {
-                const val = modalInput?.value.trim().toUpperCase();
-                if (!val) return;
-                modalResult?.classList.remove('hidden');
-                const isLocal = deliveryConfig.validPrefixes.some(p => val.startsWith(p));
-                
-                if (isLocal) {
-                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-green-600";
-                    modalResult.innerHTML = "Free Local Delivery Available!";
-                } else {
-                    modalResult.className = "mt-4 text-center text-xs font-bold tracking-luxury text-sb-gold";
-                    modalResult.innerHTML = `Standard Delivery (£${deliveryConfig.standardDeliveryFee}) applies.`;
-                }
             });
 
             const contactForm = document.getElementById('home-contact-form');

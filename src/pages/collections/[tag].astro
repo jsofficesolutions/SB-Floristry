@@ -2,8 +2,12 @@
 import Layout from '../../layouts/Layout.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { shopifyFetch } from '../../utils/shopify.js';
+import { features } from '../../config/features';
 
 export async function getStaticPaths() {
+  if (!features.shop) {
+    return [];
+  }
   const tagsQuery = `
     {
       products(first: 250) {

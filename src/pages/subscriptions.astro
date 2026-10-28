@@ -1,5 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { features } from '../config/features';
+
+if (!features.subscriptions) {
+  return Astro.redirect('/', 302);
+}
 ---
 
 <Layout title="Bespoke Fresh Flower Subscriptions | SB Floristry">

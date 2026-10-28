@@ -1,36 +1,42 @@
 ---
 import { shopifyFetch } from '../utils/shopify.js';
+import { features } from '../config/features';
 
-// 1. Fetch all unique tags from Shopify at build time
-const tagsQuery = `
-  {
-    products(first: 250) {
-      edges {
-        node {
-          tags
+let dynamicTags = [];
+
+if (features.shop) {
+  // 1. Fetch all unique tags from Shopify at build time
+  const tagsQuery = `
+    {
+      products(first: 250) {
+        edges {
+          node {
+            tags
+          }
         }
       }
     }
+  `;
+  try {
+    const response = await shopifyFetch({ query: tagsQuery });
+    const products = response?.data?.products?.edges || [];
+
+    const allTags = new Set();
+    const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink', 'corporate', 'hotels', 'spas', 'wellness'];
+    products.forEach((edge) => {
+      edge.node.tags.forEach((tag) => {
+        const cleanTag = tag.trim();
+        if (!ignoredTags.includes(cleanTag.toLowerCase())) {
+          allTags.add(cleanTag);
+        }
+      });
+    });
+
+    dynamicTags = Array.from(allTags).sort();
+  } catch (e) {
+    console.warn("Shopify fetch bypassed or offline.");
   }
-`;
-const response = await shopifyFetch({ query: tagsQuery });
-const products = response?.data?.products?.edges || [];
-
-// 2. Extract and clean the tags
-const allTags = new Set();
-// Highlight-add: 'corporate' added to ignored tags
-const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink', 'corporate', 'hotels', 'spas', 'wellness'];
-products.forEach((edge) => {
-  edge.node.tags.forEach((tag) => {
-    const cleanTag = tag.trim();
-    if (!ignoredTags.includes(cleanTag.toLowerCase())) {
-      allTags.add(cleanTag);
-    }
-  });
-});
-
-// Convert set to a sorted array
-const dynamicTags = Array.from(allTags).sort();
+}
 ---
 
 <style>
@@ -54,17 +60,12 @@ const dynamicTags = Array.from(allTags).sort();
     .mobile-accordion-btn.active i { transform: rotate(180deg); }
 </style>
 
-<!-- Announcement Bar -->
-<div class="bg-gold-shimmer text-sb-black text-[10px] py-2.5 px-4 text-center tracking-[0.25em] uppercase font-bold border-b border-sb-cream/20">
-    <p>Family Run • Free delivery over £60 within 3 miles • UK Standard £4.99</p>
-</div>
-
 <!-- Header -->
 <header class="sticky top-0 z-50 bg-sb-black/95 backdrop-blur-md border-b border-white/5" id="mainHeader">
     <div class="container mx-auto px-6 lg:px-12">
         <div class="grid grid-cols-[1fr_auto_1fr] items-center h-20 md:h-24">
             
-            <!-- Left Side (4 Items: Home, Shop, Events, Gift Finder) -->
+            <!-- Left Side -->
             <div class="flex items-center w-full h-full">
                 <button id="mobileMenuBtn" class="lg:hidden text-xl text-sb-cream p-2 -ml-2">
                     <i class="fas fa-bars"></i>
@@ -72,55 +73,59 @@ const dynamicTags = Array.from(allTags).sort();
                 <nav class="hidden lg:flex items-center space-x-8 text-[11px] tracking-luxury text-gray-300 uppercase font-bold ml-auto lg:mr-16">
                     <a href="/" class="hover:text-sb-gold transition-colors">Home</a>
                     
+                    {features.shop && (
+                      <div class="relative group h-full flex items-center">
+                          <button class="uppercase tracking-luxury flex items-center gap-1.5 hover:text-sb-gold transition-colors">
+                              Shop <i class="fas fa-chevron-down text-[8px] opacity-50"></i>
+                          </button>
+                          <div class="nav-dropdown absolute top-full left-0 w-48 bg-sb-black border border-white/10 py-2 shadow-2xl">
+                              {dynamicTags.map((tag) => (
+                                  <a 
+                                      href={`/collections/${tag.toLowerCase().replace(/\s+/g, '-')}`} 
+                                      class="block px-6 py-3 hover:text-sb-gold text-[10px] transition-colors"
+                                  >
+                                      {tag}
+                                  </a>
+                              ))}
+                          </div>
+                      </div>
+                    )}
+
                     <div class="relative group h-full flex items-center">
-                        <button class="uppercase tracking-luxury flex items-center gap-1.5 hover:text-sb-gold transition-colors">
-                            Shop <i class="fas fa-chevron-down text-[8px] opacity-50"></i>
+                        <button class="uppercase tracking-luxury flex items-center gap-1.5 text-gray-300 hover:text-sb-gold transition-colors">
+                            Events <i class="fas fa-chevron-down text-[8px] opacity-50"></i>
                         </button>
-                        <div class="nav-dropdown absolute top-full left-0 w-48 bg-sb-black border border-white/10 py-2 shadow-2xl">
-                            {dynamicTags.map((tag) => (
-                                <a 
-                                    href={`/collections/${tag.toLowerCase().replace(/\s+/g, '-')}`} 
-                                    class="block px-6 py-3 hover:text-sb-gold text-[10px] transition-colors"
-                                >
-                                    {tag}
+                        <div class="nav-dropdown absolute top-full left-0 w-56 bg-sb-black border border-white/10 py-2 shadow-2xl text-white">
+                            <a href="/weddings" class="block px-6 py-3 text-gray-200 hover:text-sb-gold text-[10px] uppercase tracking-wider transition-colors border-b border-white/5">
+                                Weddings
+                            </a>
+                            
+                            <div class="bg-white/[0.02] py-1">
+                                <a href="/corporate" class="block px-6 py-2.5 text-sb-gold font-bold text-[10px] tracking-wider uppercase hover:text-white transition-colors">
+                                    Corporate & Hospitality
                                 </a>
-                            ))}
+                                <a href="/corporate/hotels" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
+                                    — Hotels & Boutiques
+                                </a>
+                                <a href="/corporate/spas-wellness" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
+                                    — Spas & Wellness Retreats
+                                </a>
+                                <a href="/corporate/events" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
+                                    — Brand Activations & PR
+                                </a>
+                            </div>
+                            
+                            <a href="/funerals" class="block px-6 py-3 text-gray-200 hover:text-sb-gold text-[10px] uppercase tracking-wider transition-colors border-t border-white/5">
+                                Funerals
+                            </a>
                         </div>
                     </div>
 
-<div class="relative group h-full flex items-center">
-    <button class="uppercase tracking-luxury flex items-center gap-1.5 text-gray-300 hover:text-sb-gold transition-colors">
-        Events <i class="fas fa-chevron-down text-[8px] opacity-50"></i>
-    </button>
-    <div class="nav-dropdown absolute top-full left-0 w-56 bg-sb-black border border-white/10 py-2 shadow-2xl text-white">
-        <a href="/weddings" class="block px-6 py-3 text-gray-200 hover:text-sb-gold text-[10px] uppercase tracking-wider transition-colors border-b border-white/5">
-            Weddings
-        </a>
-        
-        <div class="bg-white/[0.02] py-1">
-            <a href="/corporate" class="block px-6 py-2.5 text-sb-gold font-bold text-[10px] tracking-wider uppercase hover:text-white transition-colors">
-                Corporate & Hospitality
-            </a>
-            <a href="/corporate/hotels" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
-                — Hotels & Boutiques
-            </a>
-            <a href="/corporate/spas-wellness" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
-                — Spas & Wellness Retreats
-            </a>
-            <a href="/corporate/events" class="block px-9 py-2 hover:text-sb-gold text-[10px] text-gray-300 transition-colors normal-case italic">
-                — Brand Activations & PR
-            </a>
-        </div>
-        
-        <a href="/funerals" class="block px-6 py-3 text-gray-200 hover:text-sb-gold text-[10px] uppercase tracking-wider transition-colors border-t border-white/5">
-            Funerals
-        </a>
-    </div>
-</div>
-
-                    <a href="/occasion-finder" class="hover:text-sb-gold transition-colors flex items-center gap-1.5">
-                        <i class="fas fa-magic text-sb-gold"></i> Gift Picker
-                    </a>
+                    {features.giftPicker && (
+                      <a href="/occasion-finder" class="hover:text-sb-gold transition-colors flex items-center gap-1.5">
+                          <i class="fas fa-magic text-sb-gold"></i> Gift Picker
+                      </a>
+                    )}
                 </nav>
             </div>
 
@@ -131,20 +136,24 @@ const dynamicTags = Array.from(allTags).sort();
                 </a>
             </div>
 
-            <!-- Right Side (3 Items: Subscriptions, Our Story, Contact, Cart) -->
+            <!-- Right Side -->
             <div class="flex items-center w-full h-full">
                 <nav class="hidden lg:flex items-center space-x-8 text-[11px] tracking-luxury text-gray-300 uppercase font-bold lg:ml-16">
-                    <a href="/subscriptions" class="hover:text-sb-gold transition-colors flex items-center gap-1.5">
-                        <i class="fas fa-calendar-alt text-sb-gold"></i> Subscriptions
-                    </a>
+                    {features.subscriptions && (
+                      <a href="/subscriptions" class="hover:text-sb-gold transition-colors flex items-center gap-1.5">
+                          <i class="fas fa-calendar-alt text-sb-gold"></i> Subscriptions
+                      </a>
+                    )}
                     <a href="/our-story" class="hover:text-sb-gold transition-colors">Our Story</a>
                     <a href="/contact" class="hover:text-sb-gold transition-colors">Contact</a>
                 </nav>
                 
-                <button id="cartBtn" class="relative text-sb-cream hover:text-sb-gold transition-colors p-1 ml-auto shrink-0">
-                    <i class="fas fa-shopping-bag text-sm"></i>
-                    <span id="cartCount" class="absolute -top-2 -right-2 bg-sb-black text-sb-gold text-[10px] border border-sb-gold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
-                </button>
+                {features.shop && (
+                  <button id="cartBtn" class="relative text-sb-cream hover:text-sb-gold transition-colors p-1 ml-auto shrink-0">
+                      <i class="fas fa-shopping-bag text-sm"></i>
+                      <span id="cartCount" class="absolute -top-2 -right-2 bg-sb-black text-sb-gold text-[10px] border border-sb-gold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+                  </button>
+                )}
             </div>
         </div>
     </div>
@@ -156,54 +165,60 @@ const dynamicTags = Array.from(allTags).sort();
     <nav class="flex flex-col space-y-2 overflow-y-auto pb-10">
         <a href="/" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link">Home</a>
         
+        {features.shop && (
+          <div>
+              <button class="mobile-accordion-btn w-full flex justify-between items-center text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5">
+                  Shop Collections <i class="fas fa-chevron-down text-xs transition-transform"></i>
+              </button>
+              <div class="mobile-accordion-content bg-white/5">
+                  {dynamicTags.map((tag) => (
+                      <a 
+                          href={`/collections/${tag.toLowerCase().replace(/\s+/g, '-')}`} 
+                          class="block py-4 pl-4 text-xs text-gray-300 mobile-link"
+                      >
+                          {tag}
+                      </a>
+                  ))}
+              </div>
+          </div>
+        )}
+        
         <div>
             <button class="mobile-accordion-btn w-full flex justify-between items-center text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5">
-                Shop Collections <i class="fas fa-chevron-down text-xs transition-transform"></i>
+                Events <i class="fas fa-chevron-down text-xs transition-transform"></i>
             </button>
             <div class="mobile-accordion-content bg-white/5">
-                {dynamicTags.map((tag) => (
-                    <a 
-                        href={`/collections/${tag.toLowerCase().replace(/\s+/g, '-')}`} 
-                        class="block py-4 pl-4 text-xs text-gray-300 mobile-link"
-                    >
-                        {tag}
+                <a href="/weddings" class="block py-4 pl-4 text-xs text-gray-300 mobile-link border-b border-white/5 font-bold">Weddings</a>
+                
+                <div class="border-b border-white/5 bg-white/[0.01] py-2">
+                    <a href="/corporate" class="block py-3 pl-4 text-xs text-sb-gold mobile-link uppercase font-bold">
+                        Corporate & Hospitality
                     </a>
-                ))}
+                    <a href="/corporate/hotels" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
+                        Hotels & Boutique Stays
+                    </a>
+                    <a href="/corporate/spas-wellness" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
+                        Spas & Wellness Clinics
+                    </a>
+                    <a href="/corporate/events" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
+                        Brand Events & Launches
+                    </a>
+                </div>
+                
+                <a href="/funerals" class="block py-4 pl-4 text-xs text-gray-300 mobile-link">Funerals</a>
             </div>
         </div>
-        
-<div>
-    <button class="mobile-accordion-btn w-full flex justify-between items-center text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5">
-        Events <i class="fas fa-chevron-down text-xs transition-transform"></i>
-    </button>
-    <div class="mobile-accordion-content bg-white/5">
-        <a href="/weddings" class="block py-4 pl-4 text-xs text-gray-300 mobile-link border-b border-white/5 font-bold">Weddings</a>
-        
-        <div class="border-b border-white/5 bg-white/[0.01] py-2">
-            <a href="/corporate" class="block py-3 pl-4 text-xs text-sb-gold mobile-link uppercase font-bold">
-                Corporate & Hospitality
-            </a>
-            <a href="/corporate/hotels" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
-                Hotels & Boutique Stays
-            </a>
-            <a href="/corporate/spas-wellness" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
-                Spas & Wellness Clinics
-            </a>
-            <a href="/corporate/events" class="block py-2.5 pl-8 text-xs text-gray-400 mobile-link italic">
-                Brand Events & Launches
-            </a>
-        </div>
-        
-        <a href="/funerals" class="block py-4 pl-4 text-xs text-gray-300 mobile-link">Funerals</a>
-    </div>
-</div>
 
-        <a href="/occasion-finder" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link flex items-center gap-3">
-            <i class="fas fa-magic w-4 text-center"></i> Gift Picker
-        </a>
-        <a href="/subscriptions" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link flex items-center gap-3">
-            <i class="fas fa-calendar-alt w-4 text-center"></i> Subscriptions
-        </a>
+        {features.giftPicker && (
+          <a href="/occasion-finder" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link flex items-center gap-3">
+              <i class="fas fa-magic w-4 text-center"></i> Gift Picker
+          </a>
+        )}
+        {features.subscriptions && (
+          <a href="/subscriptions" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link flex items-center gap-3">
+              <i class="fas fa-calendar-alt w-4 text-center"></i> Subscriptions
+          </a>
+        )}
 
         <a href="/our-story" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link">Our Story</a>
         <a href="/contact" class="text-sb-gold text-sm tracking-widest uppercase py-4 border-b border-white/5 mobile-link">Contact</a>

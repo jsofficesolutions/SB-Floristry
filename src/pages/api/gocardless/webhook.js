@@ -1,15 +1,10 @@
 export const prerender = false;
+import { features } from '../../../config/features';
 
 const PLAN_PRICES = {
   test: { amount: 100, description: "SB Floristry - Developer Test Tier" },
   classic: { amount: 2800, description: "SB Floristry - The Classic Subscription" },
   showstopper: { amount: 4100, description: "SB Floristry - The Showstopper Subscription" }
-};
-
-const FREQUENCY_INTERVALS = {
-  Weekly: { interval_unit: "weekly", interval: 1 },
-  Fortnightly: { interval_unit: "weekly", interval: 2 },
-  "Three-Weekly": { interval_unit: "weekly", interval: 3 }
 };
 
 function cleanPhoneForShopify(phone) {
@@ -237,10 +232,19 @@ async function createShopifyOrder(customerDetails, planInfo, frequency, reason, 
 }
 
 export async function GET() {
+  if (!features.subscriptions) {
+    return new Response("Subscriptions channel inactive.", { status: 404 });
+  }
   return new Response("GoCardless Webhook Endpoint is Active.", { status: 200, headers: { 'Content-Type': 'text/plain' } });
 }
 
 export async function POST(context) {
+  if (!features.subscriptions) {
+    return new Response(JSON.stringify({ error: "Subscriptions channel is currently inactive." }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
   const { request, locals } = context;
   const env = locals.runtime?.env || import.meta.env || process.env || {};
   const gcToken = env.GOCARDLESS_ACCESS_TOKEN;

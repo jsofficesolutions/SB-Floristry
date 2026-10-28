@@ -1,8 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { shopifyFetch } from '../utils/shopify.js';
+import { features } from '../config/features';
 
-// Fetch all products INCLUDING their descriptions at build time
+if (!features.giftPicker) {
+  return Astro.redirect('/', 302);
+}
+
+let products = [];
+if (features.giftPicker) {
 const query = `
   {
     products(first: 100) {
@@ -30,18 +36,19 @@ const query = `
   }
 `;
 
-const response = await shopifyFetch({ query });
-const rawProducts = response?.data?.products?.edges || [];
+  const response = await shopifyFetch({ query });
+  const rawProducts = response?.data?.products?.edges || [];
 
-// Clean up the data to make it easy for our client-side script to search
-const products = rawProducts.map(({ node }) => ({
-  title: node.title,
-  handle: node.handle,
-  tags: node.tags.map(t => t.toLowerCase().trim()),
-  description: (node.description || '').toLowerCase(),
-  price: parseFloat(node.priceRange.minVariantPrice.amount),
-  image: node.images.edges[0]?.node?.url || '/images/collection-signature.jpg'
-}));
+  // Clean up the data to make it easy for our client-side script to search
+  products = rawProducts.map(({ node }) => ({
+    title: node.title,
+    handle: node.handle,
+    tags: node.tags.map(t => t.toLowerCase().trim()),
+    description: (node.description || '').toLowerCase(),
+    price: parseFloat(node.priceRange.minVariantPrice.amount),
+    image: node.images.edges[0]?.node?.url || '/images/collection-signature.jpg'
+  }));
+}
 ---
 
 <Layout title="AI Gift Advisor | SB Floristry" description="Let our intelligent AI Gift Advisor find the perfect luxury bouquet for your occasion.">
