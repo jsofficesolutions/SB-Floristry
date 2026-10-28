@@ -213,9 +213,34 @@ const schema = {
                 contactForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const btn = contactForm.querySelector('button[type="submit"]');
-                    btn.innerText = 'SENDING...';
-                    await new Promise(r => setTimeout(r, 1000));
-                    contactForm.innerHTML = `<div class='py-10 text-center'><h4 class='font-serif text-2xl'>Inquiry Received</h4><p class='text-gray-400'>We'll be in touch shortly.</p></div>`;
+                    const origText = btn ? btn.innerText : 'SEND INQUIRY';
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerText = 'DISPATCHING...';
+                    }
+
+                    const formData = new FormData(contactForm);
+                    const payload = Object.fromEntries(formData.entries());
+
+                    try {
+                        const res = await fetch('/api/enquire', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await res.json();
+                        if (res.ok && result.success) {
+                            contactForm.innerHTML = `<div class='py-12 text-center bg-white/5 border border-white/10 p-8'><h4 class='font-serif text-3xl text-sb-cream mb-2 font-light'>Inquiry Received</h4><p class='text-gray-300 font-light text-sm'>Our studio directors review all commissions personally and will be in touch shortly.</p></div>`;
+                        } else {
+                            throw new Error(result.error || 'Failed to send inquiry.');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Error sending inquiry. Please try again or reach out to studio@sbfloristry.co.uk.');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerText = origText;
+                        }
+                    }
                 });
             }
         });
