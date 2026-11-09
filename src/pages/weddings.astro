@@ -1,130 +1,166 @@
 ---
-import Layout from '../layouts/Layout.astro';
+// src/pages/weddings.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const disciplines = [
+  {
+    title: "Bridal Architecture & Personals",
+    subtitle: "Bouquets & Boutonnieres",
+    description: "Flowing organic bouquets hand-tied with raw plant-dyed silk ribbons, matching lapel boutonnieres, and delicate botanical hairpins crafted with seasonal floral jewels.",
+    image: "/images/hero.jpg"
+  },
+  {
+    title: "The Ceremony & Meadow Aisles",
+    subtitle: "Sacred Spatial Statements",
+    description: "Freestanding organic arches, deconstructed floral meadows rising from stone flagstones, and grand pedestal arrangements that frame the exchange of vows.",
+    image: "/images/collection-weddings.jpg"
+  },
+  {
+    title: "The Banqueting Tablescape",
+    subtitle: "Sensory Dining Ensembles",
+    description: "Low, conversational arrangements in artisan ceramics, footed compotes, and custom glassware, layered with organic beeswax tapers and scattered garden petals.",
+    image: "/images/gallery-2.jpg"
+  }
+];
 ---
 
-<Layout 
-  title="Luxury Wedding Florist in Essex & London | SB Floristry" 
-  description="Bespoke luxury wedding floristry across Essex and London. From intimate bridal bouquets to breathtaking venue installations, let us tell your love story in bloom."
+<BaseLayout
+  title="Luxury Wedding Floristry Essex & London | SB Floristry"
+  description="Bespoke luxury wedding floristry across Essex, London, and private estates. From intimate ceremonies to breathtaking ballroom installations."
+  canonical="https://www.sbfloristry.co.uk/weddings/"
 >
-  <!-- SEO Structured Data -->
-  <script type="application/ld+json" is:inline>
-    {
-      "@context": "https://schema.org",
-      "@type": "Service",
-      "serviceType": "Wedding Floristry",
-      "provider": {
-        "@type": "LocalBusiness",
-        "name": "SB Floristry",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Romford",
-          "addressRegion": "Essex",
-          "addressCountry": "UK"
-        }
-      },
-      "areaServed": ["Essex", "London"],
-      "description": "Bespoke luxury wedding flowers, bridal bouquets, and venue installations."
-    }
-  </script>
+  <!-- Full-Bleed Editorial Hero -->
+  <EditorialHero
+    variant="full-bleed"
+    eyebrow="Weddings & Private Estates"
+    title="Botanical Grandeur for Your Wedding Day"
+    subtitle="Conceived with architectural proportion and organic delicacy. We transform country manors, marquee grounds, and London ballrooms into living sensorial atmospheres."
+    image="/images/weddings-bg.jpg"
+    imageAlt="Luxury Estate Wedding Floral Architecture"
+    caption="Hedsor House • Summer Estate Celebration • SB Floristry"
+    primaryCtaText="Commission Your Wedding →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="Explore Portfolio"
+    secondaryCtaHref="/portfolio/"
+  />
 
-  <!-- Hero Section -->
-  <section class="relative h-[85vh] overflow-hidden bg-sb-black">
-      <div class="absolute inset-0">
-          <img src="/images/weddings-bg.jpg" alt="Luxury Wedding Floral Setup" class="w-full h-full object-cover hero-zoom opacity-80" style="object-position: center 70%;">
-          <div class="absolute inset-0 bg-black/50"></div>
-          <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-sb-cream to-transparent"></div>
-      </div>
-      <div class="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-center text-center text-sb-cream pt-20">
-          <span class="text-sb-gold text-[10px] md:text-xs tracking-[0.35em] uppercase font-bold mb-6 reveal">Bespoke Bridal Design</span>
-          <h1 class="font-serif text-6xl md:text-8xl lg:text-9xl mb-8 font-light reveal text-shadow-sm">Weddings</h1>
-          <p class="text-lg md:text-xl font-light italic max-w-2xl mx-auto reveal tracking-wide opacity-90">
-            Crafting unforgettable atmospheres for your most treasured day.
-          </p>
-      </div>
-  </section>
-  
-  <!-- Introduction -->
-  <section class="py-24 lg:py-32 bg-sb-cream text-sb-black transition-colors duration-500">
-      <div class="container mx-auto px-6 max-w-4xl text-center">
-          <h2 class="font-serif text-4xl lg:text-5xl mb-8 font-light italic reveal">Your Love Story, In Bloom</h2>
-          <p class="text-xl text-gray-600 font-light leading-relaxed mb-12 reveal drop-cap">
-              <span class="text-5xl font-serif float-left mr-3 text-sb-gold mt-1">F</span>rom charming Essex countryside estates to glamorous London ballroom celebrations, we design with absolute heart and meticulous precision. We believe your wedding flowers should be as unique and profound as your relationship, setting a breathtaking tone for a day you will never forget.
-          </p>
-          <div class="w-24 h-px bg-sb-gold mx-auto reveal"></div>
-      </div>
-  </section>
+  <PressStrip />
 
-  <!-- Editorial Services Layout -->
-  <section class="py-12 bg-sb-cream overflow-hidden">
-      <div class="container mx-auto px-6">
-          
-          <!-- Bridal Party (Image Left, Text Right) -->
-          <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-24 mb-32 reveal">
-              <div class="w-full lg:w-1/2 relative group">
-                  <div class="absolute inset-0 bg-sb-gold/10 translate-x-4 translate-y-4 -z-10 transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6"></div>
-                  <img src="/images/product-pure-elegance.jpg" alt="Bridal Bouquets" class="w-full h-[600px] object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-700">
+  <!-- The Wedding Experience Chapter -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="The Disciplines"
+        title="From First Glance to Midnight Waltz"
+        subtitle="We design weddings as continuous spatial narratives, ensuring each chapter of your day reveals a fresh botanical wonder."
+      />
+
+      <!-- 3 Disciplines Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {disciplines.map((item, i) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl" style={`transition-delay: ${i * 120}ms`}>
+            <div>
+              <div class="reveal-clip aspect-[4/5] overflow-hidden bg-[#141414] mb-6 border border-white/10">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
               </div>
-              <div class="w-full lg:w-1/2 lg:pr-12">
-                  <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">01. The Personal Details</span>
-                  <h3 class="font-serif text-4xl text-sb-black mb-6">The Bridal Party</h3>
-                  <p class="text-gray-600 leading-relaxed font-light text-lg mb-8">
-                      The bouquet is the ultimate bridal accessory. From cascading traditional teardrops to wild, asymmetrical modern gatherings, we hand-select the finest stems to perfectly complement your gown. We extend this meticulous attention to detail to bridesmaids' posies, delicate flower crowns, and tailored buttonholes.
-                  </p>
-              </div>
+              <span class="text-[10px] font-body uppercase tracking-[0.22em] text-gold block mb-2 font-medium">
+                {item.subtitle}
+              </span>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+            <div class="pt-6">
+              <a href="/enquire/" class="inline-flex items-center text-xs uppercase tracking-[0.18em] text-gold hover:text-champagne transition-colors group-hover:translate-x-1 duration-200">
+                Commission Design →
+              </a>
+            </div>
           </div>
-
-          <!-- Ceremony (Text Left, Image Right) -->
-          <div class="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-24 mb-32 reveal">
-              <div class="w-full lg:w-1/2 relative group">
-                  <div class="absolute inset-0 bg-sb-black/5 -translate-x-4 translate-y-4 -z-10 transition-transform duration-500 group-hover:-translate-x-6 group-hover:translate-y-6"></div>
-                  <img src="/images/collection-weddings.jpg" alt="Wedding Ceremony Archway" class="w-full h-[600px] object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-700">
-              </div>
-              <div class="w-full lg:w-1/2 lg:pl-12">
-                  <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">02. The Vows</span>
-                  <h3 class="font-serif text-4xl text-sb-black mb-6">The Ceremony</h3>
-                  <p class="text-gray-600 leading-relaxed font-light text-lg mb-8">
-                      Frame the moment you say "I do" with breathtaking botanical architecture. Whether you envision a lush, deconstructed floral archway, romantic meadow aisle runners, or elegant urns flanking the altar, we design ceremony spaces that evoke pure romance and reverence.
-                  </p>
-              </div>
-          </div>
-
-          <!-- Reception (Image Left, Text Right) -->
-          <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-24 mb-16 reveal">
-              <div class="w-full lg:w-1/2 relative group">
-                  <div class="absolute inset-0 bg-sb-gold/10 translate-x-4 -translate-y-4 -z-10 transition-transform duration-500 group-hover:translate-x-6 group-hover:-translate-y-6"></div>
-                  <img src="/images/gallery-5.jpg" alt="Wedding Reception Installation" class="w-full h-[600px] object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-700">
-              </div>
-              <div class="w-full lg:w-1/2 lg:pr-12">
-                  <span class="text-sb-gold text-xs tracking-luxury uppercase font-bold mb-4 block">03. The Celebration</span>
-                  <h3 class="font-serif text-4xl text-sb-black mb-6">The Reception</h3>
-                  <p class="text-gray-600 leading-relaxed font-light text-lg mb-8">
-                      Transform your venue into a mesmerizing landscape. We specialize in dramatic hanging installations, abundant tablescapes, and focal point bar designs that leave a lasting impression on your guests. Every element is styled on-site by our expert team to ensure flawless execution.
-                  </p>
-              </div>
-          </div>
-
+        ))}
       </div>
+    </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="py-32 bg-sb-black text-sb-cream text-center relative border-t border-white/10">
-      <div class="container mx-auto px-6 max-w-3xl reveal">
-          <h2 class="font-serif text-5xl mb-6 font-light">Begin Your Journey</h2>
-          <p class="text-gray-400 text-lg font-light mb-12">
-              We take on a limited number of weddings each year to ensure our couples receive our undivided attention. Contact us to arrange a private consultation.
-          </p>
-          <a href="/contact" class="btn-luxury border border-sb-gold text-sb-cream px-12 py-4 uppercase tracking-luxury text-xs font-bold inline-block hover:text-sb-black">
-              Request a Consultation
-          </a>
-      </div>
-  </section>
-</Layout>
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/collection-weddings.jpg"
+      imageAlt="Estate Ceremony Arch"
+      caption="Private Estate Orangery • High Summer"
+      chapterNumber="II"
+      eyebrow="Spatial Harmony"
+      title="The Living Ceremony Arch"
+      lead="Organic, foam-free floral installations that appear to have grown naturally from the venue's historical masonry."
+      text="We study the natural trajectory of natural daylight, stone textures, and guest perspective lines to position ceremony arches that frame the vow exchange with breath-taking theatricality."
+      ctaText="View Ceremony Portfolio →"
+      ctaHref="/portfolio/"
+    />
 
-<style>
-  .drop-cap span {
-    line-height: 0.8;
-  }
-  .text-shadow-sm {
-    text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
-  }
-</style>
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-2.jpg"
+      imageAlt="Wedding Feast Tablescape"
+      caption="Candlelit Banquet • Mayfair Ballroom"
+      chapterNumber="III"
+      eyebrow="The Celebration"
+      title="The Twilight Banquet"
+      lead="Intimate dining tablescapes layered with fragrant garden blooms, fluted glass, and slow-burning beeswax tapers."
+      text="We treat dining tables as tactile landscapes. Low, sprawling floral vessels allow guests to engage across the table while basking in gentle perfume and the warmth of candlelight."
+      ctaText="Discuss Your Tablescape →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="Our guests are still speaking about the floral installations months after our wedding. The scent in the chapel when the doors opened was an unforgettable dream."
+    attribution="Victoria & James"
+    role="Hedsor House Wedding"
+    publication="British Vogue Feature"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£3,500"
+    service="Bespoke Wedding Commissions"
+    title="Seasonal Wedding Allocations"
+    note="To guarantee that both studio founders are on-site for site visits, mockups, and live installation, we commit to an exclusive, limited number of weddings per calendar year."
+    inclusions={[
+      "Initial concept moodboard & private botanical tasting",
+      "Full on-site architectural reconnaissance & technical survey",
+      "Sustainably harvested British & rare European stem selection",
+      "Full morning installation, ceremony transition & midnight teardown"
+    ]}
+    ctaText="Reserve Your Date →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Wedding Diary"
+    title="Let Us Frame Your Celebration"
+    subtitle="Dates for the upcoming season are currently open. We recommend contacting our studio 6 to 12 months in advance of your celebration."
+    ctaText="Inquire About Your Date →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

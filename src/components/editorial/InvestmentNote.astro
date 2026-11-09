@@ -1,0 +1,100 @@
+---
+// src/components/editorial/InvestmentNote.astro
+interface Props {
+  startingFrom: string; // e.g. "£3,500" or "£2,500" or "£1,500"
+  service?: string; // e.g. "Bespoke Weddings & Estates"
+  eyebrow?: string;
+  title?: string;
+  note?: string;
+  inclusions?: string[];
+  ctaText?: string;
+  ctaHref?: string;
+  class?: string;
+}
+
+const {
+  startingFrom,
+  service = "Bespoke Commissions",
+  eyebrow = "Investment & Exclusivity",
+  title = "Studio Availability & Terms",
+  note = "To maintain our founder-led creative direction and meticulous attention to scale, SB Floristry accepts an exclusive, limited allocation of commissions per calendar season.",
+  inclusions = [
+    "Direct creative consultation with studio founders",
+    "Detailed floral master plan & spatial reconnaissance",
+    "Sustainably cultivated British & rare European stems",
+    "On-site installation, ceremony transition & discreet teardown"
+  ],
+  ctaText = "Discuss Your Commission →",
+  ctaHref = "/enquire/",
+  class: className = ''
+} = Astro.props;
+---
+
+<section class={`editorial-investment py-20 md:py-28 bg-[#0d0d0d] border-y border-white/10 ${className}`}>
+  <div class="max-w-5xl mx-auto px-6 lg:px-12">
+    
+    <div class="bg-obsidian border border-white/10 p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-2xl">
+      <!-- Ambient gold accent line on top border -->
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-80"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        
+        <!-- Left: Investment statement -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="reveal-on-scroll">
+            <span class="text-[11px] font-body uppercase tracking-[0.22em] text-gold font-medium">
+              {eyebrow}
+            </span>
+          </div>
+
+          <h3 class="reveal-on-scroll delay-100 font-display text-3xl sm:text-4xl font-light text-cream leading-tight">
+            {title}
+          </h3>
+
+          <p class="reveal-on-scroll delay-200 font-body text-sm text-stone leading-relaxed font-light">
+            {note}
+          </p>
+
+          {inclusions && inclusions.length > 0 && (
+            <ul class="reveal-on-scroll delay-300 space-y-2.5 pt-2">
+              {inclusions.map((item) => (
+                <li class="flex items-start text-xs font-body text-stone/90">
+                  <span class="text-gold mr-3 select-none">—</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <!-- Right: Pricing Box & CTA -->
+        <div class="lg:col-span-5 lg:border-l lg:border-white/10 lg:pl-10 space-y-6 text-center lg:text-left">
+          <div class="reveal-on-scroll">
+            <span class="text-[10px] font-body uppercase tracking-luxury text-stone block mb-1">
+              {service}
+            </span>
+            <div class="font-display text-4xl sm:text-5xl font-light text-cream">
+              From <span class="text-gold font-normal">{startingFrom}</span>
+            </div>
+            <p class="text-[11px] font-body text-stone/70 mt-1 italic">
+              Exclusive of bespoke architectural vessels & VAT
+            </p>
+          </div>
+
+          <div class="reveal-on-scroll delay-100 pt-2">
+            <a href={ctaHref} class="btn-solid-gold w-full text-center block">
+              {ctaText}
+            </a>
+          </div>
+
+          <div class="text-[10px] font-body uppercase tracking-luxury text-stone/60 text-center">
+            Private consultations by appointment only
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>

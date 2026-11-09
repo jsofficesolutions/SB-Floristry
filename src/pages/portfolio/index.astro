@@ -1,0 +1,55 @@
+---
+// src/pages/portfolio/index.astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EditorialHero from '../../components/editorial/EditorialHero.astro';
+import PortfolioGrid from '../../components/portfolio/PortfolioGrid.astro';
+import PullQuote from '../../components/editorial/PullQuote.astro';
+import EnquireCTA from '../../components/editorial/EnquireCTA.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('portfolio');
+const sortedProjects = projects.sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  title="Portfolio & Botanical Case Studies | SB Floristry"
+  description="Explore our curated portfolio of estate weddings, brand galas, memorial tributes, and architectural floral installations across London and Essex."
+  canonical="https://www.sbfloristry.co.uk/portfolio/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="The Archive"
+    title="Curated Botanical Works"
+    subtitle="A visual record of architectural installations, private estate celebrations, and sculptural botanical design."
+    image="/images/collection-weddings.jpg"
+    imageAlt="SB Floristry Curated Works"
+    caption="Private Estate Commission • Cotswolds • Summer"
+  />
+
+  <!-- Portfolio Grid with Interactive Filtering -->
+  <section class="py-20 md:py-32 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <PortfolioGrid
+        projects={sortedProjects}
+        showFilter={true}
+        columns={3}
+      />
+    </div>
+  </section>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="SB Floristry brought a rare architectural gravitas to our celebration. Every single stem felt intentional, organic, and breathtakingly luxurious."
+    attribution="Lady Spencer & Sir Julian"
+    role="Country Estate Wedding"
+    publication="Featured in British Vogue"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Commission a Project"
+    title="Create Something Unforgettable"
+    subtitle="Whether envisioning a private estate wedding, an intimate brand gala, or a bespoke floral installation, our founders would be delighted to speak with you."
+  />
+</BaseLayout>

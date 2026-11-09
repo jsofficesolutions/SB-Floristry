@@ -1,0 +1,165 @@
+---
+// src/pages/events.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const eventTypes = [
+  {
+    title: "Brand Launches & Maison Showcases",
+    starting: "From £3,500",
+    description: "Architectural floral environments for luxury brand debuts, press showcases, and VIP client evenings tailored strictly to brand aesthetic guidelines.",
+    image: "/images/gallery-2.jpg"
+  },
+  {
+    title: "Private Dinners & Intimate Feasts",
+    starting: "From £2,500",
+    description: "Low-profile, fragrant tablescapes in artisan stoneware and crystal, designed to elevate private dining salons without impeding guest sightlines.",
+    image: "/images/gallery-1.jpg"
+  },
+  {
+    title: "Annual Galas & Ballroom Installations",
+    starting: "From £5,000",
+    description: "Comprehensive floral staging across grand venues, including suspended floral chandeliers, sweeping staircase runners, and illuminated stage monoliths.",
+    image: "/images/gallery-5.jpg"
+  }
+];
+---
+
+<BaseLayout
+  title="Luxury Corporate Events & Gala Floristry London | SB Floristry"
+  description="Atmospheric botanical installations, private dining tablescapes, and high-impact floral architecture for galas and brand activations across London."
+  canonical="https://www.sbfloristry.co.uk/events/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Private & Brand Occasions"
+    title="Botanical Art for Exceptional Evenings"
+    subtitle="Sculptural dining tablescapes, towering foyer statements, and immersive sensory environments for discerning hosts and heritage houses."
+    image="/images/gallery-2.jpg"
+    imageAlt="Mayfair Luxury Gala Floral Tablescape"
+    caption="Private Members Club • Mayfair W1 • SB Floristry"
+    primaryCtaText="Commission an Event →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="View Portfolio"
+    secondaryCtaHref="/portfolio/"
+  />
+
+  <PressStrip />
+
+  <!-- The Offerings Overview -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="Event Formats"
+        title="Curated Event Formats"
+        subtitle="We partner directly with event producers, creative agencies, and private hosts to deliver flawlessly executed botanical design."
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {eventTypes.map((item, i) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl" style={`transition-delay: ${i * 120}ms`}>
+            <div>
+              <div class="reveal-clip aspect-[16/11] overflow-hidden bg-[#161616] mb-6 border border-white/10">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div class="text-xs font-body uppercase tracking-[0.2em] text-gold mb-2 font-medium">
+                {item.starting}
+              </div>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+            <div class="pt-6">
+              <a href="/enquire/" class="inline-flex items-center text-xs uppercase tracking-[0.18em] text-gold hover:text-champagne transition-colors group-hover:translate-x-1 duration-200">
+                Discuss Event →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/gallery-1.jpg"
+      imageAlt="Conversational Dining Tablescapes"
+      caption="Private Salon Dinner • London • SB Floristry"
+      chapterNumber="II"
+      eyebrow="Dining Architecture"
+      title="The Art of the Conversational Tablescape"
+      lead="Florals should enchant your guests without ever obstructing the view across the table."
+      text="Our tablescape philosophy centers on organic flow and gentle verticality. Low-profile vessels, hand-dipped beeswax candles, and botanical textures ensure the atmosphere remains intimate, elegant, and effortless throughout dinner."
+      ctaText="View Tablescape Gallery →"
+      ctaHref="/portfolio/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-5.jpg"
+      imageAlt="High-Impact Foyer Statement"
+      caption="Grand Entrance Installation • Central London"
+      chapterNumber="III"
+      eyebrow="Sensory Impact"
+      title="Unforgettable Arrival Statements"
+      lead="Commanding botanical compositions designed to set the tone the moment your guests arrive."
+      text="We craft grand arrival moments—from monumental stone urns that frame colonnades to fragrant floral tunnels that immerse your attendees in the world of your event."
+      ctaText="Plan Your Entrance →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="SB Floristry understands the language of high-end events. They executed our gala installation with supreme professionalism and stunning artistic vision."
+    attribution="Julian Vance"
+    role="Director of Events, Heritage Maison"
+    publication="Mayfair Gala Review"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£2,500"
+    service="Private Dinners & Brand Galas"
+    title="Event Logistics & White-Glove Staging"
+    note="Our studio provides complete end-to-end event floristry: site visits, custom technical rigging, midnight strike, and environmentally responsible floral repurposing."
+    inclusions={[
+      "Initial concept pitch & botanical moodboard presentation",
+      "Venue coordination, load-in permits & risk assessments",
+      "Full setup, evening candle lighting & on-site transition",
+      "Complete post-event teardown within strict venue time windows"
+    ]}
+    ctaText="Reserve Event Date →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Event Bookings"
+    title="Bring Your Vision to Life"
+    subtitle="Let us know your event date, expected guest count, and chosen venue. We respond personally within 48 hours."
+    ctaText="Commission an Event →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

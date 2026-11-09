@@ -1,0 +1,165 @@
+---
+// src/pages/hospitality.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const contracts = [
+  {
+    title: "Weekly Foyer & Reception Statements",
+    starting: "From £250 / week",
+    description: "Weekly pre-dawn rotation of dramatic botanical centerpiece arrangements for hotel lobbys, private members clubs, and luxury clinics.",
+    image: "/images/hero.jpg"
+  },
+  {
+    title: "Spa & Wellness Botanical Curation",
+    starting: "From £175 / week",
+    description: "Calming botanical installations using living branches, scented eucalyptus, and minimalist white blooms designed for high-humidity tranquil environments.",
+    image: "/images/gallery-3.jpg"
+  },
+  {
+    title: "Seasonal Facades & Spatial Takeovers",
+    starting: "From £1,500 / quarter",
+    description: "Four seasonal transformations per year for exterior archways, colonnades, and dining verandas that capture public imagination and social press.",
+    image: "/images/product-pure-elegance.jpg"
+  }
+];
+---
+
+<BaseLayout
+  title="Luxury Hospitality & Hotel Floristry London | SB Floristry"
+  description="Weekly botanical curation, luxury hotel foyer installations, and spa floral styling for fine hospitality across London and Essex."
+  canonical="https://www.sbfloristry.co.uk/hospitality/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Hospitality & Residencies"
+    title="Botanical Identity for Discerning Venues"
+    subtitle="Weekly floral rotation, atmospheric foyer monoliths, and bespoke spa botanicals for five-star hotels, luxury residences, and private clubs."
+    image="/images/hero.jpg"
+    imageAlt="Luxury Hotel Foyer Floral Statement"
+    caption="Mayfair Hotel Residency • Weekly Botanical Series"
+    primaryCtaText="Discuss a Residency →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="View Portfolio"
+    secondaryCtaHref="/portfolio/"
+  />
+
+  <PressStrip />
+
+  <!-- Services Overview -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="Residency Programs"
+        title="Weekly Botanical Excellence"
+        subtitle="We provide seamless, white-glove contract floristry, arriving before your first guest enters the lobby."
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {contracts.map((item, i) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl" style={`transition-delay: ${i * 120}ms`}>
+            <div>
+              <div class="reveal-clip aspect-[16/11] overflow-hidden bg-[#161616] mb-6 border border-white/10">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div class="text-xs font-body uppercase tracking-[0.2em] text-gold mb-2 font-medium">
+                {item.starting}
+              </div>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+            <div class="pt-6">
+              <a href="/enquire/" class="inline-flex items-center text-xs uppercase tracking-[0.18em] text-gold hover:text-champagne transition-colors group-hover:translate-x-1 duration-200">
+                Inquire Regarding Residency →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/gallery-2.jpg"
+      imageAlt="Hotel Lobby Floral Installation"
+      caption="Central London Luxury Hotel • Weekly Rotation"
+      chapterNumber="II"
+      eyebrow="Consistency & Elegance"
+      title="Flawless 7-Day Performance"
+      lead="Our botanical formulas ensure your lobby arrangements look as pristine on Sunday evening as on Monday morning."
+      text="Through precision conditioning, climate-adaptive stem choices, and midweek health checks, our studio ensures your premises maintain an immaculate, fragrant greeting for international guests throughout the week."
+      ctaText="Request Site Assessment →"
+      ctaHref="/enquire/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-3.jpg"
+      imageAlt="Spa and Wellness Botanicals"
+      caption="Private Spa Sanctuary • Holistic Floral Art"
+      chapterNumber="III"
+      eyebrow="Tranquility & Air Quality"
+      title="Mindful Botanicals for Spas & Retreats"
+      lead="Air-purifying foliage, gentle natural essences, and clean minimalist lines for restorative spaces."
+      text="We curate specialized plant and floral installations for luxury spas, using organic materials that thrive in gentle warmth while enhancing guest relaxation through subtle aromatherapy."
+      ctaText="Explore Wellness Packages →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="Our guests comment daily on the foyer flowers. SB Floristry has brought a distinct luxury identity to our hotel that feels effortless yet deeply curated."
+    attribution="General Manager"
+    role="Five-Star Mayfair Hotel"
+    publication="Hospitality Residency Review"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£250/week"
+    service="Hospitality & Residency Contracts"
+    title="Tailored Terms for Venues"
+    note="All hospitality agreements include bespoke artisan vessel hire, Monday pre-dawn installation, midweek maintenance check, and seasonal concept updates."
+    inclusions={[
+      "Artisan stone, brass & ceramic vessel collection provided",
+      "Pre-opening 6:00 AM weekly installation & silent removal",
+      "Emergency same-day floral refresh service for VIP visits",
+      "Flexible 3-month or 12-month seasonal agreements"
+    ]}
+    ctaText="Arrange an Atelier Consultation →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Hospitality Partnerships"
+    title="Elevate Your Guest Atmosphere"
+    subtitle="Let us audit your space and present a bespoke floral residency proposal tailored to your hotel, restaurant, or private members club."
+    ctaText="Request Residency Proposal →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

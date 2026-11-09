@@ -1,0 +1,113 @@
+---
+// src/pages/enquire/received.astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PortfolioGrid from '../../components/portfolio/PortfolioGrid.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('portfolio');
+const curatedProjects = allProjects
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+---
+
+<BaseLayout
+  title="Commission Received | SB Floristry"
+  description="Thank you for submitting your commission enquiry. The studio founders are reviewing your date, venue, and vision."
+  noindex={true}
+  canonical="https://www.sbfloristry.co.uk/enquire/received/"
+>
+  <!-- Confirmation Header -->
+  <section class="py-24 md:py-36 bg-obsidian text-cream border-b border-white/10 relative overflow-hidden">
+    <!-- Ambient gold background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gold/5 blur-[160px] rounded-full pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-6 lg:px-12 text-center relative z-10 space-y-6">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-gold/10 border border-gold/40 text-gold text-[10px] uppercase tracking-luxury font-medium">
+        <span>Commission Brief Received</span>
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-6xl md:text-7xl font-light text-cream leading-[1.08]">
+        We Have Received Your Vision
+      </h1>
+
+      <p class="font-display text-xl sm:text-2xl text-stone italic font-light max-w-2xl mx-auto leading-relaxed">
+        Thank you for inviting SB Floristry into your celebration. Every brief is reviewed personally by our studio founders.
+      </p>
+
+      <!-- 48-Hour Next Steps Timeline Card -->
+      <div class="bg-[#0e0e0e] border border-white/10 p-8 sm:p-12 text-left max-w-2xl mx-auto mt-12 space-y-8 shadow-2xl relative">
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-80"></div>
+
+        <h3 class="text-xs font-body uppercase tracking-[0.22em] text-gold font-medium">
+          What Happens Next
+        </h3>
+
+        <div class="space-y-6 text-xs sm:text-sm font-body text-stone leading-relaxed">
+          <div class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full border border-gold text-gold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">1</span>
+            <div>
+              <p class="text-cream font-medium">Studio Diary Check</p>
+              <p class="text-stone/80 text-xs mt-1">We immediately check our seasonal commitments for your chosen date and venue to ensure full founder availability.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full border border-gold text-gold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">2</span>
+            <div>
+              <p class="text-cream font-medium">Founder Dialogue (Within 48 Hours)</p>
+              <p class="text-stone/80 text-xs mt-1">We will contact you via your preferred window with initial botanical impressions, spatial scale recommendations, or to schedule a private video or telephone consultation.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <span class="w-6 h-6 rounded-full border border-gold text-gold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">3</span>
+            <div>
+              <p class="text-cream font-medium">Bespoke Proposal Presentation</p>
+              <p class="text-stone/80 text-xs mt-1">Following our discussion, we prepare a tailored moodboard, flower menu, and comprehensive proposal for your consideration.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-body">
+          <span class="text-stone">Immediate questions?</span>
+          <a href="tel:+441708956609" class="text-gold hover:text-champagne transition-colors font-medium">
+            Call Studio Desk: +44 (0) 1708 956609
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Curated Portfolio Carousel / Showcase -->
+  <section class="py-24 bg-noir text-cream border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="text-center mb-14 space-y-2">
+        <span class="text-[10px] font-body uppercase tracking-[0.25em] text-gold font-medium block">While You Wait</span>
+        <h2 class="font-display text-3xl sm:text-4xl font-light text-cream">Explore Recent Installations</h2>
+        <p class="text-xs sm:text-sm font-body text-stone font-light max-w-xl mx-auto">
+          Delve into our archive of estate celebrations, monolithic urns, and atmospheric dining tablescapes.
+        </p>
+      </div>
+
+      <PortfolioGrid
+        projects={curatedProjects}
+        columns={3}
+      />
+
+      <div class="text-center mt-12">
+        <a href="/portfolio/" class="btn-outline-luxury">
+          View Complete Portfolio Archive →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Return Home Bar -->
+  <section class="py-12 bg-obsidian text-center">
+    <a href="/" class="text-xs font-body uppercase tracking-[0.2em] text-stone hover:text-gold transition-colors">
+      ← Return to SB Floristry Home
+    </a>
+  </section>
+</BaseLayout>
+

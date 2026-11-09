@@ -1,0 +1,75 @@
+---
+// src/components/portfolio/ProjectCard.astro
+import { Image } from 'astro:assets';
+
+interface Props {
+  title: string;
+  service: string;
+  venue: string;
+  season?: string;
+  slug: string;
+  hero: any;
+  aspectRatio?: string;
+  class?: string;
+}
+
+const {
+  title,
+  service,
+  venue,
+  season,
+  slug,
+  hero,
+  aspectRatio = 'aspect-[4/5]',
+  class: className = ''
+} = Astro.props;
+
+const isAsset = typeof hero === 'object' && hero !== null && 'src' in hero;
+---
+
+<article class={`project-card group relative flex flex-col ${className}`}>
+  <!-- Image Container with Reveal and Zoom -->
+  <a href={`/portfolio/${slug}/`} class="relative block overflow-hidden bg-[#121212] border border-white/10 shadow-lg" aria-label={`View case study: ${title}`}>
+    <div class={`${aspectRatio} w-full overflow-hidden`}>
+      {isAsset ? (
+        <Image
+          src={hero}
+          alt={title}
+          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <img
+          src={hero}
+          alt={title}
+          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+        />
+      )}
+    </div>
+    <!-- Hover overlay with View indicator -->
+    <div class="absolute inset-0 bg-obsidian/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+      <span class="btn-outline-luxury text-[10px] tracking-luxury py-2 px-5 bg-obsidian/80">
+        Explore Case Study →
+      </span>
+    </div>
+  </a>
+
+  <!-- Metadata & Title -->
+  <div class="pt-4 pb-2 space-y-1.5">
+    <div class="flex items-center justify-between text-[10px] font-body uppercase tracking-luxury text-stone">
+      <span class="text-gold font-medium">{service}</span>
+      {season && <span>{season}</span>}
+    </div>
+
+    <h3 class="font-display text-xl sm:text-2xl font-light text-cream group-hover:text-gold transition-colors duration-200">
+      <a href={`/portfolio/${slug}/`}>
+        {title}
+      </a>
+    </h3>
+
+    <p class="text-xs font-body text-stone/80 font-light truncate">
+      {venue}
+    </p>
+  </div>
+</article>

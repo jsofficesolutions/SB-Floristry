@@ -1,0 +1,128 @@
+---
+// src/components/editorial/ImageText.astro
+import { Image } from 'astro:assets';
+
+interface Props {
+  split?: '7-5' | '5-7';
+  image: any; // string or ImageMetadata
+  imageAlt?: string;
+  caption?: string; // e.g. "Hedsor House • Summer Gala • Photography by Atelier"
+  chapterNumber?: string;
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  text?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  reversed?: boolean; // If true, puts text on left, image on right
+  imageAspectRatio?: string; // e.g. 'aspect-[4/5]' or 'aspect-[16/11]'
+  class?: string;
+}
+
+const {
+  split = '7-5',
+  image,
+  imageAlt = "SB Floristry Botanical Architecture",
+  caption,
+  chapterNumber,
+  eyebrow,
+  title,
+  lead,
+  text,
+  ctaText,
+  ctaHref = "/enquire/",
+  reversed = false,
+  imageAspectRatio = 'aspect-[4/5]',
+  class: className = ''
+} = Astro.props;
+
+const isAsset = typeof image === 'object' && image !== null && 'src' in image;
+const imageCols = split === '7-5' ? 'lg:col-span-7' : 'lg:col-span-5';
+const textCols = split === '7-5' ? 'lg:col-span-5' : 'lg:col-span-7';
+---
+
+<section class={`editorial-image-text py-16 md:py-24 ${className}`}>
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      
+      <!-- Image Column -->
+      <div class={`${imageCols} ${reversed ? 'lg:order-2' : 'lg:order-1'}`}>
+        <div class="reveal-clip relative overflow-hidden bg-[#121212] border border-white/10 shadow-2xl group">
+          <div class={`${imageAspectRatio} w-full overflow-hidden`}>
+            {isAsset ? (
+              <Image
+                src={image}
+                alt={imageAlt}
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                loading="lazy"
+              />
+            ) : (
+              <img
+                src={image}
+                alt={imageAlt}
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                loading="lazy"
+              />
+            )}
+          </div>
+          <!-- Subtle corner vignette -->
+          <div class="absolute inset-0 bg-gradient-to-t from-obsidian/40 via-transparent to-transparent pointer-events-none"></div>
+        </div>
+
+        {caption && (
+          <div class="flex items-center justify-between text-[10px] font-body uppercase tracking-luxury text-stone mt-3 pl-1">
+            <span>{caption}</span>
+            <span class="text-gold/70">SB Floristry</span>
+          </div>
+        )}
+      </div>
+
+      <!-- Text Column -->
+      <div class={`${textCols} ${reversed ? 'lg:order-1' : 'lg:order-2'} space-y-6`}>
+        <!-- Chapter / Eyebrow Header -->
+        {(chapterNumber || eyebrow) && (
+          <div class="reveal-on-scroll flex items-center gap-3">
+            {chapterNumber && (
+              <span class="text-xs font-body font-medium uppercase tracking-[0.25em] text-gold">
+                Chapter {chapterNumber}
+              </span>
+            )}
+            {chapterNumber && eyebrow && <span class="text-stone/40 text-xs">•</span>}
+            {eyebrow && (
+              <span class="text-xs font-body uppercase tracking-[0.2em] text-stone">
+                {eyebrow}
+              </span>
+            )}
+          </div>
+        )}
+
+        <h3 class="reveal-on-scroll delay-100 font-display text-3xl sm:text-4xl md:text-5xl font-light text-cream leading-[1.15]">
+          {title}
+        </h3>
+
+        {lead && (
+          <p class="reveal-on-scroll delay-200 font-display text-xl sm:text-2xl text-stone italic font-light leading-relaxed">
+            {lead}
+          </p>
+        )}
+
+        {text && (
+          <p class="reveal-on-scroll delay-300 font-body text-sm sm:text-base text-stone/90 leading-relaxed font-light">
+            {text}
+          </p>
+        )}
+
+        <slot />
+
+        {ctaText && (
+          <div class="reveal-on-scroll delay-400 pt-4">
+            <a href={ctaHref} class="btn-outline-luxury">
+              {ctaText}
+            </a>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,300 @@
+---
+// src/pages/trade/funeral-directors.astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Chapter from '../../components/editorial/Chapter.astro';
+
+const tradeServices = [
+  {
+    name: "Double-Ended Casket Sprays",
+    tradeRate: "From £195",
+    retailGuide: "RRP £350+",
+    specs: "3ft, 4ft, 5ft, and 6ft. Fully biodegradable moss base, seasonal blooms, cascading foliage."
+  },
+  {
+    name: "Circular Wreaths & Posies",
+    tradeRate: "From £120",
+    retailGuide: "RRP £225+",
+    specs: "14\", 18\", and 22\" statement circlets. Organic English foliage with focal seasonal blooms."
+  },
+  {
+    name: "Letter & Name Tributes",
+    tradeRate: "£85 / letter",
+    retailGuide: "RRP £130 / letter",
+    specs: "Naturalistic moss backing, loose garden-gathered flower clusters, bespoke colourways."
+  },
+  {
+    name: "Heart & Pillow Cushions",
+    tradeRate: "From £140",
+    retailGuide: "RRP £250+",
+    specs: "Solid moss base, textured botanicals, hand-tied ribbon edging on request."
+  }
+];
+
+const coverage = [
+  "South Essex Crematorium (Upminster / Corbets Tey)",
+  "Bentley Crematorium & Cemetery (Brentwood)",
+  "Forest Park Crematorium (Hainault / Ilford)",
+  "City of London Cemetery & Crematorium (Manor Park)",
+  "Chelmsford Crematorium & Cemetery (Writtle)",
+  "Parish Churches & Private Chapels across RM, CM & IG postcodes"
+];
+---
+
+<BaseLayout
+  title="Trade Portal for Funeral Directors | SB Floristry"
+  description="Private trade pricing, priority dispatch, and direct chapel delivery for licensed funeral directors across Essex and East London."
+  noindex={true}
+  canonical="https://www.sbfloristry.co.uk/trade/funeral-directors/"
+>
+  <!-- Private Trade Header -->
+  <header class="py-16 md:py-24 bg-obsidian text-cream border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/30 text-gold text-[10px] uppercase tracking-luxury font-medium mb-6">
+        <span>Verified Trade Partners Only</span>
+        <span>•</span>
+        <span>Confidential Rates</span>
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl font-light text-cream mb-6">
+        Funeral Directors Trade Portal
+      </h1>
+
+      <p class="font-display text-xl sm:text-2xl text-stone italic font-light max-w-3xl leading-relaxed mb-8">
+        Reliable, artistic botanical tributes crafted without plastic or foam. Delivered directly to your chapel of rest or service location across Essex and London.
+      </p>
+
+      <div class="flex flex-wrap gap-4 text-xs font-body">
+        <a href="#dispatch-form" class="btn-solid-gold">
+          Place Trade Order / Apply for Account →
+        </a>
+        <a href="tel:+441708956609" class="btn-outline-luxury">
+          Priority Trade Desk: 01708 956609
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Trade Benefits Chapter -->
+  <section class="py-16 md:py-24 bg-noir text-cream">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="The Trade Partnership"
+        title="Why Funeral Directors Partner With SB Floristry"
+        subtitle="We treat your funeral home and your client families with the utmost punctuality, reverence, and discretion."
+        alignment="left"
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-stone font-body text-xs leading-relaxed">
+        <div class="bg-[#121212] p-6 border border-white/10 space-y-3">
+          <div class="text-gold font-display text-xl font-medium">100% Eco-Compliant</div>
+          <p>
+            All our trade tributes are engineered without floral foam or single-use plastics, complying fully with green burial sanctuaries, woodland grounds, and standard crematoriums.
+          </p>
+        </div>
+        <div class="bg-[#121212] p-6 border border-white/10 space-y-3">
+          <div class="text-gold font-display text-xl font-medium">Punctual Direct Delivery</div>
+          <p>
+            We deliver directly to your chapel of rest 2 hours prior to hearse departure, ensuring flowers are conditioned, fresh, and securely mounted.
+          </p>
+        </div>
+        <div class="bg-[#121212] p-6 border border-white/10 space-y-3">
+          <div class="text-gold font-display text-xl font-medium">30-Day Trade Billing</div>
+          <p>
+            Established funeral directors receive consolidated monthly invoicing with 30-day payment terms, simplifying reconciliation and client accounts.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Confidential Trade Rates Table -->
+  <section class="py-16 md:py-24 bg-obsidian text-cream border-t border-white/10">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="II"
+        eyebrow="Pricing Matrix"
+        title="Confidential Trade Rates"
+        subtitle="Exclusive wholesale margins structured to allow standard industry markup while guaranteeing master botanical quality."
+        alignment="left"
+      />
+
+      <div class="mt-12 overflow-x-auto">
+        <table class="w-full text-left text-xs font-body border-collapse border border-white/10">
+          <thead>
+            <tr class="bg-[#161616] text-gold uppercase tracking-[0.16em] border-b border-white/10">
+              <th class="p-4 font-medium">Tribute Classification</th>
+              <th class="p-4 font-medium">Trade Net Rate</th>
+              <th class="p-4 font-medium">Suggested RRP</th>
+              <th class="p-4 font-medium hidden sm:table-cell">Specifications</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {tradeServices.map((row) => (
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="p-4 text-cream font-medium text-sm font-display">{row.name}</td>
+                <td class="p-4 text-gold font-semibold">{row.tradeRate}</td>
+                <td class="p-4 text-stone">{row.retailGuide}</td>
+                <td class="p-4 text-stone/80 hidden sm:table-cell">{row.specs}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-[11px] font-body text-stone/70 mt-4 italic">
+        * Custom bespoke requests (unusual colour matching, sports emblems, or rare heritage flower varieties) quoted individually via priority telephone.
+      </p>
+    </div>
+  </section>
+
+  <!-- Crematorium & Delivery Coverage -->
+  <section class="py-16 bg-[#0c0c0c] border-t border-white/10 text-cream">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12">
+      <span class="text-[10px] font-body uppercase tracking-[0.25em] text-gold font-medium block mb-2">
+        Logistical Reach
+      </span>
+      <h3 class="font-display text-2xl sm:text-3xl font-light text-cream mb-6">
+        Daily Delivery Coverage
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-body text-stone">
+        {coverage.map((item) => (
+          <div class="flex items-center gap-2">
+            <span class="text-gold">•</span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Trade Order & Registration Form -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream border-t border-white/10" id="dispatch-form">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <span class="text-[10px] font-body uppercase tracking-[0.25em] text-gold font-medium block mb-2">
+          Direct Dispatch
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl font-light text-cream">
+          Place a Trade Order / Open Account
+        </h2>
+        <p class="text-xs font-body text-stone mt-2">
+          Submit your order details below or phone our priority trade desk directly on 01708 956609.
+        </p>
+      </div>
+
+      <form class="space-y-6 bg-[#0e0e0e] p-8 sm:p-12 border border-white/10 shadow-2xl" id="trade-order-form">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Funeral Home / Business Name *
+            </label>
+            <input
+              type="text"
+              name="businessName"
+              required
+              placeholder="e.g. West & Coe Funeral Directors"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Contact Arranger Name *
+            </label>
+            <input
+              type="text"
+              name="contactName"
+              required
+              placeholder="e.g. David West"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Telephone / Direct Mobile *
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              required
+              placeholder="01708 000 000"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Business Email *
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="arrangers@funeralhome.co.uk"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Deceased Name / Case Reference
+            </label>
+            <input
+              type="text"
+              name="caseReference"
+              placeholder="e.g. Late Arthur Pendelton"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+              Service / Delivery Date
+            </label>
+            <input
+              type="date"
+              name="serviceDate"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-body uppercase tracking-[0.16em] text-stone mb-2">
+            Tribute Requirements & Notes
+          </label>
+          <textarea
+            name="notes"
+            rows="4"
+            placeholder="Specify tribute type, required length, color palette, delivery chapel address, and departure time..."
+            class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-xs font-body text-cream focus:border-gold focus:outline-none"
+          ></textarea>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <button type="submit" class="btn-solid-gold w-full sm:w-auto px-8 py-3.5">
+            Submit Trade Dispatch
+          </button>
+          <span class="text-[11px] font-body text-stone">
+            Confirmation phoned or emailed within 2 hours
+          </span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <script is:inline>
+    const form = document.getElementById('trade-order-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Thank you. Your trade dispatch request has been sent directly to the studio directors. We will contact your office immediately to confirm.');
+        form.reset();
+      });
+    }
+  </script>
+</BaseLayout>

@@ -1,0 +1,98 @@
+---
+// src/components/portfolio/PortfolioGrid.astro
+import ProjectCard from './ProjectCard.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  projects: CollectionEntry<'portfolio'>[];
+  columns?: 2 | 3;
+  limit?: number;
+  showFilter?: boolean;
+  class?: string;
+}
+
+const {
+  projects,
+  columns = 3,
+  limit,
+  showFilter = false,
+  class: className = ''
+} = Astro.props;
+
+const displayProjects = limit ? projects.slice(0, limit) : projects;
+const services = ['All', 'Weddings', 'Events', 'Stem Bar', 'Hospitality', 'Sympathy', 'Commissions'];
+const colClass = columns === 2 ? 'grid-cols-1 md:grid-cols-2 gap-10 md:gap-14' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12';
+---
+
+<div class={`portfolio-grid-wrapper ${className}`}>
+  {showFilter && (
+    <div class="reveal-on-scroll flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-12 sm:mb-16 border-b border-white/10 pb-6 text-xs font-body tracking-[0.18em] uppercase">
+      {services.map((svc) => (
+        <button
+          type="button"
+          class={`portfolio-filter-btn px-3 py-1.5 transition-colors duration-200 cursor-pointer ${svc === 'All' ? 'text-gold border-b border-gold font-medium' : 'text-stone hover:text-cream'}`}
+          data-filter={svc}
+        >
+          {svc}
+        </button>
+      ))}
+    </div>
+  )}
+
+  <div class={`grid ${colClass}`} id="portfolio-items-grid">
+    {displayProjects.map((p, idx) => (
+      <div 
+        class={`reveal-on-scroll portfolio-item`}
+        style={`transition-delay: ${(idx % 3) * 120}ms`}
+        data-service={p.data.service}
+      >
+        <ProjectCard
+          title={p.data.title}
+          service={p.data.service}
+          venue={p.data.venue}
+          season={p.data.season}
+          slug={p.slug}
+          hero={p.data.hero}
+          aspectRatio={idx % 4 === 1 ? 'aspect-[3/4]' : 'aspect-[4/5]'}
+        />
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  function setupPortfolioFilter() {
+    const buttons = document.querySelectorAll('.portfolio-filter-btn');
+    const items = document.querySelectorAll('.portfolio-item');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+        
+        // Update active button state
+        buttons.forEach(b => {
+          b.classList.remove('text-gold', 'border-b', 'border-gold', 'font-medium');
+          b.classList.add('text-stone');
+        });
+        btn.classList.add('text-gold', 'border-b', 'border-gold', 'font-medium');
+        btn.classList.remove('text-stone');
+
+        // Filter items
+        items.forEach((item) => {
+          const service = item.getAttribute('data-service');
+          if (filter === 'All' || service === filter) {
+            (item as HTMLElement).style.display = '';
+            setTimeout(() => {
+              item.classList.add('active');
+            }, 50);
+          } else {
+            (item as HTMLElement).style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', setupPortfolioFilter);
+  document.addEventListener('astro:page-load', setupPortfolioFilter);
+</script>

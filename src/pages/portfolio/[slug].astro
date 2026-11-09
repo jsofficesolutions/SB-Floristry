@@ -1,0 +1,194 @@
+---
+// src/pages/portfolio/[slug].astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EnquireCTA from '../../components/editorial/EnquireCTA.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('portfolio');
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project }
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'portfolio'>;
+}
+
+const { project } = Astro.props;
+const { Content } = await project.render();
+const { title, service, venue, location, season, photographer, hero, gallery, excerpt } = project.data;
+
+// Get adjacent projects for navigation
+const allProjects = await getCollection('portfolio');
+const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
+const currentIndex = sorted.findIndex(p => p.slug === project.slug);
+const prevProject = currentIndex > 0 ? sorted[currentIndex - 1] : sorted[sorted.length - 1];
+const nextProject = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : sorted[0];
+---
+
+<BaseLayout
+  title={`${title} | SB Floristry Portfolio`}
+  description={excerpt}
+  image={hero}
+  canonical={`https://www.sbfloristry.co.uk/portfolio/${project.slug}/`}
+>
+  <!-- Case Study Hero Header -->
+  <header class="relative pt-24 pb-16 md:pt-32 md:pb-24 bg-obsidian text-cream border-b border-white/10">
+    <div class="max-w-6xl mx-auto px-6 lg:px-12">
+      <!-- Breadcrumb & Tag -->
+      <div class="flex items-center gap-3 text-xs font-body uppercase tracking-[0.22em] text-stone mb-6">
+        <a href="/portfolio/" class="hover:text-gold transition-colors">Portfolio</a>
+        <span class="text-stone/40">/</span>
+        <span class="text-gold font-medium">{service}</span>
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-6xl md:text-7xl font-light text-cream leading-[1.08] mb-8">
+        {title}
+      </h1>
+
+      <p class="font-display text-xl sm:text-2xl text-stone italic font-light max-w-3xl leading-relaxed mb-12">
+        {excerpt}
+      </p>
+
+      <!-- Project Metadata Strip -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-white/10 text-xs font-body">
+        <div>
+          <span class="text-[10px] uppercase tracking-luxury text-stone/70 block mb-1">Venue</span>
+          <p class="text-cream font-medium">{venue}</p>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-luxury text-stone/70 block mb-1">Location</span>
+          <p class="text-cream font-medium">{location}</p>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-luxury text-stone/70 block mb-1">Season</span>
+          <p class="text-cream font-medium">{season}</p>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-luxury text-stone/70 block mb-1">Photography</span>
+          <p class="text-cream font-medium">{photographer}</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full-Width Featured Hero Image -->
+  <section class="bg-obsidian border-b border-white/10 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 py-12 md:py-16">
+      <div class="reveal-clip relative aspect-[16/10] bg-[#121212] overflow-hidden border border-white/10 shadow-2xl">
+        <img
+          src={hero}
+          alt={title}
+          class="w-full h-full object-cover"
+          loading="eager"
+        />
+      </div>
+      <div class="flex justify-between items-center text-[10px] font-body uppercase tracking-luxury text-stone mt-3 pl-1">
+        <span>{venue} • {season}</span>
+        <span class="text-gold/80">{photographer}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Content -->
+  <section class="py-16 md:py-24 bg-noir text-cream">
+    <div class="max-w-3xl mx-auto px-6 prose prose-invert prose-stone">
+      <div class="case-study-content font-body text-base text-stone/90 leading-relaxed space-y-6">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Gallery Grid -->
+  {gallery && gallery.length > 0 && (
+    <section class="py-16 md:py-24 bg-obsidian border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="mb-10 text-center">
+          <span class="text-[10px] font-body uppercase tracking-[0.25em] text-gold font-medium block mb-2">Visual Diary</span>
+          <h2 class="font-display text-3xl md:text-4xl font-light text-cream">Installation Gallery</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {gallery.map((imgUrl, i) => (
+            <div class="reveal-clip relative aspect-[4/5] bg-[#121212] overflow-hidden border border-white/10 group shadow-lg" style={`transition-delay: ${i * 100}ms`}>
+              <img
+                src={imgUrl}
+                alt={`${title} detail ${i + 1}`}
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Next / Prev Case Study Pagination -->
+  <section class="py-12 bg-[#090909] border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 flex justify-between items-center text-xs font-body uppercase tracking-[0.18em]">
+      {prevProject && (
+        <a href={`/portfolio/${prevProject.slug}/`} class="group flex items-center gap-3 text-stone hover:text-gold transition-colors">
+          <span class="text-gold">←</span>
+          <span class="hidden sm:inline">Previous:</span>
+          <span class="text-cream group-hover:text-gold font-medium">{prevProject.data.title}</span>
+        </a>
+      )}
+      {nextProject && (
+        <a href={`/portfolio/${nextProject.slug}/`} class="group flex items-center gap-3 text-stone hover:text-gold transition-colors ml-auto">
+          <span class="hidden sm:inline">Next:</span>
+          <span class="text-cream group-hover:text-gold font-medium">{nextProject.data.title}</span>
+          <span class="text-gold">→</span>
+        </a>
+      )}
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <EnquireCTA
+    eyebrow="Commission a Project"
+    title="Envision Your Own Installation"
+    subtitle={`Inspired by our work for ${venue}? Discuss your event date and architectural floral vision directly with our founders.`}
+  />
+</BaseLayout>
+
+<style>
+  /* Custom typography enhancements for markdown case study content */
+  .case-study-content :global(h2) {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    font-weight: 300;
+    color: #FAF8F5;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.5rem;
+  }
+  .case-study-content :global(p) {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: #9E988F;
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    font-weight: 300;
+  }
+  .case-study-content :global(ul) {
+    margin-top: 1rem;
+    margin-bottom: 1.75rem;
+    padding-left: 1.25rem;
+  }
+  .case-study-content :global(li) {
+    font-family: var(--font-body);
+    color: #9E988F;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+  .case-study-content :global(strong) {
+    color: #FAF8F5;
+    font-weight: 500;
+  }
+</style>

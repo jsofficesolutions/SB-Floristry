@@ -1,0 +1,106 @@
+---
+// src/components/layout/SiteFooter.astro
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-dark-card text-cream border-t border-white/10 pt-20 pb-12 mt-auto">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 pb-16 border-b border-white/10">
+      
+      <!-- Brand & Practice Statement (Cols 1-5) -->
+      <div class="lg:col-span-5 space-y-6">
+        <a href="/" class="inline-block" aria-label="SB Floristry Home">
+          <img src="/brand/crest.png" alt="SB Floristry" class="h-14 w-auto object-contain" width="56" height="56" />
+        </a>
+        <p class="font-display text-xl text-stone max-w-md italic font-normal leading-relaxed">
+          Architectural floral installations, quiet luxury weddings, and bespoke editorial botanical commissions.
+        </p>
+        <div class="text-xs font-body tracking-caption uppercase text-stone space-y-1">
+          <p class="text-gold font-medium">Studio By Appointment Only</p>
+          <p>Essex & London · UK & Destination</p>
+        </div>
+      </div>
+
+      <!-- Navigation Columns (Cols 6-8) -->
+      <div class="lg:col-span-3 space-y-4">
+        <h3 class="text-xs font-body uppercase tracking-[0.2em] text-gold font-medium">Practice</h3>
+        <ul class="space-y-3 text-xs font-body text-stone">
+          <li><a href="/weddings/" class="hover:text-gold transition-colors">Weddings & Private Estates</a></li>
+          <li><a href="/events/" class="hover:text-gold transition-colors">Events & Galas</a></li>
+          <li><a href="/stem-bar/" class="hover:text-gold transition-colors">Stem Bar Activations</a></li>
+          <li><a href="/hospitality/" class="hover:text-gold transition-colors">Hospitality & Residences</a></li>
+          <li><a href="/sympathy/" class="hover:text-gold transition-colors">Sympathy & Tributes</a></li>
+          <li><a href="/portfolio/" class="hover:text-gold transition-colors">Portfolio</a></li>
+          <li><a href="/studio/" class="hover:text-gold transition-colors">The Studio</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter / Private Client List (Cols 9-12) -->
+      <div class="lg:col-span-4 space-y-4">
+        <h3 class="text-xs font-body uppercase tracking-[0.2em] text-gold font-medium">Private Client List</h3>
+        <p class="text-xs font-body text-stone leading-relaxed">
+          Seasonal notes on floral availability, studio diary openings, and private showcase invitations.
+        </p>
+        <form class="space-y-3 pt-2" id="client-list-form">
+          <div class="flex border-b border-white/20 pb-2 focus-within:border-gold transition-colors">
+            <input
+              type="email"
+              placeholder="Email address"
+              aria-label="Email address for private client list"
+              required
+              class="w-full bg-transparent text-xs font-body text-cream placeholder:text-stone/60 focus:outline-none"
+            />
+            <button
+              type="submit"
+              class="text-xs font-body uppercase tracking-caption text-gold hover:text-champagne transition-colors ml-4 whitespace-nowrap"
+            >
+              Join →
+            </button>
+          </div>
+        </form>
+
+        <div class="pt-4 flex items-center space-x-6 text-xs text-stone font-body">
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-gold transition-colors"
+          >
+            Instagram
+          </a>
+          <a
+            href="mailto:studio@sbfloristry.co.uk"
+            class="hover:text-gold transition-colors"
+          >
+            studio@sbfloristry.co.uk
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legal & Colophon -->
+    <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-[11px] font-body text-stone tracking-wide">
+      <p>&copy; {year} SB Floristry Studio Ltd. All rights reserved.</p>
+      <div class="flex space-x-6 mt-4 md:mt-0">
+        <a href="/enquire/" class="hover:text-gold transition-colors">Enquiries</a>
+        <a href="tel:+441708956609" class="hover:text-gold transition-colors">+44 (0) 1708 956609</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setupClientList() {
+    const form = document.getElementById('client-list-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Thank you. You have been added to the studio client list.');
+        (form as HTMLFormElement).reset();
+      });
+    }
+  }
+  document.addEventListener('DOMContentLoaded', setupClientList);
+  document.addEventListener('astro:page-load', setupClientList);
+</script>

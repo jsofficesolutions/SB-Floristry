@@ -1,0 +1,148 @@
+---
+// src/pages/studio.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const pillars = [
+  {
+    title: "Founder-Led Direction",
+    description: "Every commission—from initial concept to final blossom placement—is directed personally by our studio founders."
+  },
+  {
+    title: "Sustainable Foam-Free Craft",
+    description: "We work exclusively with biodegradable mechanics, living moss, and water tubes, rejecting toxic microplastic floral foams."
+  },
+  {
+    title: "English Heritage Growers",
+    description: "We champion British stem farmers, sourcing heirloom garden roses, fragrant sweet peas, and seasonal branches at peak bloom."
+  }
+];
+---
+
+<BaseLayout
+  title="The Studio | Luxury London & Essex Florist Ethos"
+  description="Learn about the mother-and-daughter founders behind SB Floristry. Architectural botanical installations, sustainable craft, and quiet luxury floristry."
+  canonical="https://www.sbfloristry.co.uk/studio/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="The Atelier Ethos"
+    title="Sculptural Floristry Born of Fine Art"
+    subtitle="Founded by mother and daughter, SB Floristry blends classical artistic discipline with an untamed love of English wild flora."
+    image="/images/story-arranging.jpg"
+    imageAlt="SB Floristry Studio Founders Arranging Flowers"
+    caption="SB Floristry Studio • Essex Atelier"
+    primaryCtaText="Begin a Commission →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="Explore Portfolio"
+    secondaryCtaHref="/portfolio/"
+  />
+
+  <PressStrip />
+
+  <!-- The Story Chapter -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="Our Heritage"
+        title="A Partnership of Craft and Vision"
+        subtitle="We founded SB Floristry with a clear ambition: to reject commercial, cookie-cutter flower arrangements in favour of spatial botanical architecture."
+      />
+
+      <!-- 3 Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {pillars.map((item) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl">
+            <div>
+              <div class="w-8 h-px bg-gold mb-6"></div>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/story-mother-daughter.jpg"
+      imageAlt="SB Floristry Mother and Daughter Founders"
+      caption="Founders at Work • Essex Atelier"
+      chapterNumber="II"
+      eyebrow="The Founders"
+      title="Two Generations of Botanical Passion"
+      lead="Combining decades of floral mastery with contemporary spatial and fine-art design."
+      text="Our partnership is founded on deep mutual intuition. One brings rigorous horticultural intuition and classical structural technique; the other brings contemporary fashion editorial sensibilities and architectural proportions. Together, we create floral worlds that feel simultaneously timeless and strikingly modern."
+      ctaText="Meet the Founders →"
+      ctaHref="/enquire/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-5.jpg"
+      imageAlt="Sustainable Workshop Environment"
+      caption="The Walled Garden Archive • Essex"
+      chapterNumber="III"
+      eyebrow="Environmental Stewardship"
+      title="Committed to Pure, Foam-Free Floristry"
+      lead="Luxury should never come at the expense of our living ecosystems."
+      text="Traditional floristry produces mountains of petroleum-derived green foam that pollutes water supplies. At SB Floristry, every single arch, urn, and tablescape is engineered with re-usable chicken wire, terracotta kenzan frogs, natural moss, and pure fresh water. When your celebration concludes, every blossom is naturally composted or repurposed."
+      ctaText="Learn About Our Practices →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="What sets SB Floristry apart is their absolute rejection of mass-market floral trends. Their work feels deeply personal, poetic, and utterly bespoke to the architecture of the space."
+    attribution="British Bride Magazine"
+    role="Feature Profile"
+    publication="London & Country Artisans"
+  />
+
+  <!-- Atelier Location & Visitation Notice -->
+  <section class="py-20 bg-obsidian border-b border-white/10 text-cream">
+    <div class="max-w-4xl mx-auto px-6 text-center space-y-6">
+      <span class="text-[11px] font-body uppercase tracking-[0.25em] text-gold font-medium block">
+        The Studio Atelier
+      </span>
+      <h2 class="font-display text-3xl sm:text-4xl font-light text-cream">
+        By Appointment in Essex & London
+      </h2>
+      <p class="font-body text-sm sm:text-base text-stone font-light leading-relaxed max-w-2xl mx-auto">
+        Our studio operates strictly by private appointment, allowing our full attention to be devoted to current client commissions. We welcome private consultations, site visits, and creative pitches.
+      </p>
+      <div class="pt-4 flex flex-wrap justify-center gap-6 text-xs font-body text-stone uppercase tracking-luxury">
+        <span>Romford & Brentwood Atelier</span>
+        <span>•</span>
+        <span>Serving London, Essex & Destinations</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Join Our Journey"
+    title="Begin a Conversation with Our Founders"
+    subtitle="We would be delighted to welcome you for a private consultation to discuss your wedding, gala, or bespoke residential commission."
+    ctaText="Schedule a Consultation →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

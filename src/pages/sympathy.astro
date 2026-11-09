@@ -1,0 +1,182 @@
+---
+// src/pages/sympathy.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const tributes = [
+  {
+    title: "Casket Sprays & Double-Ended Sprays",
+    starting: "From £350",
+    description: "Flowing, naturalistic compositions designed to rest upon the casket. Custom-scaled in 4ft, 5ft, or full-length dimensions, rich with scented British garden blooms, textured eucalyptus, and seasonal boughs.",
+    image: "/images/collection-sympathy.jpg"
+  },
+  {
+    title: "Statement Wreaths & Circlets",
+    starting: "From £225",
+    description: "Continuous circles of eternal remembrance. Woven upon living moss and hazel bases, layered with rare open garden roses, astrantia, and textured woodland foliage.",
+    image: "/images/gallery-6.jpg"
+  },
+  {
+    title: "Bespoke Name & Letter Tributes",
+    starting: "From £300",
+    description: "A contemporary editorial evolution of the traditional letter tribute. Naturalistic moss framing with loose, garden-gathered blooms in your loved one's favourite hues.",
+    image: "/images/gallery-4.jpg"
+  },
+  {
+    title: "Chapel & Memorial Sanctuary Urns",
+    starting: "From £1,000",
+    description: "Monumental stone urns and altar installations framing the memorial service, providing a sanctuary of organic beauty, gentle perfume, and profound solace.",
+    image: "/images/gallery-1.jpg"
+  }
+];
+---
+
+<BaseLayout
+  title="Sympathy & Farewell Tributes Essex & London | SB Floristry"
+  description="Bespoke funeral flowers, natural casket sprays, and architectural memorial tributes across Essex and London. Direct funeral director coordination."
+  canonical="https://www.sbfloristry.co.uk/sympathy/"
+>
+  <!-- Hero Section (Split Editorial) -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Memorial & Farewell Tributes"
+    title="Quiet Grace in Living Flora"
+    subtitle="Bespoke funeral tributes, natural casket sprays, and chapel installations crafted with discretion, deep reverence, and personal founder delivery."
+    image="/images/collection-sympathy.jpg"
+    imageAlt="Natural Sympathy Casket Spray"
+    caption="Private Chapel Tribute • Essex • SB Floristry"
+    primaryCtaText="Commission a Tribute →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="Direct Atelier Line"
+    secondaryCtaHref="tel:+441708956609"
+  />
+
+  <!-- Philosophy & Service Overview -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="The Farewell"
+        title="Tributes Tailored to a Life"
+        subtitle="We believe floral tributes should capture the true spirit of the person remembered—their favourite colours, their gardens, and their passions."
+      />
+
+      <!-- Tribute Options Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mt-16">
+        {tributes.map((item, i) => (
+          <div class="reveal-on-scroll bg-[#0d0d0d] border border-white/10 p-8 sm:p-10 flex flex-col justify-between group shadow-xl" style={`transition-delay: ${i * 120}ms`}>
+            <div>
+              <div class="reveal-clip aspect-[16/10] overflow-hidden bg-[#161616] mb-6 border border-white/10">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div class="flex items-center justify-between text-xs font-body uppercase tracking-[0.2em] text-gold mb-2">
+                <span>Bespoke Commission</span>
+                <span class="font-medium text-cream">{item.starting}</span>
+              </div>
+              <h3 class="font-display text-2xl sm:text-3xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light mb-6">
+                {item.description}
+              </p>
+            </div>
+            <div>
+              <a href="/enquire/" class="inline-flex items-center text-xs uppercase tracking-[0.18em] text-gold hover:text-champagne transition-colors group-hover:translate-x-1 duration-200">
+                Discuss This Tribute →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial ImageText: The Care & Liaison -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/gallery-6.jpg"
+      imageAlt="Direct Funeral Director Coordination"
+      caption="Direct Chapel Delivery • London & Essex"
+      chapterNumber="II"
+      eyebrow="Care & Logistics"
+      title="Seamless Funeral Director Liaison"
+      lead="We liaise directly with your chosen funeral home, crematorium, or church so your family is unburdened by logistics."
+      text="Once you share your wishes with us, our founders coordinate exact delivery schedules, vehicle transfers, and chapel placements directly with funeral directors across Romford, Brentwood, Hornchurch, Chelmsford, and Greater London."
+      ctaText="Order by Phone or Form →"
+      ctaHref="/enquire/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-4.jpg"
+      imageAlt="Sustainable Foam-Free Floristry"
+      caption="100% Biodegradable Mechanics • Woodland Compliant"
+      chapterNumber="III"
+      eyebrow="Eco-Conscious Craft"
+      title="Foam-Free & Environmentally Mindful"
+      lead="Crafted upon living moss, hazel branches, and natural twine—completely free of microplastic floral foam."
+      text="Our sustainable mechanics are accepted by all natural woodland burial sites, green cemeteries, and crematoriums. Every stem is compostable, returning gently to the earth without synthetic residue."
+      ctaText="Inquire About Green Burials →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="At the most difficult moment our family has faced, SB Floristry created an arrangement so profoundly sensitive and exquisite that it brought genuine peace to our hearts. The flowers smelled just like my mother's rose garden."
+    attribution="The Harrington Family"
+    role="South Weald Memorial Service"
+    publication="Private Client Tribute"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£225"
+    service="Bespoke Sympathy & Memorial Floral Art"
+    title="Turnaround Time & Seasonal Stems"
+    note="We prioritize sympathy commissions with immediate studio scheduling. Orders can typically be turned around within 3 to 5 business days, with urgent 48-hour delivery available upon direct telephone consultation."
+    inclusions={[
+      "Direct telephone consultation with studio founders",
+      "Personalised colour matching and botanical memory curation",
+      "Direct handover to funeral director or chapel before service",
+      "Custom handwritten memorial card with wax envelope seal"
+    ]}
+    ctaText="Consult With Founders →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Funeral Director Trade Notice -->
+  <section class="py-12 bg-obsidian border-b border-white/10 text-center">
+    <div class="max-w-4xl mx-auto px-6">
+      <p class="text-xs font-body uppercase tracking-[0.2em] text-stone">
+        Are you a licensed funeral director or celebrant?
+        <a href="/trade/funeral-directors/" class="text-gold underline underline-offset-4 hover:text-champagne ml-2">
+          Access the Private Trade Portal →
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Quiet Consultation"
+    title="We Are Here to Guide You"
+    subtitle="Speak directly with our founders. We will listen with patience, recommend gentle botanical harmonies, and ensure your loved one is honoured with dignity."
+    ctaText="Submit Tribute Enquiry →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

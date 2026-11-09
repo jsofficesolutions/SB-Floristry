@@ -22,8 +22,8 @@ export async function getStaticPaths() {
   const allTags = new Set();
   const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink'];
   
-  products.forEach((edge) => {
-    edge.node.tags.forEach((tag) => {
+  products.forEach((edge: any) => {
+    edge.node.tags.forEach((tag: string) => {
       const cleanTag = tag.trim().toLowerCase();
       if (!ignoredTags.includes(cleanTag)) {
         allTags.add(cleanTag.replace(/\s+/g, '-')); 
@@ -42,11 +42,12 @@ export async function getStaticPaths() {
   }));
 }
 
-const { tag } = Astro.params;
-const displayTitle = tag.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+const { tag } = Astro.params as { tag: string };
+const safeTag = tag || 'seasonal';
+const displayTitle = safeTag.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
 // Dark Theme logic
-const isDark = tag.includes('gothic') || tag.includes('dark') || tag.includes('halloween');
+const isDark = safeTag.includes('gothic') || safeTag.includes('dark') || safeTag.includes('halloween');
 
 // 1. Dynamic Content Mapper for SEO and Aesthetics
 // Expanded with richer, distinct descriptions for various potential collections
@@ -82,14 +83,14 @@ const collectionData = {
 };
 
 // Fallback for dynamically generated tags that aren't in the explicit list above
-const currentCollection = collectionData[tag.toLowerCase()] || { 
+const currentCollection = (collectionData as Record<string, { description: string; image: string }>)[safeTag.toLowerCase()] || { 
   description: `Discover the art of gifting with our exclusive ${displayTitle} collection. Hand-tied by our expert florists in Essex and delivered with uncompromising care.`, 
   image: "/images/gallery-3.jpg" 
 };
 
 const productsQuery = `
   {
-    products(first: 20, query: "tag:${tag.replace(/-/g, ' ')}") {
+    products(first: 20, query: "tag:${safeTag.replace(/-/g, ' ')}") {
       edges {
         node {
           id
@@ -182,7 +183,7 @@ const productCount = collectionProducts.length;
         </div>
       ) : (
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 min-h-[400px]">
-          {collectionProducts.map((edge) => {
+          {collectionProducts.map((edge: any) => {
             const price = edge.node.variants?.edges[0]?.node?.price?.amount || 0;
             const title = edge.node.title || '';
             return (

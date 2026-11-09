@@ -1,0 +1,151 @@
+---
+// src/pages/stem-bar.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const steps = [
+  {
+    step: "01",
+    title: "The Botanical Curation",
+    description: "Our florists stage a curated bar of vintage brass urns and stoneware vessels overflowing with fragrant seasonal British blooms, rare stems, and trailing foliage."
+  },
+  {
+    step: "02",
+    title: "Guided Sommelier Selection",
+    description: "Guests are greeted by our master florists, discovering stem varieties, botanical meanings, and scent notes as they hand-select their personal bouquet elements."
+  },
+  {
+    step: "03",
+    title: "The Atelier Finishing Touch",
+    description: "Each bouquet is spiral-tied by our florists, wrapped in heavy recycled paper, bound with plant-dyed raw silk ribbon, and sealed with a personalized hot wax emblem."
+  }
+];
+---
+
+<BaseLayout
+  title="The Botanical Stem Bar Experience | SB Floristry"
+  description="An interactive sommelier-style floral activation for weddings, brand parties, and VIP galas across London and Essex."
+  canonical="https://www.sbfloristry.co.uk/stem-bar/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Interactive Experience"
+    title="The Living Botanical Stem Bar"
+    subtitle="An immersive celebratory activation where guests create their own bespoke floral posies, bound in pure silk ribbons and hot wax seals."
+    image="/images/gallery-1.jpg"
+    imageAlt="Botanical Stem Bar Activation"
+    caption="Private Estate Wedding • Essex • SB Floristry"
+    primaryCtaText="Book a Stem Bar →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="Explore Gallery"
+    secondaryCtaHref="/portfolio/"
+  />
+
+  <PressStrip />
+
+  <!-- How It Works Chapter -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="The Experience"
+        title="An Artful Alternative to Favors"
+        subtitle="Forget throwaway favors. Offer your guests an enchanting sensory experience they will remember and carry home."
+      />
+
+      <!-- 3 Steps Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {steps.map((item) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl">
+            <div>
+              <span class="font-display text-4xl text-gold/60 font-light block mb-4">
+                {item.step}
+              </span>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+            <div class="w-12 h-px bg-gold/30 mt-6"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/gallery-3.jpg"
+      imageAlt="Hand-Tied Botanical Posy with Silk Ribbon"
+      caption="Hand-Crafted Guest Token • SB Floristry"
+      chapterNumber="II"
+      eyebrow="Tactile Luxury"
+      title="Rare Stems & Heirloom Finishes"
+      lead="Every detail is considered, from organic British roses to bespoke monogram wax seals."
+      text="We do not supply standard commercial blooms. Our stem bars showcase heritage garden roses, feathery cosmos, chocolate cosmos, and scented herbs that evoke an untamed English walled garden."
+      ctaText="View Stem Bar Photos →"
+      ctaHref="/portfolio/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/collection-seasonal.jpg"
+      imageAlt="The Stem Bar Setup"
+      caption="Private Garden Celebration • Summer"
+      chapterNumber="III"
+      eyebrow="Tailored Occasions"
+      title="Perfect for Weddings, Galas & Brand Debuts"
+      lead="Seamlessly integrated into champagne receptions, garden parties, or brand VIP suites."
+      text="Our activation bar requires minimal venue footprint and zero power. We arrive, construct the botanical counter, host your guests with warmth, and discreetly clear away leaving nothing but fragrant smiles."
+      ctaText="Check Activation Availability →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="The Stem Bar was the absolute highlight of our wedding drinks reception! Guests were queuing up to chat with the florists, and walking back with their silk-tied bouquets was simply magical."
+    attribution="Charlotte & Harry"
+    role="Country Estate Wedding"
+    publication="Private Client Review"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£1,500"
+    service="The Living Stem Bar Activation"
+    title="Half-Day & Full-Day Packages"
+    note="Stem Bar activations include full artisan counter setup, two dedicated master florists, all floral materials for up to 100 guests, silk ribbon, wrap, and personalized wax stamps."
+    inclusions={[
+      "3-hour live hosting by two senior SB Floristry florists",
+      "Generous floral capacity for up to 100 bespoke guest bouquets",
+      "Hand-dyed botanical silk ribbons & custom wax seal stamping",
+      "Individual personalized botanical care tags for every guest"
+    ]}
+    ctaText="Reserve a Stem Bar →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Activation Bookings"
+    title="Delight Your Guests"
+    subtitle="Let us know your event date and venue. We will confirm availability and curate a seasonal flower menu for your activation."
+    ctaText="Inquire for Stem Bar →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

@@ -1,0 +1,58 @@
+---
+// src/components/editorial/PressStrip.astro
+interface PressItem {
+  name: string;
+  quote?: string;
+}
+
+interface Props {
+  label?: string;
+  items?: PressItem[];
+  class?: string;
+}
+
+const defaultItems: PressItem[] = [
+  { name: "British Vogue", quote: "Architectural grandeur & quiet floral luxury" },
+  { name: "Tatler", quote: "The private estate wedding choice" },
+  { name: "House & Garden", quote: "Sensorial botanical design" },
+  { name: "The Wedding Edition", quote: "Bespoke editorial masterclasses" },
+  { name: "World of Interiors", quote: "Uncompromising spatial harmony" }
+];
+
+const {
+  label = "Selected Press & Editorial Features",
+  items = defaultItems,
+  class: className = ''
+} = Astro.props;
+---
+
+<div class={`editorial-press-strip py-12 md:py-16 bg-obsidian border-b border-white/10 ${className}`}>
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    
+    <!-- Quiet Editorial Label -->
+    {label && (
+      <div class="reveal-on-scroll text-center mb-8">
+        <span class="text-[10px] md:text-[11px] font-body uppercase tracking-[0.25em] text-stone">
+          {label}
+        </span>
+      </div>
+    )}
+
+    <!-- Publication Titles Grid -->
+    <div class="reveal-on-scroll delay-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12 items-center justify-center text-center">
+      {items.map((item) => (
+        <div class="group py-2 transition-transform duration-300 hover:-translate-y-0.5">
+          <span class="font-display text-lg sm:text-xl tracking-[0.14em] uppercase text-stone/80 group-hover:text-gold transition-colors duration-300 font-normal">
+            {item.name}
+          </span>
+          {item.quote && (
+            <p class="text-[10px] font-body text-stone/50 italic mt-1 hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              "{item.quote}"
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+
+  </div>
+</div>

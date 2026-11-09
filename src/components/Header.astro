@@ -2,7 +2,7 @@
 import { shopifyFetch } from '../utils/shopify.js';
 import { features } from '../config/features';
 
-let dynamicTags = [];
+let dynamicTags: string[] = [];
 
 if (features.shop) {
   // 1. Fetch all unique tags from Shopify at build time
@@ -21,10 +21,10 @@ if (features.shop) {
     const response = await shopifyFetch({ query: tagsQuery });
     const products = response?.data?.products?.edges || [];
 
-    const allTags = new Set();
+    const allTags = new Set<string>();
     const ignoredTags = ['subscription', 'bespoke', 'add-on', 'upsell', 'white', 'red', 'pink', 'corporate', 'hotels', 'spas', 'wellness'];
-    products.forEach((edge) => {
-      edge.node.tags.forEach((tag) => {
+    products.forEach((edge: any) => {
+      edge.node.tags.forEach((tag: string) => {
         const cleanTag = tag.trim();
         if (!ignoredTags.includes(cleanTag.toLowerCase())) {
           allTags.add(cleanTag);

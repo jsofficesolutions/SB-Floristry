@@ -1,0 +1,125 @@
+---
+// src/components/layout/MobileNav.astro
+---
+<dialog
+  id="mobile-nav-dialog"
+  class="fixed inset-0 m-0 w-full h-full max-w-full max-h-full bg-obsidian text-cream p-0 backdrop:bg-black/80 z-[100] border-none overflow-hidden"
+  aria-label="Navigation Menu"
+>
+  <div class="flex flex-col h-full justify-between p-8 md:p-12">
+    <!-- Top bar inside overlay -->
+    <div class="flex items-center justify-between pb-6 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <img src="/brand/crest.png" alt="SB Floristry" class="h-10 w-auto object-contain" width="40" height="40" />
+        <span class="text-xs uppercase tracking-[0.2em] font-body text-cream">SB Floristry</span>
+      </div>
+      <button
+        id="close-mobile-nav"
+        type="button"
+        class="text-xs uppercase tracking-caption font-body text-stone hover:text-gold transition-colors p-2 -mr-2"
+        aria-label="Close menu"
+      >
+        Close [esc]
+      </button>
+    </div>
+
+    <!-- Navigation links -->
+    <nav class="flex flex-col space-y-4 my-auto py-8">
+      <div class="text-[11px] uppercase tracking-caption text-gold/70 mb-1">Services</div>
+      <a href="/weddings/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Weddings & Estates
+      </a>
+      <a href="/events/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Events & Galas
+      </a>
+      <a href="/stem-bar/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Stem Bar Experience
+      </a>
+      <a href="/hospitality/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Hospitality & Residencies
+      </a>
+      <a href="/sympathy/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Sympathy & Memorials
+      </a>
+      <a href="/commissions/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Private Commissions
+      </a>
+
+      <div class="h-px bg-white/10 my-3"></div>
+
+      <div class="text-[11px] uppercase tracking-caption text-gold/70 mb-1">Practice</div>
+      <a href="/portfolio/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        Portfolio
+      </a>
+      <a href="/studio/" class="mobile-nav-link text-2xl font-display text-cream hover:text-gold transition-colors">
+        The Studio
+      </a>
+      <a href="/enquire/" class="mobile-nav-link text-2xl font-display text-gold italic pt-2">
+        Commission an Enquiry →
+      </a>
+    </nav>
+
+    <!-- Bottom Studio Details -->
+    <div class="pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-4 text-xs text-stone font-body">
+      <div>
+        <p class="text-cream font-medium">By Appointment Only</p>
+        <p>London · Essex · Private Estates</p>
+      </div>
+      <div>
+        <a href="mailto:studio@sbfloristry.co.uk" class="block text-cream hover:text-gold transition-colors">
+          studio@sbfloristry.co.uk
+        </a>
+        <a href="tel:+441708956609" class="block hover:text-gold transition-colors">
+          +44 (0) 1708 956609
+        </a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  function setupMobileNav() {
+    const dialog = document.getElementById('mobile-nav-dialog') as HTMLDialogElement | null;
+    const openBtn = document.getElementById('open-mobile-nav');
+    const closeBtn = document.getElementById('close-mobile-nav');
+
+    if (!dialog || !openBtn) return;
+
+    const openModal = () => {
+      dialog.showModal();
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+      dialog.close();
+      document.body.style.overflow = '';
+    };
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+
+    // Close when clicking backdrop
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      const isInDialog = (
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width
+      );
+      if (!isInDialog) {
+        closeModal();
+      }
+    });
+
+    // Close when a link inside is clicked
+    dialog.querySelectorAll('.mobile-nav-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        closeModal();
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', setupMobileNav);
+  document.addEventListener('astro:page-load', setupMobileNav);
+</script>

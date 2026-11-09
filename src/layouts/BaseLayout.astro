@@ -1,0 +1,79 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import SiteHeader from '../components/layout/SiteHeader.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import SEO from '../components/seo/SEO.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+  schema?: Record<string, any>;
+}
+
+const {
+  title,
+  description,
+  image,
+  canonical,
+  noindex,
+  type,
+  schema
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-obsidian text-cream">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      canonical={canonical}
+      noindex={noindex}
+      type={type}
+      schema={schema}
+    />
+
+    <ViewTransitions />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  </head>
+  <body class="bg-obsidian font-body text-cream flex flex-col min-h-screen selection:bg-gold selection:text-obsidian antialiased">
+    <SiteHeader />
+
+    <main id="main-content" class="flex-grow">
+      <slot />
+    </main>
+
+    <SiteFooter />
+
+    <script is:inline>
+      document.addEventListener('astro:page-load', () => {
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target);
+              }
+            });
+          }, { rootMargin: '0px 0px -40px 0px', threshold: 0.08 });
+
+          document.querySelectorAll('.reveal, .reveal-on-scroll, .reveal-clip').forEach(el => observer.observe(el));
+        } else {
+          document.querySelectorAll('.reveal, .reveal-on-scroll, .reveal-clip').forEach(el => el.classList.add('active'));
+        }
+      });
+    </script>
+  </body>
+</html>

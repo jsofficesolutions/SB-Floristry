@@ -1,0 +1,67 @@
+---
+// src/pages/enquire/index.astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EditorialHero from '../../components/editorial/EditorialHero.astro';
+import EnquiryForm from '../../components/enquire/EnquiryForm.astro';
+import PullQuote from '../../components/editorial/PullQuote.astro';
+---
+
+<BaseLayout
+  title="Commission an Enquiry | SB Floristry Studio"
+  description="Begin a bespoke floral commission with SB Floristry. Discuss weddings, private galas, brand activations, and quiet memorial tributes across London, Essex, and private estates."
+  canonical="https://www.sbfloristry.co.uk/enquire/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Direct Studio Dialogue"
+    title="Begin a Floral Commission"
+    subtitle="Every installation begins with a private conversation. Share your celebratory date, architectural setting, or aesthetic vision."
+    image="/images/story-arranging.jpg"
+    imageAlt="SB Floristry Studio Founders in Consultation"
+    caption="The Founders • Essex Atelier • SB Floristry"
+  >
+    <div slot="intro" class="space-y-4 pt-2 text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+      <p>
+        To ensure our founders remain personally involved in every concept, mockup, and live installation, we commit to an exclusive, limited allocation of commissions per season.
+      </p>
+      <div class="flex items-center gap-6 pt-2 text-xs font-body uppercase tracking-[0.16em]">
+        <span class="text-gold font-medium">Studio Line:</span>
+        <a href="tel:+441708956609" class="text-cream hover:text-gold transition-colors font-medium">
+          +44 (0) 1708 956609
+        </a>
+      </div>
+    </div>
+  </EditorialHero>
+
+  <!-- Multi-Step Qualification Funnel Section -->
+  <section class="py-16 md:py-28 bg-obsidian text-cream border-b border-white/10" id="commission-form-section">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12">
+      <EnquiryForm />
+    </div>
+  </section>
+
+  <!-- Studio Ethos Pull Quote -->
+  <PullQuote
+    quote="We do not supply standard arrangements; we build living atmospheres. Our consultation process is designed to understand how you want your guests to feel."
+    attribution="The Studio Founders"
+    role="SB Floristry"
+    publication="Founder Consultation Manifesto"
+  />
+
+  <!-- Direct Consultation Notice -->
+  <section class="py-16 bg-[#0a0a0a] text-center text-xs font-body text-stone">
+    <div class="max-w-3xl mx-auto px-6 space-y-3">
+      <p class="uppercase tracking-luxury text-gold font-medium">
+        Private Consultations & Site Reconnaissance
+      </p>
+      <p class="leading-relaxed">
+        Our studio founders regularly conduct on-site spatial consultations across Mayfair, Belgravia, Chelsea, the Cotswolds, and private estates in Essex and Hertfordshire.
+      </p>
+      <p class="pt-2 text-stone/60">
+        Electronic enquiries: <a href="mailto:studio@sbfloristry.co.uk" class="text-gold underline hover:text-champagne">studio@sbfloristry.co.uk</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+

@@ -1,0 +1,102 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+  schema?: Record<string, any>;
+}
+
+const {
+  title,
+  description = "Bespoke floral design, luxury weddings, and architectural floral installations across London, Essex, and private estates.",
+  image = "/images/hero.jpg",
+  canonical,
+  noindex = false,
+  type = "website",
+  schema
+} = Astro.props;
+
+// Clean title format: clean single suffix, no duplicates
+const siteName = "SB Floristry";
+let fullTitle = siteName;
+if (title) {
+  if (title.includes(siteName)) {
+    fullTitle = title.trim();
+  } else {
+    fullTitle = `${title.trim()} | ${siteName}`;
+  }
+}
+
+// Ensure canonical URL has trailing slash
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : 'https://www.sbfloristry.co.uk';
+const pathname = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonicalURL = canonical || new URL(pathname, siteUrl).toString();
+const ogImageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).toString();
+
+// Default Studio ProfessionalService / Florist JSON-LD Schema
+const defaultSchema = {
+  "@context": "https://schema.org",
+  "@type": "Florist",
+  "name": "SB Floristry",
+  "image": ogImageUrl,
+  "@id": `${siteUrl}/#studio`,
+  "url": siteUrl,
+  "telephone": "+441708956609",
+  "email": "studio@sbfloristry.co.uk",
+  "priceRange": "£££",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "By Appointment",
+    "addressLocality": "Romford",
+    "addressRegion": "Essex",
+    "postalCode": "RM1",
+    "addressCountry": "GB"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 51.579,
+    "longitude": 0.184
+  },
+  "areaServed": [
+    { "@type": "AdministrativeArea", "name": "London" },
+    { "@type": "AdministrativeArea", "name": "Essex" },
+    { "@type": "Country", "name": "United Kingdom" }
+  ],
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "opens": "09:00",
+    "closes": "18:00"
+  }
+};
+
+const finalSchema = schema || defaultSchema;
+---
+
+<!-- Primary Meta Tags -->
+<title>{fullTitle}</title>
+<meta name="title" content={fullTitle} />
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:site_name" content={siteName} />
+
+<!-- Twitter Card -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={canonicalURL} />
+<meta property="twitter:title" content={fullTitle} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={ogImageUrl} />
+
+<!-- Structured Data -->
+<script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />

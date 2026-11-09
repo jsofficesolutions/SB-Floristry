@@ -1,0 +1,80 @@
+---
+// src/components/editorial/EnquireCTA.astro
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  showDirectContact?: boolean;
+  phone?: string;
+  email?: string;
+  class?: string;
+}
+
+const {
+  eyebrow = "Private Commissions",
+  title = "Begin Your Commission",
+  subtitle = "Every floral creation begins with a private dialogue. Share your celebration date, architectural venue, or atmospheric vision.",
+  ctaText = "Commission an Enquiry →",
+  ctaHref = "/enquire/",
+  showDirectContact = true,
+  phone = "+44 (0) 1708 956609",
+  email = "studio@sbfloristry.co.uk",
+  class: className = ''
+} = Astro.props;
+---
+
+<section class={`editorial-enquire-cta py-24 md:py-36 bg-obsidian text-cream relative overflow-hidden border-t border-white/10 ${className}`}>
+  <!-- Ambient Gold Light Effect -->
+  <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/5 blur-[160px] rounded-full pointer-events-none"></div>
+
+  <div class="max-w-4xl mx-auto px-6 lg:px-12 text-center relative z-10">
+    
+    {eyebrow && (
+      <div class="reveal-on-scroll">
+        <span class="inline-block text-[11px] font-body uppercase tracking-[0.28em] text-gold font-medium mb-6">
+          {eyebrow}
+        </span>
+      </div>
+    )}
+
+    <h2 class="reveal-on-scroll delay-100 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-cream mb-6 leading-[1.12]">
+      {title}
+    </h2>
+
+    {subtitle && (
+      <p class="reveal-on-scroll delay-200 font-display text-lg sm:text-xl md:text-2xl text-stone italic font-light max-w-2xl mx-auto leading-relaxed mb-10">
+        {subtitle}
+      </p>
+    )}
+
+    <div class="reveal-on-scroll delay-300 flex flex-col sm:flex-row items-center justify-center gap-5">
+      <a href={ctaHref} class="btn-solid-gold w-full sm:w-auto px-10 py-4 text-xs font-semibold tracking-[0.2em]">
+        {ctaText}
+      </a>
+      <a href="/portfolio/" class="btn-outline-luxury w-full sm:w-auto px-8 py-4 text-xs font-medium tracking-[0.18em]">
+        Explore Portfolio
+      </a>
+    </div>
+
+    {showDirectContact && (
+      <div class="reveal-on-scroll delay-400 mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-12 text-xs font-body text-stone">
+        <div>
+          <span class="text-stone/60 uppercase tracking-caption text-[10px] block mb-1">Direct Atelier</span>
+          <a href={`tel:${phone.replace(/\s+/g, '')}`} class="text-cream hover:text-gold transition-colors font-medium">
+            {phone}
+          </a>
+        </div>
+        <div class="hidden sm:block w-px h-6 bg-white/10"></div>
+        <div>
+          <span class="text-stone/60 uppercase tracking-caption text-[10px] block mb-1">Electronic Inquiries</span>
+          <a href={`mailto:${email}`} class="text-cream hover:text-gold transition-colors font-medium">
+            {email}
+          </a>
+        </div>
+      </div>
+    )}
+
+  </div>
+</section>

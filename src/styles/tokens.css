@@ -1,0 +1,66 @@
+:root {
+  /* ==========================================================================
+     SB FLORISTRY: LUXURY NOIR & GOLD DESIGN TOKENS
+     ========================================================================== */
+
+  /* Primary Noir & Obsidian Surfaces */
+  --color-obsidian: #080808;
+  --color-noir: #0D0D0D;
+  --color-dark-surface: #121212;
+  --color-dark-card: #161616;
+  --color-dark-card-hover: #1E1E1E;
+
+  /* Metallic & Imperial Gold Spectrum */
+  --color-gold: #D4AF37;
+  --color-gold-light: #F4E4BC;
+  --color-gold-champagne: #E5C378;
+  --color-gold-muted: #B89742;
+  --color-gold-deep: #8E7026;
+  --color-gold-border: rgba(212, 175, 55, 0.25);
+  --color-gold-border-hover: rgba(212, 175, 55, 0.6);
+
+  /* Typography Colors */
+  --color-cream: #FAF8F5;
+  --color-ivory: #F3EFE8;
+  --color-stone: #9E988F;
+  --color-stone-muted: #6B665F;
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-gold-subtle: rgba(212, 175, 55, 0.15);
+
+  /* Semantic Variables */
+  --surface-bg: var(--color-obsidian);
+  --surface-header: rgba(8, 8, 8, 0.95);
+  --surface-card: var(--color-dark-card);
+  --text-primary: var(--color-cream);
+  --text-secondary: var(--color-stone);
+  --text-accent: var(--color-gold);
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Fluid Spacing Scale (8px rhythm) */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-24: 6rem;    /* 96px */
+  --space-32: 8rem;    /* 128px */
+  --space-40: 10rem;   /* 160px */
+
+  /* Section Spacing */
+  --section-rhythm-sm: clamp(3.5rem, 6vw, 5rem);
+  --section-rhythm-md: clamp(5rem, 10vw, 8rem);
+  --section-rhythm-lg: clamp(7rem, 14vw, 12rem);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}

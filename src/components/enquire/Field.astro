@@ -1,0 +1,88 @@
+---
+// src/components/enquire/Field.astro
+interface Props {
+  label: string;
+  name: string;
+  type?: 'text' | 'email' | 'tel' | 'date' | 'number' | 'url' | 'textarea' | 'select';
+  required?: boolean;
+  placeholder?: string;
+  hint?: string;
+  value?: string;
+  min?: string;
+  max?: string;
+  rows?: number;
+  class?: string;
+  autocomplete?: string;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  required = false,
+  placeholder = '',
+  hint,
+  value = '',
+  min,
+  max,
+  rows = 4,
+  class: className = '',
+  autocomplete
+} = Astro.props;
+---
+
+<div class={`enquire-field-group space-y-2 ${className}`}>
+  <div class="flex items-baseline justify-between">
+    <label for={name} class="block text-[11px] font-body uppercase tracking-[0.2em] text-cream/90 font-medium">
+      {label}
+      {required && <span class="text-gold ml-1 select-none">*</span>}
+    </label>
+    {hint && (
+      <span class="text-[10px] font-body text-stone/80 italic">
+        {hint}
+      </span>
+    )}
+  </div>
+
+  {type === 'textarea' ? (
+    <textarea
+      id={name}
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      rows={rows}
+      autocomplete={autocomplete}
+      class="w-full bg-[#141414] border border-white/15 px-4 py-3.5 font-body text-sm text-cream placeholder:text-stone/50 placeholder:font-normal focus:border-gold focus:outline-none rounded-none transition-colors leading-relaxed selection:bg-gold selection:text-obsidian"
+    >{value}</textarea>
+  ) : type === 'select' ? (
+    <div class="relative">
+      <select
+        id={name}
+        name={name}
+        required={required}
+        class="w-full appearance-none bg-[#141414] border border-white/15 px-4 py-3.5 pr-10 font-body text-sm text-cream focus:border-gold focus:outline-none rounded-none cursor-pointer transition-colors"
+      >
+        <slot />
+      </select>
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gold">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  ) : (
+    <input
+      type={type}
+      id={name}
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      value={value}
+      min={min}
+      max={max}
+      autocomplete={autocomplete}
+      class="w-full bg-[#141414] border border-white/15 px-4 py-3.5 font-body text-sm text-cream placeholder:text-stone/50 placeholder:font-normal focus:border-gold focus:outline-none rounded-none transition-colors selection:bg-gold selection:text-obsidian"
+    />
+  )}
+</div>
+

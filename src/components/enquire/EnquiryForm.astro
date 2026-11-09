@@ -1,0 +1,731 @@
+---
+// src/components/enquire/EnquiryForm.astro
+import Field from './Field.astro';
+import { services } from '../../config/services';
+
+const serviceList = Object.values(services);
+
+const moodChips = [
+  'Architectural & Sculptural',
+  'Romantic & Ethereal',
+  'Wild & Untamed English',
+  'Monochrome & Minimalist',
+  'High-Contrast Velvet & Gothic',
+  'Candlelit Warmth & Abundance'
+];
+
+const referralOptions = [
+  'Instagram / Social Media',
+  'Word of Mouth / Client Recommendation',
+  'Venue / Wedding Planner Referral',
+  'Press Feature (Vogue, Tatler, etc.)',
+  'Google / Online Search',
+  'Returning Patron'
+];
+---
+
+<div class="enquiry-form-container relative max-w-4xl mx-auto">
+  <!-- Gold Accent Header Border -->
+  <div class="h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-80 mb-8"></div>
+
+  <!-- Progress Stepper (JavaScript Enhanced) -->
+  <nav id="enquiry-stepper" class="mb-10 pb-6 border-b border-white/10 hidden sm:flex items-center justify-between text-xs font-body tracking-[0.2em] uppercase" aria-label="Enquiry Progress">
+    <div class="step-indicator flex items-center gap-2 text-gold font-medium" data-step="1">
+      <span class="w-6 h-6 rounded-full border border-gold flex items-center justify-center text-[10px]">I</span>
+      <span>Occasion</span>
+    </div>
+    <span class="text-white/20">—</span>
+    <div class="step-indicator flex items-center gap-2 text-stone" data-step="2">
+      <span class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">II</span>
+      <span>Details</span>
+    </div>
+    <span class="text-white/20">—</span>
+    <div class="step-indicator flex items-center gap-2 text-stone" data-step="3">
+      <span class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">III</span>
+      <span>Investment</span>
+    </div>
+    <span class="text-white/20">—</span>
+    <div class="step-indicator flex items-center gap-2 text-stone" data-step="4">
+      <span class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">IV</span>
+      <span>Vision & Contact</span>
+    </div>
+  </nav>
+
+  <!-- The Form Element (Progressive Enhancement: plain POST target, enhanced via JS) -->
+  <form
+    id="client-qualification-form"
+    action="/api/enquire"
+    method="POST"
+    class="space-y-12 bg-[#0c0c0c] p-6 sm:p-10 md:p-14 border border-white/10 shadow-2xl relative"
+    novalidate
+  >
+    <!-- Bot Defense: Honeypot field (hidden from real users, caught if filled) -->
+    <div class="hidden" aria-hidden="true">
+      <label for="website_hp">Do not fill this field if human</label>
+      <input type="text" name="website_hp" id="website_hp" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <!-- Error Banner -->
+    <div id="form-error-banner" class="hidden p-4 bg-red-950/40 border border-red-500/40 text-red-200 text-xs font-body leading-relaxed"></div>
+
+    <!-- =========================================================================
+         STEP I: THE OCCASION
+         ========================================================================= -->
+    <section class="form-step-panel space-y-8" data-step-panel="1">
+      <div class="space-y-2">
+        <span class="text-gold text-[10px] font-body uppercase tracking-[0.25em] font-medium block">Step I • The Occasion</span>
+        <h2 class="font-display text-3xl sm:text-4xl text-cream font-light">Which celebration or commission may we curate?</h2>
+        <p class="text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+          Selecting your discipline configures our bespoke spatial questionnaire and investment guide.
+        </p>
+      </div>
+
+      <!-- Service Selection Cards (Grid) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="occasion-picker">
+        {serviceList.map((svc) => (
+          <label class="service-radio-card relative flex flex-col justify-between p-5 bg-[#121212] border border-white/10 hover:border-gold/60 cursor-pointer transition-all duration-200 group">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-[10px] font-body uppercase tracking-luxury text-gold">
+                {svc.eyebrow}
+              </span>
+              <input
+                type="radio"
+                name="service"
+                value={svc.id}
+                required
+                class="h-4 w-4 rounded-none border-white/30 text-gold focus:ring-0 focus:ring-offset-0 bg-[#1a1a1a] cursor-pointer"
+              />
+            </div>
+            <div>
+              <h3 class="font-display text-xl sm:text-2xl text-cream group-hover:text-gold transition-colors font-light mb-1">
+                {svc.name}
+              </h3>
+              <p class="text-xs font-body text-stone/80 font-light leading-relaxed mb-4">
+                {svc.tagline}
+              </p>
+            </div>
+            <div class="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] font-body text-stone">
+              <span>Investment:</span>
+              <span class="text-cream font-medium">{svc.minimumInvestment}</span>
+            </div>
+          </label>
+        ))}
+      </div>
+
+      <!-- Sympathy Expedited Notice -->
+      <div id="sympathy-shortcut-notice" class="hidden p-5 bg-[#14120e] border border-gold/40 text-xs font-body text-stone leading-relaxed space-y-2">
+        <div class="flex items-center gap-2 text-gold font-medium uppercase tracking-caption">
+          <span>Expedited Memorial Care</span>
+        </div>
+        <p>
+          Sympathy commissions are managed with urgent founder priority. Selecting Sympathy opens an expedited single-stage consultation, or you may dial our direct studio line immediately at <a href="tel:+441708956609" class="text-gold underline hover:text-champagne font-medium">+44 (0) 1708 956609</a>.
+        </p>
+      </div>
+
+      <div class="pt-4 flex justify-end">
+        <button type="button" class="step-next-btn btn-solid-gold" data-goto="2">
+          Continue to Details →
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         STEP II: THE DETAILS (Or Sympathy Expedited Details)
+         ========================================================================= -->
+    <section class="form-step-panel space-y-8 hidden" data-step-panel="2">
+      <!-- Standard Celebration Details (Weddings / Events / Stem Bar / Hosp / Comm) -->
+      <div id="standard-details-block" class="space-y-8">
+        <div class="space-y-2">
+          <span class="text-gold text-[10px] font-body uppercase tracking-[0.25em] font-medium block">Step II • The Setting & Timing</span>
+          <h2 class="font-display text-3xl sm:text-4xl text-cream font-light">Where and when is your gathering?</h2>
+          <p class="text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+            Dates within 6 weeks are flagged for priority short-notice diary allocation.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Celebration / Event Date"
+            name="eventDate"
+            type="date"
+            hint="Specific date if confirmed"
+          />
+          <Field
+            label="Seasonal Horizon / Year"
+            name="seasonalTiming"
+            placeholder="e.g. Summer 2027 / Late Autumn"
+            hint="If exact date is not yet locked"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Venue or Estate Name"
+            name="venueName"
+            placeholder="e.g. Hedsor House / Private Residence"
+            hint="Town or postcode"
+          />
+          <Field
+            label="Estimated Guest Count"
+            name="guestCount"
+            type="number"
+            placeholder="e.g. 120"
+            min="1"
+          />
+        </div>
+
+        <Field
+          label="Wedding Planner / Event Producer"
+          name="plannerName"
+          placeholder="e.g. Sarah Haywood Weddings (optional)"
+          hint="If working with an agency or coordinator"
+        />
+      </div>
+
+      <!-- Sympathy Dedicated Branch (Activated when Sympathy is chosen) -->
+      <div id="sympathy-details-block" class="space-y-8 hidden">
+        <div class="space-y-2">
+          <span class="text-gold text-[10px] font-body uppercase tracking-[0.25em] font-medium block">Expedited Sympathy • Memorial Details</span>
+          <h2 class="font-display text-3xl sm:text-4xl text-cream font-light">Honouring Your Loved One</h2>
+          <p class="text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+            We liaise directly with your funeral director to eliminate administrative stress.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Service / Funeral Date"
+            name="sympathyDate"
+            type="date"
+            required
+            hint="Required for chapel delivery scheduling"
+          />
+          <Field
+            label="Funeral Home & Director"
+            name="funeralDirector"
+            required
+            placeholder="e.g. West & Coe, Upminster"
+            hint="Name of funeral director & branch"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Tribute Style Desired"
+            name="tributeStyle"
+            type="select"
+          >
+            <option value="casket-spray">Full Casket Spray (4ft, 5ft, or 6ft)</option>
+            <option value="wreath">Circular Statement Wreath / Circlet</option>
+            <option value="letters">Bespoke Name or Letter Tribute</option>
+            <option value="sanctuary-urns">Chapel Sanctuary Pedestal Urns</option>
+            <option value="bespoke-combination">Full Family Memorial Suite</option>
+          </Field>
+          <Field
+            label="Favourite Flowers, Colours or Fragrance"
+            name="memorialFloralWishes"
+            placeholder="e.g. White English garden roses, rosemary & lavender"
+          />
+        </div>
+      </div>
+
+      <div class="pt-4 flex items-center justify-between">
+        <button type="button" class="step-prev-btn btn-outline-luxury" data-goto="1">
+          ← Back
+        </button>
+        <button type="button" class="step-next-btn btn-solid-gold" data-goto="3">
+          Continue to Investment →
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         STEP III: INVESTMENT (Dynamic Budget Bands from services.ts)
+         ========================================================================= -->
+    <section class="form-step-panel space-y-8 hidden" data-step-panel="3">
+      <div class="space-y-2">
+        <span class="text-gold text-[10px] font-body uppercase tracking-[0.25em] font-medium block">Step III • The Investment</span>
+        <h2 class="font-display text-3xl sm:text-4xl text-cream font-light">Envisioned Floral Investment</h2>
+        <p class="text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+          Transparent baseline budgets ensure our founder-led team can devote the necessary sourcing and on-site hours to your commission.
+        </p>
+      </div>
+
+      <!-- Dynamic Budget Radios Container (Populated via JS based on selected service) -->
+      <div id="dynamic-budget-container" class="space-y-3">
+        <!-- Render fallback / server list for no-JS environments -->
+        <noscript>
+          <div class="space-y-3">
+            <p class="text-xs text-stone">Please specify your approximate floral investment budget:</p>
+            <Field
+              label="Approximate Budget (£)"
+              name="budget_fallback"
+              placeholder="e.g. £5,000"
+            />
+          </div>
+        </noscript>
+      </div>
+
+      <!-- Gracious Below-Minimum Advisory Callout -->
+      <div id="below-minimum-advisory" class="hidden p-6 bg-[#16130d] border border-gold/30 space-y-3 text-xs font-body text-stone leading-relaxed">
+        <div class="flex items-center gap-2 text-gold font-medium uppercase tracking-[0.16em]">
+          <span>A Note on Studio Investment</span>
+        </div>
+        <p id="below-minimum-text">
+          Our bespoke commissions begin at a curated threshold to guarantee exclusive founder oversight, rare European botanical sourcing, and dedicated installation crews.
+        </p>
+        <p class="text-cream/90 italic">
+          You are still very welcome to submit your brief. If our comprehensive commission framework is not the right fit, our founders will gladly suggest alternative botanical approaches or smaller bespoke options.
+        </p>
+      </div>
+
+      <div class="pt-4 flex items-center justify-between">
+        <button type="button" class="step-prev-btn btn-outline-luxury" data-goto="2">
+          ← Back
+        </button>
+        <button type="button" class="step-next-btn btn-solid-gold" data-goto="4">
+          Continue to Vision & Contact →
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         STEP IV: THE VISION & CONTACT
+         ========================================================================= -->
+    <section class="form-step-panel space-y-8 hidden" data-step-panel="4">
+      <div class="space-y-2">
+        <span class="text-gold text-[10px] font-body uppercase tracking-[0.25em] font-medium block">Step IV • Vision & Dialogue</span>
+        <h2 class="font-display text-3xl sm:text-4xl text-cream font-light">Tell us about the atmosphere</h2>
+        <p class="text-xs sm:text-sm font-body text-stone font-light leading-relaxed">
+          Share your aesthetic inspirations and direct contact coordinates.
+        </p>
+      </div>
+
+      <!-- Mood Chips -->
+      <div class="space-y-3">
+        <label class="block text-[11px] font-body uppercase tracking-[0.2em] text-cream/90 font-medium">
+          Aesthetic Tone & Mood <span class="text-stone/60 font-normal italic lowercase">(select all that resonate)</span>
+        </label>
+        <div class="flex flex-wrap gap-2.5" id="mood-chips-container">
+          {moodChips.map((chip) => (
+            <label class="mood-chip px-3.5 py-2 bg-[#121212] border border-white/10 hover:border-gold/50 cursor-pointer text-xs font-body text-stone transition-all duration-200 select-none">
+              <input type="checkbox" name="moodWords" value={chip} class="sr-only" />
+              <span>{chip}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <!-- Moodboard / Pinterest Link -->
+      <Field
+        label="Pinterest, Drive or Concept Deck Link"
+        name="moodboardUrl"
+        type="url"
+        placeholder="https://pinterest.co.uk/..."
+        hint="Optional link to imagery or aesthetic references"
+      />
+
+      <!-- Atmosphere Vision Free Text -->
+      <Field
+        label="Atmosphere, Notes & Architectural Vision"
+        name="message"
+        type="textarea"
+        required
+        placeholder="Describe your floral dream, architectural features of your venue, color palette, or specific sentiment..."
+        rows={4}
+      />
+
+      <!-- Referral Source -->
+      <Field
+        label="How Did You Discover SB Floristry?"
+        name="referralSource"
+        type="select"
+      >
+        <option value="">Please select...</option>
+        {referralOptions.map((opt) => (
+          <option value={opt}>{opt}</option>
+        ))}
+      </Field>
+
+      <!-- Client Contact Details -->
+      <div class="pt-6 border-t border-white/10 space-y-6">
+        <h3 class="font-display text-2xl text-cream font-light">
+          Your Contact Coordinates
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Full Name"
+            name="name"
+            required
+            placeholder="e.g. Lady Spencer / Christian Dior"
+            autocomplete="name"
+          />
+          <Field
+            label="Email Address"
+            name="email"
+            type="email"
+            required
+            placeholder="client@atelier.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Field
+            label="Telephone / Mobile"
+            name="phone"
+            type="tel"
+            required
+            placeholder="+44 (0) 7000 000000"
+            autocomplete="tel"
+          />
+          <Field
+            label="Preferred Contact Time"
+            name="contactTime"
+            type="select"
+          >
+            <option value="morning">Morning (09:00 – 12:00)</option>
+            <option value="afternoon">Afternoon (12:00 – 17:00)</option>
+            <option value="evening">Evening (17:00 – 19:30)</option>
+            <option value="email-only">Email Correspondence Preferred</option>
+          </Field>
+        </div>
+      </div>
+
+      <!-- Cloudflare Turnstile Container (Optional) -->
+      <div id="cf-turnstile-container" class="my-4"></div>
+
+      <!-- Final Submit Action -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-white/10">
+        <button type="button" class="step-prev-btn btn-outline-luxury w-full sm:w-auto" data-goto="3">
+          ← Back
+        </button>
+
+        <button type="submit" id="submit-enquiry-btn" class="btn-solid-gold w-full sm:w-auto px-12 py-4">
+          Submit Commission Enquiry →
+        </button>
+      </div>
+
+      <p class="text-[11px] font-body text-stone/70 text-center sm:text-right">
+        Protected by studio discretion. Submissions are reviewed personally by founders within 48 hours.
+      </p>
+    </section>
+  </form>
+</div>
+
+<!-- Embed services data for Client-Side Dynamic Form Logic -->
+<script is:inline define:vars={{ servicesData: services }}>
+  window.SB_SERVICES_DATA = servicesData;
+</script>
+
+<script>
+  function initEnquiryMultiStep() {
+    const form = document.getElementById('client-qualification-form') as HTMLFormElement | null;
+    if (!form) return;
+
+    const services = (window as any).SB_SERVICES_DATA || {};
+    const panels = form.querySelectorAll<HTMLElement>('.form-step-panel');
+    const stepIndicators = document.querySelectorAll<HTMLElement>('.step-indicator');
+    const occasionRadios = form.querySelectorAll<HTMLInputElement>('input[name="service"]');
+    const dynamicBudgetContainer = document.getElementById('dynamic-budget-container');
+    const belowMinAdvisory = document.getElementById('below-minimum-advisory');
+    const belowMinText = document.getElementById('below-minimum-text');
+    const sympathyNotice = document.getElementById('sympathy-shortcut-notice');
+    const standardDetails = document.getElementById('standard-details-block');
+    const sympathyDetails = document.getElementById('sympathy-details-block');
+    const errorBanner = document.getElementById('form-error-banner');
+    const submitBtn = document.getElementById('submit-enquiry-btn') as HTMLButtonElement | null;
+
+    let currentStep = 1;
+    let selectedService = 'weddings';
+
+    // Highlight mood chips on change
+    const moodCheckboxes = form.querySelectorAll<HTMLInputElement>('#mood-chips-container input[type="checkbox"]');
+    moodCheckboxes.forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const parent = cb.closest('.mood-chip');
+        if (parent) {
+          if (cb.checked) {
+            parent.classList.add('border-gold', 'text-gold', 'bg-[#1a1711]');
+            parent.classList.remove('border-white/10', 'text-stone', 'bg-[#121212]');
+          } else {
+            parent.classList.remove('border-gold', 'text-gold', 'bg-[#1a1711]');
+            parent.classList.add('border-white/10', 'text-stone', 'bg-[#121212]');
+          }
+        }
+      });
+    });
+
+    // Handle Service Radio Card Visual State & Sympathy branch toggle
+    function updateServiceSelection(val: string) {
+      selectedService = val;
+
+      occasionRadios.forEach((r) => {
+        const card = r.closest('.service-radio-card');
+        if (card) {
+          if (r.value === val) {
+            r.checked = true;
+            card.classList.add('border-gold', 'bg-[#171511]');
+            card.classList.remove('border-white/10', 'bg-[#121212]');
+          } else {
+            card.classList.remove('border-gold', 'bg-[#171511]');
+            card.classList.add('border-white/10', 'bg-[#121212]');
+          }
+        }
+      });
+
+      // Show sympathy notice / toggle step 2 block
+      if (val === 'sympathy') {
+        sympathyNotice?.classList.remove('hidden');
+        standardDetails?.classList.add('hidden');
+        sympathyDetails?.classList.remove('hidden');
+      } else {
+        sympathyNotice?.classList.add('hidden');
+        standardDetails?.classList.remove('hidden');
+        sympathyDetails?.classList.add('hidden');
+      }
+
+      // Re-populate Step III Budget Bands
+      renderBudgetBands(val);
+    }
+
+    occasionRadios.forEach((r) => {
+      r.addEventListener('change', () => {
+        updateServiceSelection(r.value);
+      });
+      // Click on parent card checks radio
+      r.closest('.service-radio-card')?.addEventListener('click', () => {
+        updateServiceSelection(r.value);
+      });
+    });
+
+    // Populate dynamic budget radios
+    function renderBudgetBands(serviceKey: string) {
+      if (!dynamicBudgetContainer) return;
+      const svc = services[serviceKey] || services['weddings'];
+      const bands = svc.budgetBands || [];
+
+      let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+      bands.forEach((b: any, idx: number) => {
+        html += `
+          <label class="budget-radio-card relative flex items-start gap-4 p-4 bg-[#121212] border border-white/10 hover:border-gold/50 cursor-pointer transition-all duration-200 group">
+            <input
+              type="radio"
+              name="budgetBand"
+              value="${b.id}"
+              data-below-min="${b.isBelowMinimum ? 'true' : 'false'}"
+              ${idx === (b.isBelowMinimum ? 1 : 0) ? 'checked' : ''}
+              class="mt-1 h-4 w-4 rounded-none border-white/30 text-gold focus:ring-0 focus:ring-offset-0 bg-[#1a1a1a] cursor-pointer"
+            />
+            <div class="space-y-0.5">
+              <span class="text-xs sm:text-sm font-display tracking-wide uppercase text-cream group-hover:text-gold transition-colors font-medium">
+                ${b.label}
+              </span>
+              ${b.isBelowMinimum ? `<span class="block text-[10px] text-stone/70 italic">Below studio minimum</span>` : ''}
+            </div>
+          </label>
+        `;
+      });
+      html += `</div>`;
+
+      dynamicBudgetContainer.innerHTML = html;
+
+      // Add listeners to budget radios to show/hide below-minimum advisory
+      const budgetRadios = dynamicBudgetContainer.querySelectorAll<HTMLInputElement>('input[name="budgetBand"]');
+      budgetRadios.forEach((br) => {
+        br.addEventListener('change', () => {
+          checkBelowMinimum(br);
+        });
+        br.closest('.budget-radio-card')?.addEventListener('click', () => {
+          br.checked = true;
+          checkBelowMinimum(br);
+        });
+      });
+
+      // Initial check
+      const checkedRadio = dynamicBudgetContainer.querySelector<HTMLInputElement>('input[name="budgetBand"]:checked');
+      if (checkedRadio) checkBelowMinimum(checkedRadio);
+    }
+
+    function checkBelowMinimum(radio: HTMLInputElement) {
+      const isBelow = radio.getAttribute('data-below-min') === 'true';
+      const svc = services[selectedService] || services['weddings'];
+
+      // Visual highlight
+      const cards = dynamicBudgetContainer?.querySelectorAll('.budget-radio-card');
+      cards?.forEach((c) => {
+        const inp = c.querySelector('input');
+        if (inp?.checked) {
+          c.classList.add('border-gold', 'bg-[#171511]');
+          c.classList.remove('border-white/10', 'bg-[#121212]');
+        } else {
+          c.classList.remove('border-gold', 'bg-[#171511]');
+          c.classList.add('border-white/10', 'bg-[#121212]');
+        }
+      });
+
+      if (isBelow) {
+        if (belowMinText && svc.belowMinimumNote) {
+          belowMinText.textContent = svc.belowMinimumNote;
+        }
+        belowMinAdvisory?.classList.remove('hidden');
+      } else {
+        belowMinAdvisory?.classList.add('hidden');
+      }
+    }
+
+    // Step Navigation Function
+    function goToStep(stepNumber: number) {
+      if (stepNumber < 1 || stepNumber > 4) return;
+
+      // Validation before proceeding forward
+      if (stepNumber > currentStep) {
+        const currentPanel = form?.querySelector<HTMLElement>(`[data-step-panel="${currentStep}"]`);
+        if (currentPanel) {
+          const requiredInputs = currentPanel.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+            'input[required], select[required], textarea[required]'
+          );
+          let valid = true;
+          requiredInputs.forEach((inp) => {
+            // Ignore hidden fields (e.g. from the unselected branch)
+            if (inp.offsetParent !== null && !inp.checkValidity()) {
+              valid = false;
+              inp.classList.add('border-red-500');
+              inp.reportValidity();
+            } else {
+              inp.classList.remove('border-red-500');
+            }
+          });
+          if (!valid) return;
+        }
+      }
+
+      currentStep = stepNumber;
+
+      // Update Panel visibility
+      panels.forEach((p) => {
+        const pStep = parseInt(p.getAttribute('data-step-panel') || '1', 10);
+        if (pStep === currentStep) {
+          p.classList.remove('hidden');
+          p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+
+      // Update Stepper Nav
+      stepIndicators.forEach((ind) => {
+        const indStep = parseInt(ind.getAttribute('data-step') || '1', 10);
+        const circle = ind.querySelector('span');
+        if (indStep === currentStep) {
+          ind.classList.add('text-gold', 'font-medium');
+          ind.classList.remove('text-stone');
+          circle?.classList.add('border-gold', 'text-gold');
+          circle?.classList.remove('border-white/20');
+        } else if (indStep < currentStep) {
+          ind.classList.add('text-cream');
+          ind.classList.remove('text-stone', 'text-gold');
+          circle?.classList.add('border-gold', 'bg-gold', 'text-obsidian');
+          circle?.classList.remove('border-white/20');
+        } else {
+          ind.classList.remove('text-gold', 'text-cream', 'font-medium');
+          ind.classList.add('text-stone');
+          circle?.classList.remove('border-gold', 'bg-gold', 'text-obsidian');
+          circle?.classList.add('border-white/20');
+        }
+      });
+    }
+
+    // Attach button handlers
+    form.querySelectorAll<HTMLButtonElement>('.step-next-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = parseInt(btn.getAttribute('data-goto') || '2', 10);
+        goToStep(target);
+      });
+    });
+
+    form.querySelectorAll<HTMLButtonElement>('.step-prev-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = parseInt(btn.getAttribute('data-goto') || '1', 10);
+        goToStep(target);
+      });
+    });
+
+    // Initialize Default Selection
+    const checkedService = form.querySelector<HTMLInputElement>('input[name="service"]:checked');
+    updateServiceSelection(checkedService ? checkedService.value : 'weddings');
+
+    // Handle AJAX Form Submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!errorBanner) return;
+      errorBanner.classList.add('hidden');
+
+      // Final Validity Check
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Transmitting Commission Brief...';
+      }
+
+      const formData = new FormData(form);
+      const data: Record<string, any> = {};
+
+      formData.forEach((val, key) => {
+        if (key === 'moodWords') {
+          if (!data[key]) data[key] = [];
+          data[key].push(val);
+        } else {
+          data[key] = val;
+        }
+      });
+
+      try {
+        const response = await fetch('/api/enquire', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // Redirect to confirmation page
+          const redirectUrl = result.redirectUrl || '/enquire/received/';
+          window.location.href = redirectUrl;
+        } else {
+          throw new Error(result.error || 'Unable to submit enquiry. Please try again or call the studio directly.');
+        }
+      } catch (err: any) {
+        console.error('Enquiry error:', err);
+        errorBanner.textContent = err.message || 'An unexpected transmission error occurred. Please contact studio@sbfloristry.co.uk directly.';
+        errorBanner.classList.remove('hidden');
+        errorBanner.scrollIntoView({ behavior: 'smooth' });
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit Commission Enquiry →';
+        }
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initEnquiryMultiStep);
+  document.addEventListener('astro:page-load', initEnquiryMultiStep);
+</script>
+
+<style>
+  .service-radio-card:has(input:checked) {
+    border-color: #D4AF37;
+    background-color: #171511;
+  }
+</style>
+

@@ -46,19 +46,22 @@ export async function getStaticPaths() {
   const response = await shopifyFetch({ query });
   const products = response?.data?.products?.edges || [];
 
-  return products.map((edge) => ({
+  return products.map((edge: any) => ({
     params: { handle: edge.node.handle },
     props: { product: edge.node },
   }));
 }
+interface Props {
+  product: any;
+}
 
-const { product } = Astro.props;
+const { product } = Astro.props as Props;
 
 // Extract necessary variables
 const variantId = product.variants?.edges[0]?.node?.id || product.id;
 const priceAmount = product.variants?.edges[0]?.node?.price?.amount || '0.00';
 const priceText = `£${parseFloat(priceAmount).toFixed(2)}`;
-const images = product.images?.edges.map(e => e.node.url) || [];
+const images = product.images?.edges.map((e: any) => e.node.url) || [];
 const mainImage = images[0] || 'https://via.placeholder.com/600x800?text=No+Image';
 
 // Find collection tag for breadcrumbs
@@ -87,7 +90,7 @@ const displayCollection = collectionTag.charAt(0).toUpperCase() + collectionTag.
             
             {images.length > 1 && (
               <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible no-scrollbar w-full md:w-20 shrink-0">
-                {images.map((img, idx) => (
+                {images.map((img: string, idx: number) => (
                   <button class={`gallery-thumbnail w-20 h-24 md:w-full md:h-28 shrink-0 border-2 transition-all duration-300 ${idx === 0 ? 'border-sb-gold' : 'border-transparent hover:border-gray-300'}`} data-full={img}>
                     <img src={img} alt={`Thumbnail ${idx + 1}`} class="w-full h-full object-cover" />
                   </button>

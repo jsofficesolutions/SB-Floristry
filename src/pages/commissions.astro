@@ -1,0 +1,165 @@
+---
+// src/pages/commissions.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialHero from '../components/editorial/EditorialHero.astro';
+import Chapter from '../components/editorial/Chapter.astro';
+import ImageText from '../components/editorial/ImageText.astro';
+import PressStrip from '../components/editorial/PressStrip.astro';
+import PullQuote from '../components/editorial/PullQuote.astro';
+import InvestmentNote from '../components/editorial/InvestmentNote.astro';
+import EnquireCTA from '../components/editorial/EnquireCTA.astro';
+
+const commissionTypes = [
+  {
+    title: "Editorial & Fashion Set Design",
+    starting: "From £1,000",
+    description: "Living sculptures, botanical backdrop walls, and wearable botanical art for high-fashion photoshoots, magazine features, and campaign sets.",
+    image: "/images/product-pure-elegance.jpg"
+  },
+  {
+    title: "Private Residence Installations",
+    starting: "From £500",
+    description: "Architectural floral styling for private estate house parties, milestone birthdays, and holiday staging throughout London and Essex country manors.",
+    image: "/images/gallery-3.jpg"
+  },
+  {
+    title: "Bespoke Botanical Sculptures",
+    starting: "From £1,500",
+    description: "Large-scale ephemeral art pieces composed of driftwood, boughs, rare orchids, and dried florals designed for private galleries and architectural openings.",
+    image: "/images/gallery-6.jpg"
+  }
+];
+---
+
+<BaseLayout
+  title="Private Floral Commissions & Editorial Art | SB Floristry"
+  description="Bespoke architectural botanical installations, editorial fashion styling, and private estate commissions by SB Floristry London."
+  canonical="https://www.sbfloristry.co.uk/commissions/"
+>
+  <!-- Split Editorial Hero -->
+  <EditorialHero
+    variant="split"
+    eyebrow="Private Commissions"
+    title="Botanical Art Without Boundaries"
+    subtitle="Site-specific living sculptures, editorial campaign florals, and bespoke residential installations crafted for visionary patrons."
+    image="/images/product-pure-elegance.jpg"
+    imageAlt="Bespoke Botanical Art Commission"
+    caption="Private Collector Sculpture Gallery • Essex • SB Floristry"
+    primaryCtaText="Begin a Commission →"
+    primaryCtaHref="/enquire/"
+    secondaryCtaText="View Portfolio"
+    secondaryCtaHref="/portfolio/"
+  />
+
+  <PressStrip />
+
+  <!-- The Offerings Overview -->
+  <section class="py-20 md:py-28 bg-obsidian text-cream">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <Chapter
+        number="I"
+        eyebrow="Artistic Scope"
+        title="Bespoke Commission Types"
+        subtitle="We treat each private commission as an individual artwork, selecting rare materials that dialogue with your architecture and interior design."
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+        {commissionTypes.map((item, i) => (
+          <div class="reveal-on-scroll bg-[#0c0c0c] border border-white/10 p-8 flex flex-col justify-between group shadow-xl" style={`transition-delay: ${i * 120}ms`}>
+            <div>
+              <div class="reveal-clip aspect-[16/11] overflow-hidden bg-[#161616] mb-6 border border-white/10">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div class="text-xs font-body uppercase tracking-[0.2em] text-gold mb-2 font-medium">
+                {item.starting}
+              </div>
+              <h3 class="font-display text-2xl text-cream font-light mb-3">
+                {item.title}
+              </h3>
+              <p class="font-body text-xs sm:text-sm text-stone leading-relaxed font-light">
+                {item.description}
+              </p>
+            </div>
+            <div class="pt-6">
+              <a href="/enquire/" class="inline-flex items-center text-xs uppercase tracking-[0.18em] text-gold hover:text-champagne transition-colors group-hover:translate-x-1 duration-200">
+                Discuss Project →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Narrative Splits -->
+  <div class="space-y-4 md:space-y-8 bg-noir border-y border-white/10">
+    
+    <ImageText
+      split="7-5"
+      image="/images/gallery-3.jpg"
+      imageAlt="Private Residence Floral Staging"
+      caption="Private Country Estate • Essex Manor"
+      chapterNumber="II"
+      eyebrow="Residential Art"
+      title="Intimate Living Staging"
+      lead="Transforming dining rooms, grand staircases, and inglenook fireplaces for private milestones."
+      text="Whether celebrating an intimate anniversary dinner, unveiling a renovated historic property, or staging a private holiday gathering, we curate florals that honour your home's unique spirit."
+      ctaText="View Residential Portfolio →"
+      ctaHref="/portfolio/"
+    />
+
+    <ImageText
+      split="5-7"
+      reversed={true}
+      image="/images/gallery-6.jpg"
+      imageAlt="Editorial Botanical Sculpture"
+      caption="Campaign Shoot • Studio Set Design"
+      chapterNumber="III"
+      eyebrow="Editorial Precision"
+      title="Fashion, Print & Film Collaborations"
+      lead="Botanicals engineered for the lens—resilient, sculpturally balanced, and dramatically textured."
+      text="We collaborate with photographers, creative directors, and stylists on location and in studio, creating living backdrops, floral headdresses, and surreal botanical interventions."
+      ctaText="Collaborate on a Shoot →"
+      ctaHref="/enquire/"
+    />
+
+  </div>
+
+  <!-- Editorial Pull Quote -->
+  <PullQuote
+    quote="SB Floristry operates with the intuition of sculptors. Their botanical installations elevate every room they touch into an unforgettable sensory museum."
+    attribution="Julian C. Thorne"
+    role="Architectural Digest Reviewer"
+    publication="Private Residence Feature"
+  />
+
+  <!-- Investment Transparency -->
+  <InvestmentNote
+    startingFrom="£500"
+    service="Bespoke Private Commissions"
+    title="Commissions Terms & Curation"
+    note="Private commissions begin from £500 for compact bespoke residential projects, and scale to £5,000+ for monumental editorial and spatial installations."
+    inclusions={[
+      "Private founder consultation & concept sketches",
+      "Sourcing of rare botanical specimens & sculptural boughs",
+      "Hand-carved alabaster, stoneware or bronze vessel hire",
+      "White-glove on-site installation and scheduled collection"
+    ]}
+    ctaText="Consult With Founders →"
+    ctaHref="/enquire/"
+  />
+
+  <!-- Shared Closing CTA -->
+  <EnquireCTA
+    eyebrow="Private Commissions"
+    title="Commission a Work of Art"
+    subtitle="Share your concept, location, or editorial brief directly with our founders. We welcome creative challenges."
+    ctaText="Commission a Piece →"
+    ctaHref="/enquire/"
+  />
+</BaseLayout>

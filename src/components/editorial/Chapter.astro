@@ -1,0 +1,60 @@
+---
+// src/components/editorial/Chapter.astro
+interface Props {
+  number: string; // Roman numeral e.g. "I", "II", "III" or "01"
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  alignment?: 'center' | 'left';
+  accentRule?: boolean;
+  class?: string;
+}
+
+const {
+  number,
+  title,
+  subtitle,
+  eyebrow,
+  alignment = 'center',
+  accentRule = true,
+  class: className = ''
+} = Astro.props;
+
+const isCenter = alignment === 'center';
+---
+
+<header class={`chapter-header max-w-4xl ${isCenter ? 'mx-auto text-center' : 'text-left'} py-12 md:py-16 ${className}`}>
+  <!-- Numbered Chapter Indicator -->
+  <div class="reveal-on-scroll flex items-center gap-3 mb-4 justify-start" style={isCenter ? 'justify-content: center;' : ''}>
+    <span class="text-xs font-body font-medium uppercase tracking-[0.25em] text-gold">
+      Chapter {number}
+    </span>
+    {eyebrow && (
+      <>
+        <span class="text-stone/40 text-xs">•</span>
+        <span class="text-xs font-body uppercase tracking-[0.2em] text-stone">
+          {eyebrow}
+        </span>
+      </>
+    )}
+  </div>
+
+  <!-- Editorial Chapter Title -->
+  <h2 class="reveal-on-scroll delay-100 font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-cream leading-[1.15] mb-6">
+    {title}
+  </h2>
+
+  <!-- Optional Subtitle / Lead Paragraph -->
+  {subtitle && (
+    <p class="reveal-on-scroll delay-200 font-display text-lg sm:text-xl md:text-2xl text-stone italic font-light leading-relaxed max-w-2xl mx-auto mb-8" style={!isCenter ? 'margin-left: 0;' : ''}>
+      {subtitle}
+    </p>
+  )}
+
+  <slot />
+
+  <!-- Subtle Gold Divider Rule -->
+  {accentRule && (
+    <div class={`reveal-on-scroll delay-300 w-20 h-px bg-gold/40 mt-8 ${isCenter ? 'mx-auto' : ''}`}></div>
+  )}
+</header>

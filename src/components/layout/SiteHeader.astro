@@ -1,0 +1,227 @@
+---
+import MobileNav from './MobileNav.astro';
+import { features } from '../../config/features';
+
+const services = [
+  {
+    name: "Weddings",
+    subtitle: "Private Estates & Destination Ceremonies",
+    href: "/weddings/",
+    image: "/images/collection-weddings.jpg",
+    investment: "From £3,500"
+  },
+  {
+    name: "Events & Galas",
+    subtitle: "Brand Launches, Galas & Private Dinners",
+    href: "/events/",
+    image: "/images/gallery-2.jpg",
+    investment: "From £2,500"
+  },
+  {
+    name: "Stem Bar",
+    subtitle: "Interactive Botanical Experience for Guests",
+    href: "/stem-bar/",
+    image: "/images/gallery-1.jpg",
+    investment: "From £1,500"
+  },
+  {
+    name: "Hospitality",
+    subtitle: "Hotel Foyers, Spas & Weekly Contracts",
+    href: "/hospitality/",
+    image: "/images/hero.jpg",
+    investment: "From £250/week"
+  },
+  {
+    name: "Commissions",
+    subtitle: "VIP Editorial, Residencies & Bespoke Art",
+    href: "/commissions/",
+    image: "/images/product-pure-elegance.jpg",
+    investment: "From £500"
+  }
+];
+---
+
+<header class="sticky top-0 z-50 bg-[#080808]/95 backdrop-blur-md border-b border-white/10 transition-colors duration-300" id="site-header">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 h-20 md:h-24 flex items-center justify-between">
+    
+    <!-- Left: SB Floristry Wordmark + Crest -->
+    <a href="/" class="group flex items-center gap-3.5 text-cream" aria-label="SB Floristry Home">
+      <img 
+        src="/brand/crest.png" 
+        alt="SB Floristry Crest" 
+        class="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+        width="48"
+        height="48"
+      />
+      <span class="font-display text-lg md:text-xl tracking-[0.22em] uppercase text-cream group-hover:text-gold transition-colors font-medium">
+        SB Floristry
+      </span>
+    </a>
+
+    <!-- Center Navigation Links (Exact ROADMAP Section 2.2 Spec) -->
+    <nav class="hidden lg:flex items-center space-x-10 text-[11px] font-body tracking-[0.16em] uppercase text-cream/90 font-medium" aria-label="Primary Navigation">
+      
+      <!-- Services ▾ with Hover Trigger -->
+      <div class="services-menu-trigger py-6">
+        <button 
+          id="services-btn"
+          type="button" 
+          class="inline-flex items-center gap-1.5 text-cream/90 hover:text-gold transition-colors tracking-[0.16em] uppercase focus:outline-none cursor-pointer"
+          aria-expanded="false"
+          aria-haspopup="true"
+        >
+          Services
+          <svg class="w-2.5 h-2.5 text-gold/70 transition-transform duration-200" id="services-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+      </div>
+
+      <a href="/sympathy/" class="hover:text-gold transition-colors">
+        Sympathy
+      </a>
+
+      <a href="/portfolio/" class="hover:text-gold transition-colors">
+        Portfolio
+      </a>
+
+      {features.shop && (
+        <a href="/editions/" class="hover:text-gold transition-colors">
+          Editions
+        </a>
+      )}
+
+      <a href="/studio/" class="hover:text-gold transition-colors">
+        Studio
+      </a>
+    </nav>
+
+    <!-- Right: Outlined Enquire CTA & Mobile Toggle -->
+    <div class="flex items-center gap-4">
+      <a href="/enquire/" class="hidden md:inline-flex btn-outline-luxury">
+        Enquire →
+      </a>
+
+      <button
+        id="open-mobile-nav"
+        type="button"
+        class="lg:hidden p-2 text-gold hover:text-cream transition-colors"
+        aria-label="Open navigation menu"
+      >
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Full-Width Services Mega Panel (ROADMAP Section 2.2 Spec) -->
+  <div 
+    id="services-panel" 
+    class="invisible opacity-0 absolute top-full left-0 w-full bg-[#0d0d0d] border-b border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.95)] transition-all duration-300 z-50 pointer-events-none"
+  >
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 py-10 lg:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Left Column: Services Interactive Links (Cols 1-7) -->
+      <div class="lg:col-span-7 flex flex-col space-y-1">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-gold/80 mb-3 font-medium">Studio Practices</div>
+        {services.map((svc, index) => (
+          <a
+            href={svc.href}
+            class="service-item group flex items-baseline justify-between py-3.5 px-4 rounded transition-all duration-200 hover:bg-white/[0.03] border-b border-white/[0.04] last:border-none"
+            data-image={svc.image}
+            data-index={index}
+          >
+            <div>
+              <span class="font-display text-2xl lg:text-3xl text-cream group-hover:text-gold transition-colors font-light mr-4">
+                {svc.name}
+              </span>
+              <span class="text-xs text-stone font-light hidden sm:inline group-hover:text-cream/80 transition-colors">
+                — {svc.subtitle}
+              </span>
+            </div>
+            <span class="text-[10px] uppercase tracking-luxury text-gold/70 group-hover:text-gold font-medium whitespace-nowrap pl-4">
+              {svc.investment}
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <!-- Right Column: Interactive Image Preview (Cols 8-12) -->
+      <div class="hidden lg:block lg:col-span-5 pl-8 border-l border-white/10">
+        <div class="relative aspect-[16/10] overflow-hidden rounded-sm bg-[#161616] border border-white/10 shadow-2xl">
+          <img 
+            id="service-preview-img"
+            src="/images/collection-weddings.jpg" 
+            alt="Service Preview" 
+            class="w-full h-full object-cover transition-opacity duration-300"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute bottom-3 left-4 right-4 flex justify-between items-center text-[10px] uppercase tracking-luxury text-cream/90">
+            <span id="service-preview-caption">Weddings & Private Estates</span>
+            <span class="text-gold">Explore →</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<MobileNav />
+
+<script>
+  function setupServicesMegaMenu() {
+    const trigger = document.querySelector('.services-menu-trigger');
+    const panel = document.getElementById('services-panel');
+    const chevron = document.getElementById('services-chevron');
+    const previewImg = document.getElementById('service-preview-img') as HTMLImageElement | null;
+    const previewCaption = document.getElementById('service-preview-caption');
+    const items = document.querySelectorAll('.service-item');
+    let timeoutId: any = null;
+
+    if (!trigger || !panel) return;
+
+    const openPanel = () => {
+      clearTimeout(timeoutId);
+      panel.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+      panel.classList.add('visible', 'opacity-100', 'pointer-events-auto');
+      if (chevron) chevron.classList.add('rotate-180');
+    };
+
+    const closePanel = () => {
+      timeoutId = setTimeout(() => {
+        panel.classList.remove('visible', 'opacity-100', 'pointer-events-auto');
+        panel.classList.add('invisible', 'opacity-0', 'pointer-events-none');
+        if (chevron) chevron.classList.remove('rotate-180');
+      }, 150);
+    };
+
+    trigger.addEventListener('mouseenter', openPanel);
+    trigger.addEventListener('mouseleave', closePanel);
+    panel.addEventListener('mouseenter', openPanel);
+    panel.addEventListener('mouseleave', closePanel);
+
+    // Hover effect changing right-side preview image
+    items.forEach((item) => {
+      item.addEventListener('mouseenter', () => {
+        const imgUrl = item.getAttribute('data-image');
+        const name = item.querySelector('span')?.textContent?.trim() || '';
+        if (previewImg && imgUrl) {
+          previewImg.style.opacity = '0.5';
+          setTimeout(() => {
+            previewImg.src = imgUrl;
+            previewImg.style.opacity = '1';
+          }, 100);
+        }
+        if (previewCaption) {
+          previewCaption.textContent = name;
+        }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', setupServicesMegaMenu);
+  document.addEventListener('astro:page-load', setupServicesMegaMenu);
+</script>

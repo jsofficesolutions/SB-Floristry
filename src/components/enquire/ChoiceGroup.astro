@@ -1,0 +1,74 @@
+---
+// src/components/enquire/ChoiceGroup.astro
+interface Option {
+  id: string;
+  label: string;
+  description?: string;
+  value: string;
+  badge?: string;
+}
+
+interface Props {
+  name: string;
+  type?: 'radio' | 'checkbox';
+  options: Option[];
+  required?: boolean;
+  columns?: 1 | 2 | 3;
+  class?: string;
+}
+
+const {
+  name,
+  type = 'radio',
+  options,
+  required = false,
+  columns = 1,
+  class: className = ''
+} = Astro.props;
+
+const colClass = columns === 3
+  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  : columns === 2
+  ? 'grid-cols-1 sm:grid-cols-2'
+  : 'grid-cols-1';
+---
+
+<div class={`choice-group grid gap-3 ${colClass} ${className}`}>
+  {options.map((opt, i) => (
+    <label class="choice-card relative flex items-start gap-4 p-4 md:p-5 bg-[#121212] border border-white/10 hover:border-gold/50 cursor-pointer transition-all duration-200 group">
+      <input
+        type={type}
+        name={name}
+        value={opt.value}
+        id={`${name}-${opt.id || i}`}
+        required={required && i === 0}
+        class="mt-1 h-4 w-4 rounded-none border-white/30 text-gold focus:ring-0 focus:ring-offset-0 bg-[#1a1a1a] cursor-pointer"
+      />
+      <div class="flex-grow space-y-1">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs sm:text-sm font-display tracking-wide uppercase text-cream group-hover:text-gold transition-colors font-medium">
+            {opt.label}
+          </span>
+          {opt.badge && (
+            <span class="text-[9px] font-body uppercase tracking-luxury text-gold border border-gold/30 px-2 py-0.5">
+              {opt.badge}
+            </span>
+          )}
+        </div>
+        {opt.description && (
+          <p class="text-xs font-body text-stone/80 font-light leading-relaxed">
+            {opt.description}
+          </p>
+        )}
+      </div>
+    </label>
+  ))}
+</div>
+
+<style>
+  .choice-card:has(input:checked) {
+    border-color: #D4AF37;
+    background-color: #171511;
+  }
+</style>
+
